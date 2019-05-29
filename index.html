@@ -1,0 +1,18 @@
+<html>
+    <head>
+        <title>2D Sandbox</title>
+    </head>
+
+    <body>
+        <script src="js/lang/lexer.js"></script>
+        <script src="js/lang/parser.js"></script>
+        <script>
+            let test = 
+            `x = 3
+            print x`;
+            
+            let lexer = new Lexer(test);
+            console.log(lexer.lex());    
+        </script>
+    </body>
+</html>
