@@ -1,0 +1,44 @@
+#sandbox {
+    border: 2px lightgray solid;
+    border-radius: 0.25rem;
+}
+
+textarea {
+    border: 2px solid lightgray;
+    border-radius: 0.25rem;
+    box-shadow: none;
+    padding: 0.5rem;
+}
+
+button {
+    border: 2px solid lightgray;
+    border-radius: 0.25rem;
+    padding: 0.33rem;
+}
+
+button:hover {
+    background-color: gray;
+}
+
+.game {
+    display: flex;
+    flex-direction: row;
+}
+
+.game div {
+    display: flex;
+    flex-direction: column;
+    margin-left: 2rem;
+    max-height: 480px;
+    width: 300px;
+}
+
+.game textarea {
+    height: 100%;
+    display: block;
+    resize: none;
+}
+
+.game *:not(:last-child) {
+    margin-bottom: 1rem;
+}

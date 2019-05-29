@@ -1,21 +1,43 @@
 <html>
     <head>
         <title>2D Sandbox</title>
-    </head>
-
-    <body>
+        <link rel="stylesheet" type="text/css" href="css/style.css">
         <script src="js/lang/lexer.js"></script>
         <script src="js/lang/parser.js"></script>
         <script>
-            let test = 
-            `x = 3
-            print x`;
+            // let test = 
+            // `x = 3
+            // print x`;
             
-            let lexer = new Lexer(test);
-            console.log(lexer.lex());    
+            // let lexer = new Lexer(test);
+            // console.log(lexer.lex()); 
+            
+            window.onload = function () {
+                console.log('test!');
+                document.getElementById('parse').addEventListener('click', () => {
+                    let code = document.getElementById('input').value;
+    
+                    let lexer = new Lexer(code);
+    
+                    let output = lexer.lex();
+                    let text = Lexer.printTokens(output);
+                    document.getElementById('output').value = text;
+                });
+            }
         </script>
         
         <script src="//cdn.jsdelivr.net/npm/phaser@3.17.0/dist/phaser.js"></script>
         <script src="js/sandbox/app.js"></script>
+    </head>
+
+    <body>
+        <div class="game">
+            <canvas id="sandbox" width="640" height="480"></canvas>
+            <div>
+                <textarea id="input"></textarea>
+                <button id="parse">Tokenize</button>
+                <textarea id="output" disabled></textarea>
+            </div>
+        </div>
     </body>
 </html>

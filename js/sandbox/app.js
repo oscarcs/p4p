@@ -2,6 +2,7 @@ var game = new Phaser.Game({
     type: Phaser.AUTO,
     width: 640,
     height: 480,
+    parent: 'sandbox',
     scene: {
         preload: preload,
         create: create,
@@ -18,5 +19,5 @@ function create () {
 }
 
 function update () {
-    
+
 }

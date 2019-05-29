@@ -112,6 +112,18 @@ class Lexer {
         return new Token('numeric', number);
     }
 
+    static printTokens(output) {
+        let text = '';
+        for (let token of output) {
+            text += Lexer.printToken(token) + '\n';
+        }
+        return text;
+    }
+
+    static printToken(token) {
+        return token.type + ' ' + JSON.stringify(token.reproduction); 
+    }
+
     static isIdent(c) {
         return new RegExp('[A-Za-z]').test(c);
     }
