@@ -17,7 +17,7 @@ button {
 }
 
 button:hover {
-    background-color: gray;
+    background-color: white;
 }
 
 .game {
@@ -39,6 +39,21 @@ button:hover {
     resize: none;
 }
 
-.game *:not(:last-child) {
+.game .buttons {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+}
+
+.game .buttons button {
+    flex-grow: 1;
+    width: 50%;
+}
+
+.game .buttons *:not(:last-child) {
+    margin-right: 1rem;
+}
+
+.game .panel>*:not(:last-child) {
     margin-bottom: 1rem;
 }

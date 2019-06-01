@@ -14,13 +14,25 @@
             
             window.onload = function () {
                 console.log('test!');
-                document.getElementById('parse').addEventListener('click', () => {
+                document.getElementById('tokenize').addEventListener('click', () => {
                     let code = document.getElementById('input').value;
     
                     let lexer = new Lexer(code);
     
                     let output = lexer.lex();
                     let text = Lexer.printTokens(output);
+                    document.getElementById('output').value = text;
+                });
+
+                document.getElementById('parse').addEventListener('click', () => {
+                    let code = document.getElementById('input').value;
+
+                    let lexer = new Lexer(code);
+                    let tokens = lexer.lex();
+
+                    let parser = new Parser(tokens);
+                    let output = parser.parse();
+                    let text = Parser.printSyntaxTree(output);
                     document.getElementById('output').value = text;
                 });
             }
@@ -35,7 +47,10 @@
             <div id="sandbox"></div>
             <div class="panel">
                 <textarea id="input"></textarea>
-                <button id="parse">Tokenize</button>
+                <div class="buttons">
+                    <button id="tokenize">Tokenize</button>
+                    <button id="parse">Parse</button>
+                </div>
                 <textarea id="output" disabled></textarea>
             </div>
         </div>

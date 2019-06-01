@@ -133,8 +133,14 @@ class Lexer {
     }
 
     static isOp(c) {
-        return c === '+' || c === '-' || c === '*' || c === '/' ||
-            c === '^' || c === '=';
+        return  c === '+' ||
+                c === '-' || 
+                c === '*' || 
+                c === '/' ||
+                c === '^' || 
+                c === '=' ||
+                c === '<' ||
+                c === '>';
     }
 
     static isLinebreak(c) {
