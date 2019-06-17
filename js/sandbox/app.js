@@ -1,16 +1,54 @@
+class BasicTile
+{
+    world;
+    x;
+    y;
+    sprite;
+    name;
+
+    tilesize = 16;
+
+    constructor(world,x,y,index){
+        this.world=world;
+        this.x=x;
+        this.y = y;
+        this.sprite = this.world.add.sprite(x, y, 'tiles',index);
+        this.sprite.depth = 1; 
+    }
+
+    update(){
+        //further instructions for each block type to be hooked into here
+        //Parser.getnextInstruction etc.
+
+        if (this.x!==this.sprite.x || this.y!==this.sprite.y){
+            //lazy update position
+            this.sprite.x = this.x;
+            this.sprite.y = this.y;
+        }
+    }
+
+    destroy(){
+        this.sprite.destroy();
+
+    }
+}
+
 class mainScene extends Phaser.Scene
 {   
     map; //the map that the sprites are placed upon
     focusObject; //tile currently selected, to be manipulated
 
     marker; //selector tool
-    pointer; //Mouse pointer
+    pointer; //Mouse pointer    
     selected_tile; //currently selected tiletype
 
-    deleteKey; //keyboard inputs
+    deleteKey; //keyboard input for delete
 
     sprites = []; //array to keep track of all created sprites
 
+    spriteDict = []; // map the numerical positions of the tiles to names.
+
+    
     constructor ()
     {
         super("Game_Scene");
@@ -22,6 +60,12 @@ class mainScene extends Phaser.Scene
             frameWidth: 16,
             frameHeight: 16
         });
+        
+        //need to make this a seperate class.
+        this.spriteDict["deer"] = 1;
+        this.spriteDict["snow"] = 12;
+        this.spriteDict["tree"] = 0; 
+        //treat blocks that span wider differrently.
     }    
 
     create () {
@@ -50,36 +94,48 @@ class mainScene extends Phaser.Scene
     update () {
         var x = Math.round(this.input.mousePointer.x/16)*16+8;
         var y = Math.round(this.input.mousePointer.y/16)*16+8;
+        
+        var selected = false; // is an tile selected?
+        var tentativeSelect; //tentative selection
+    
+        //check if marker is over a sprite.
+        for (var i = 0;i <this.sprites.length;i++){                
+            this.sprites[i].update();
+
+            if (this.sprites[i].x=== x && this.sprites[i].y===y){
+                selected = true;
+                tentativeSelect = i;                
+            }
+        }      
 
         //Marker handling        
         if (y>32 && x > 0){
             this.marker.setPosition(x,y);
             this.marker.depth = 100; //magic numbered to always be on top.
-            var tentativeSelect; //tentative selection
-            
-            //check if marker is over a sprite.
-            for (var i = 0;i <this.sprites.length;i++){
-                
-                if (this.sprites[i].x== x && this.sprites[i].y==y){
-                    this.marker.setStrokeStyle(1,0xfff000);
-                    tentativeSelect = i;
-                    break;
-                }else{
-                    this.marker.setStrokeStyle(1,0xffffff);                    
-                }
-            }
+            this.marker.visible=true;
+
+            if (selected){
+                this.marker.setStrokeStyle(1,0xfff000);
+            }else{
+                                
+                this.marker.setStrokeStyle(1,0xffffff);
+            }           
 
             if (this.input.activePointer.primaryDown&&this.input.activePointer.justDown) {                
                 //Selecting the active tile
                 if (typeof tentativeSelect != "undefined"){
                     this.focusObject = this.sprites[tentativeSelect];
-                    console.log("Selected: " + tentativeSelect);                    
+                    //On click, the selected object becomes focused.                    
                 }else{
                     //convert to a callback based on what the selected tile is.
-                    //TODO pass in the creation function first class. 
-                    let deer = this.createDeer(x,y);  
-                    this.sprites.push(deer);
-                    this.focusObject = deer;   
+                    if (this.selected_tile){
+                        
+                        let tileSprite = new BasicTile(this,x,y,this.spriteDict[this.selected_tile]);  
+                        this.sprites.push(tileSprite);
+                        this.focusObject = tileSprite; 
+                        
+                    }                  
+  
                 }          
             }
             if (this.input.activePointer.primaryDown){                
@@ -88,21 +144,21 @@ class mainScene extends Phaser.Scene
                     this.focusObject.y = this.marker.y;
                 }
             }
+        }else{
+            this.marker.visible=false;
         }
-        //@TODO fix deletion.
+        
         if (this.deleteKey.isDown){
             if (this.focusObject){
-                var index = this.sprites.indexOf(this.focusObject);
-                console.log(index);
-                this.sprites.splice(index,index);
-                
-                
-
+                let index = this.sprites.indexOf(this.focusObject);
+                this.sprites.splice(index,1);
+            
                 this.focusObject.destroy();
                 this.focusObject = undefined;
             }
         }
     }
+
 
     createSnowDrift(x, y) {
         //this.map.putTileAt(12, x, y, 'base');
@@ -120,7 +176,7 @@ class mainScene extends Phaser.Scene
         tree.add(this.add.sprite(x, y-32, 'tiles',0));
 
         return tree;
-
+        
         //this.map.putTileAt(0, x, y, 'objects');
         //this.map.putTileAt(10, x, y + 1, 'objects');
         //this.map.putTileAt(20, x, y + 2, 'objects');
@@ -137,8 +193,7 @@ class mainScene extends Phaser.Scene
 
     createDeer(x, y) {
         let deer = this.add.sprite(x, y, 'tiles',1);
-        deer.depth = 1;
-        
+        deer.depth = 1;        
         //let deer = this.map.putTileAt(1, x, y, 'objects');
         return deer;        
     }
@@ -147,6 +202,7 @@ class mainScene extends Phaser.Scene
 
 class tileSelection extends Phaser.Scene{
 //Menu to select which block to drag out. 
+//@TODO indication as to which block is selected
     constructor ()
     {
         super("Block_Menu");
@@ -155,25 +211,35 @@ class tileSelection extends Phaser.Scene{
     create(){
         let baseScene = this.scene.get("Game_Scene");
 
+        //Buttons should be autogenerated from existing prototypes. 
+
         var treeButton = this.add.text(10, 10, 'Tree')
         .setInteractive()
         .on('pointerdown', () => { 
             console.log("Tree Sprite");
-            baseScene.selected_tile = 'tree'
+            baseScene.selected_tile = 'tree'            
            
         });
 
-        var mooseButton = this.add.text(60, 10, 'Moose')
+        var mooseButton = this.add.text(60, 10, 'Deer')
         .setInteractive()
         .on('pointerdown', () => { 
-            console.log("Moose Sprite");
-            baseScene.selected_tile = 'moose'
-        });        
+            console.log("Deer Sprite");
+            baseScene.selected_tile = 'deer'
+            
+        });
+        
+        var snowButton = this.add.text(110, 10, 'Snow')
+        .setInteractive()
+        .on('pointerdown', () => { 
+            console.log("Snow Sprite");
+            baseScene.selected_tile = 'snow'            
+           
+        });
     }
     update(){
 
     }
-
 }
 
 var config = {
