@@ -58,8 +58,7 @@ class mainScene extends Phaser.Scene
     sprites = []; //array to keep track of all created sprites
     spriteDict = []; // map the numerical positions of the tiles to names.
     
-    movingTile = false; //flag set to true if we are in the process of dragging and moving an object
-    
+        
     constructor ()
     {
         super("Game_Scene");
@@ -112,12 +111,14 @@ class mainScene extends Phaser.Scene
 
             if (this.sprites[i].x=== x && this.sprites[i].y===y){
                 selected = true;
-                tentativeSelect = i;
-                if (this.movingTile){
-                    //Now need to check if the tile in the position or the tile being moved is "solid"
-                    console.log("collision");
-                }                
+                tentativeSelect = i;               
             }
+            
+            //detect if the sprite being moved is colliding with another sprite
+            //@TODO: need to work out a method to register all sprite colliding with all sprites efficiently.
+            if (this.focusObject &&this.focusObject!==this.sprites[i] && this.focusObject.x===this.sprites[i].x &&this.focusObject.y===this.sprites[i].y){
+                console.log("collision");
+            } 
         }
 
         //Marker handling        
@@ -140,8 +141,7 @@ class mainScene extends Phaser.Scene
                             //On click, the selected object becomes focused.                    
                         }else{
                             //convert to a callback based on what the selected tile is.
-                            if (this.selected_tile){
-                                
+                            if (this.selected_tile){                                
                                 let tileSprite = new BasicTile(this,x,y,this.spriteDict[this.selected_tile]);  
                                 this.sprites.push(tileSprite);
                                 this.focusObject = tileSprite;                         
@@ -149,15 +149,12 @@ class mainScene extends Phaser.Scene
                         }
                     }                           
                 if (this.focusObject){
-                    this.movingTile = true; //set the internal flag for moving a tile to be true.
-
+                    
                     this.focusObject.x = this.marker.x;
                     this.focusObject.y = this.marker.y;                
                 }          
             }
-
         }else{
-            this.marker.visible=false;
             this.movingTile=false;
         }
         
