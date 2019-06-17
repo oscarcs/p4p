@@ -3,30 +3,34 @@ class BasicTile
     world;
     x; //@TODO clean up the co-ordinate system
     y;
-    sprite;
+    sprite;    
     
     gridx; // x position in terms of the game grid
     gridy; // y position in terms of the game grid
 
+    solid = false;
+
     tilesize = 16;
 
-    constructor(world,x,y,index){
+    constructor(world,x,y,index,name=undefined){
         this.world=world;
         this.x = x;
         this.y = y;
         this.sprite = this.world.add.sprite(x, y, 'tiles',index);
-        this.sprite.depth = 1; 
+        this.sprite.depth = 1;
+        this.calcGrid(); 
     }
 
     update(){
-        this.calcGrid();
+        
         //further instructions for each block type to be hooked into here
         //Parser.getnextInstruction etc.
-
         if (this.x!==this.sprite.x || this.y!==this.sprite.y){
             //lazy update position
             this.sprite.x = this.x;
             this.sprite.y = this.y;
+
+            this.calcGrid();
         }
     }
 
@@ -42,18 +46,20 @@ class BasicTile
 
 class mainScene extends Phaser.Scene
 {   
-    map; //the map that the sprites are placed upon
-    focusObject; //tile currently selected, to be manipulated
+    map; //the map that the sprites are placed upon  
 
-    marker; //selector tool
-    pointer; //Mouse pointer    
+    marker; //selector tool    
+    pointer; //Mouse pointer
+    focusObject; //tile currently selected, to be manipulated    
     selected_tile; //currently selected tiletype
 
-    deleteKey; //keyboard input for delete
+    deleteKey; //keyboard input for delete, @TODO refactor for more generality.
 
     sprites = []; //array to keep track of all created sprites
     spriteDict = []; // map the numerical positions of the tiles to names.
-
+    
+    movingTile = false; //flag set to true if we are in the process of dragging and moving an object
+    
     constructor ()
     {
         super("Game_Scene");
@@ -65,16 +71,15 @@ class mainScene extends Phaser.Scene
             frameHeight: 16
         });
 
-        //need to make this a seperate class.
+        
         this.spriteDict["deer"] = 1;
         this.spriteDict["snow"] = 12;
         this.spriteDict["tree"] = 0; 
-        //treat blocks that span wider differrently.
+
+        //treat blocks that span more than 1 block differrently.
     }    
 
     create () {
-        //TODO map a dict to map sprite names to spritesheet indexes.
-
         this.map = this.make.tilemap({
             width: 100, 
             height: 100,
@@ -95,7 +100,7 @@ class mainScene extends Phaser.Scene
     }
 
     update () {
-        var x = Math.round(this.input.mousePointer.x/16)*16+8;
+        var x = Math.round(this.input.mousePointer.x/16)*16+8; //@TODO remove the magic numbers
         var y = Math.round(this.input.mousePointer.y/16)*16+8;
         
         var selected = false; // is an tile selected?
@@ -107,9 +112,13 @@ class mainScene extends Phaser.Scene
 
             if (this.sprites[i].x=== x && this.sprites[i].y===y){
                 selected = true;
-                tentativeSelect = i;                
+                tentativeSelect = i;
+                if (this.movingTile){
+                    //Now need to check if the tile in the position or the tile being moved is "solid"
+                    console.log("collision");
+                }                
             }
-        }      
+        }
 
         //Marker handling        
         if (y>32 && x > 0){
@@ -118,35 +127,38 @@ class mainScene extends Phaser.Scene
             this.marker.visible=true;
 
             if (selected){
-                this.marker.setStrokeStyle(1,0xfff000);
+                this.marker.setStrokeStyle(1,0xfff000);                
             }else{
                                 
                 this.marker.setStrokeStyle(1,0xffffff);
             }           
 
-            if (this.input.activePointer.primaryDown&&this.input.activePointer.justDown) {                
-                //Selecting the active tile
-                if (typeof tentativeSelect != "undefined"){
-                    this.focusObject = this.sprites[tentativeSelect];
-                    //On click, the selected object becomes focused.                    
-                }else{
-                    //convert to a callback based on what the selected tile is.
-                    if (this.selected_tile){
-                        
-                        let tileSprite = new BasicTile(this,x,y,this.spriteDict[this.selected_tile]);  
-                        this.sprites.push(tileSprite);
-                        this.focusObject = tileSprite;                         
-                    }                    
+            if (this.input.activePointer.primaryDown) {                
+                    if (this.input.activePointer.justDown){ //If the click was just done.                    
+                        if (typeof tentativeSelect != "undefined"){
+                            this.focusObject = this.sprites[tentativeSelect];
+                            //On click, the selected object becomes focused.                    
+                        }else{
+                            //convert to a callback based on what the selected tile is.
+                            if (this.selected_tile){
+                                
+                                let tileSprite = new BasicTile(this,x,y,this.spriteDict[this.selected_tile]);  
+                                this.sprites.push(tileSprite);
+                                this.focusObject = tileSprite;                         
+                            }                    
+                        }
+                    }                           
+                if (this.focusObject){
+                    this.movingTile = true; //set the internal flag for moving a tile to be true.
+
+                    this.focusObject.x = this.marker.x;
+                    this.focusObject.y = this.marker.y;                
                 }          
             }
-            if (this.input.activePointer.primaryDown){                
-                if (this.focusObject){   
-                    this.focusObject.x = this.marker.x;
-                    this.focusObject.y = this.marker.y;
-                }
-            }
+
         }else{
             this.marker.visible=false;
+            this.movingTile=false;
         }
         
         if (this.deleteKey.isDown){
@@ -213,10 +225,11 @@ class tileSelection extends Phaser.Scene{
     {
         super("Block_Menu");
     }
+
     create(){
         this.baseScene = this.scene.get("Game_Scene");
 
-        this.debugText=this.add.text(180, 10, 'No Focus Object'); //@debug
+        this.debugText=this.add.text(160, 10, 'No Focus Object',{ fontSize: '10px'}); //@debug 
 
         //Buttons should be autogenerated from existing prototypes. 
         var treeButton = this.add.text(10, 10, 'Tree')
