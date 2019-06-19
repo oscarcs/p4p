@@ -1,46 +1,60 @@
+class Utils{
+    //Helper class to manage grid location conversions.
+
+    //get the true value postion on screen given the grid position
+    gridXtoTrueX(x){
+        return x*16+8;
+    }
+
+    gridYtoTrueY(y){
+        return y*16+40;
+    }
+
+    TrueXtoGridX(grid_x){
+        return (grid_x-8)/16;
+    }
+    
+    TrueYtoGridY(grid_y){
+        return(grid_y-40)/16;
+    }
+}
+
 class BasicTile
 {
     world;
-    x; //@TODO clean up the co-ordinate system
+    x; // x position in terms of the game grid
     y;
-    sprite;    
+    sprite;   
     
-    gridx; // x position in terms of the game grid
-    gridy; // y position in terms of the game grid
-
-    solid = false;
-
-    tilesize = 16;
+    solid = false; //Should this block allow other blocks to "overlap"
 
     constructor(world,x,y,index,name=undefined){
         this.world=world;
         this.x = x;
         this.y = y;
-        this.sprite = this.world.add.sprite(x, y, 'tiles',index);
-        this.sprite.depth = 1;
-        this.calcGrid(); 
-    }
-
-    update(){
+        this.sprite = this.world.add.sprite(world.utils.gridXtoTrueX(x), world.utils.gridYtoTrueY(y), 'tiles',index);
+        this.sprite.depth = 1;  
         
+        if (index === 0){
+            this.solid = true;
+        }
+    }
+    
+    update(){               
         //further instructions for each block type to be hooked into here
-        //Parser.getnextInstruction etc.
-        if (this.x!==this.sprite.x || this.y!==this.sprite.y){
+        //Parser.getnextInstruction etc. 
+        if (this.world.utils.gridXtoTrueX(this.x)!==this.sprite.x || this.world.utils.gridYtoTrueY(this.y)!==this.sprite.y){
             //lazy update position
-            this.sprite.x = this.x;
-            this.sprite.y = this.y;
-
-            this.calcGrid();
+            this.sprite.x = this.world.utils.gridXtoTrueX(this.x);
+            this.sprite.y = this.world.utils.gridYtoTrueY(this.y);            
         }
     }
 
-    calcGrid(){
-        this.gridx=(this.x-8)/this.tilesize;
-        this.gridy=(this.y-40)/this.tilesize;
-    }
-
-    destroy(){
-        this.sprite.destroy();
+     destroy(){
+        if (this.solid){
+            this.world.worldGrid[this.x][this.y] = 0;
+        }
+        this.sprite.destroy(); 
     }
 }
 
@@ -57,8 +71,12 @@ class mainScene extends Phaser.Scene
 
     sprites = []; //array to keep track of all created sprites
     spriteDict = []; // map the numerical positions of the tiles to names.
-    
-        
+
+    utils = new Utils();
+    worldGrid; //grid to represent every grid position. 
+    worldWidth = 20; //Very magic number-y.
+    worldHeight = 13;
+       
     constructor ()
     {
         super("Game_Scene");
@@ -69,7 +87,6 @@ class mainScene extends Phaser.Scene
             frameWidth: 16,
             frameHeight: 16
         });
-
         
         this.spriteDict["deer"] = 1;
         this.spriteDict["snow"] = 12;
@@ -90,17 +107,17 @@ class mainScene extends Phaser.Scene
         let base = this.map.createBlankDynamicLayer('base', tiles);
         this.map.fill(2, 0, 0, this.map.width, this.map.height, 'base');
 
-                        
-        this.marker = this.add.rectangle(0, 32, 16, 16).setStrokeStyle(1,0xffffff); 
+        this.worldGrid = this.initializeWorldGrid();
+
+        this.marker = this.add.rectangle(0, 32, 16, 16).setStrokeStyle(1,0xffffff);       
         
         this.deleteKey = this.input.keyboard.addKey('DELETE');
-
         this.scene.launch("Block_Menu");  
     }
 
-    update () {
-        var x = Math.round(this.input.mousePointer.x/16)*16+8; //@TODO remove the magic numbers
-        var y = Math.round(this.input.mousePointer.y/16)*16+8;
+    update () {        
+        var x = Math.round(this.input.mousePointer.x/16); 
+        var y = Math.round(this.input.mousePointer.y/16)-2;        
         
         var selected = false; // is an tile selected?
         var tentativeSelect; //tentative selection
@@ -108,22 +125,18 @@ class mainScene extends Phaser.Scene
         //check if marker is over a sprite.
         for (var i = 0;i <this.sprites.length;i++){                
             this.sprites[i].update();
-
-            if (this.sprites[i].x=== x && this.sprites[i].y===y){
+                       
+            if (this.sprites[i].x=== x && this.sprites[i].y===y){                
                 selected = true;
                 tentativeSelect = i;               
             }
-            
-            //detect if the sprite being moved is colliding with another sprite
-            //@TODO: need to work out a method to register all sprite colliding with all sprites efficiently.
-            if (this.focusObject &&this.focusObject!==this.sprites[i] && this.focusObject.x===this.sprites[i].x &&this.focusObject.y===this.sprites[i].y){
-                console.log("collision");
-            } 
+
         }
 
         //Marker handling        
-        if (y>32 && x > 0){
-            this.marker.setPosition(x,y);
+        if (y>=0 && x >=0 && x <this.worldWidth && y<this.worldWidth){
+            this.marker.setPosition(this.utils.gridXtoTrueX(x),this.utils.gridYtoTrueY(y));
+
             this.marker.depth = 100; //magic numbered to always be on top.
             this.marker.visible=true;
 
@@ -135,26 +148,25 @@ class mainScene extends Phaser.Scene
             }           
 
             if (this.input.activePointer.primaryDown) {                
-                    if (this.input.activePointer.justDown){ //If the click was just done.                    
-                        if (typeof tentativeSelect != "undefined"){
-                            this.focusObject = this.sprites[tentativeSelect];
-                            //On click, the selected object becomes focused.                    
-                        }else{
-                            //convert to a callback based on what the selected tile is.
-                            if (this.selected_tile){                                
-                                let tileSprite = new BasicTile(this,x,y,this.spriteDict[this.selected_tile]);  
-                                this.sprites.push(tileSprite);
-                                this.focusObject = tileSprite;                         
-                            }                    
-                        }
-                    }                           
-                if (this.focusObject){
-                    
-                    this.focusObject.x = this.marker.x;
-                    this.focusObject.y = this.marker.y;                
-                }          
+                if (this.input.activePointer.justDown){ //If the click was just done.                    
+                    if (typeof tentativeSelect != "undefined"){
+                        this.focusObject = this.sprites[tentativeSelect];
+                        //On click, the selected object becomes focused.                    
+                    }else{
+                        //tile placement
+                        if (this.selected_tile){                                
+                            let tileSprite = new BasicTile(this,x,y,this.spriteDict[this.selected_tile]);                             
+                            this.sprites.push(tileSprite);
+                            this.focusObject = tileSprite;                  
+                        }                    
+                    }
+                }
+
+                this.moveFocusObject(this.utils.TrueXtoGridX(this.marker.x),this.utils.TrueYtoGridY(this.marker.y))
+          
             }
         }else{
+            this.marker.visible=false;
             this.movingTile=false;
         }
         
@@ -162,10 +174,37 @@ class mainScene extends Phaser.Scene
             if (this.focusObject){
                 let index = this.sprites.indexOf(this.focusObject);
                 this.sprites.splice(index,1);
-            
+
                 this.focusObject.destroy();
                 this.focusObject = undefined;
             }
+        }
+    }
+
+    initializeWorldGrid(){
+        let grid = [];
+        for (var i =0;i<this.worldWidth;i++){
+            grid[i] = new Array(this.worldHeight)
+        }
+        return grid;
+    }
+
+    //function to move an object to a new grid location, will do nothing if the position is taken.
+    //@TODO, could add more generality by making the focus object a parameter for a sprite.
+    moveFocusObject(new_x,new_y){
+        if (this.focusObject){
+            let currentX = this.focusObject.x;
+            let currentY = this.focusObject.y;
+
+            if (this.worldGrid[new_x][new_y] != 1){
+                this.focusObject.x = new_x;
+                this.focusObject.y = new_y;
+
+                if (this.focusObject.solid){
+                    this.worldGrid[currentX][currentY] = 0;
+                    this.worldGrid[this.focusObject.x][this.focusObject.y] = 1;
+                }
+            }                                                  
         }
     }
 
@@ -260,10 +299,10 @@ class tileSelection extends Phaser.Scene{
     update(){
         //@debug
         if(this.baseScene.focusObject){
-            this.debugText.setText("x: " + (this.baseScene.focusObject.gridx) +" y: " + (this.baseScene.focusObject.gridy));
+            this.debugText.setText("x: " + (this.baseScene.focusObject.x) +" y: " + (this.baseScene.focusObject.y));
         }else{
-            this.debugText.setText("No focus object");
-        }
+            this.debugText.setText("No Focus Object");
+        }        
 
         //colour in the selected button
         for (var i=0;i<this.buttons.length;i++){
