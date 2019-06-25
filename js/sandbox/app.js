@@ -34,7 +34,7 @@ class BasicTile
     constructor(world,x,y,index,name=undefined){
         this.world=world;
         
-        this.exposed_fields = []; //array of exposed fields mapped to their values. 
+        this.exposed_fields = {}; //array of exposed fields mapped to their values. 
         
         this.x = x;
         this.y = y;
@@ -46,7 +46,6 @@ class BasicTile
         if (index === 0){
             this.solid = true;
         }
-
         //Demo only, force deer to be on top.
         if (index === 1){
             this.sprite.depth = 2;
@@ -60,8 +59,8 @@ class BasicTile
             //lazy update position
             this.sprite.x = this.world.utils.gridXtoTrueX(this.x);
             this.sprite.y = this.world.utils.gridYtoTrueY(this.y);           
-        }        
-        
+        } 
+
     }
 
     destroy(){
@@ -73,8 +72,24 @@ class BasicTile
 
     //Events should be in the update loop and will be exectured if the flag is set. (Ensures unison.)
     cursorAction(cursor, action){
-        //Nothing as of now     
-        
+        //Nothing as of now    
+    }
+
+    addStringField(field){
+        //need to check if field already exists
+        this.exposed_fields[field] = " ";
+    }
+
+    addNumberField(field){
+        this.exposed_fields[field] = 0;
+    }
+
+    addBooleanField(field){
+        this.exposed_fields[field] = false;
+    }
+
+    assignFieldValye(value){
+
     }
 
     //@TODO need to make a some way to set an interval between actions without blocking.
@@ -265,8 +280,12 @@ class mainScene extends Phaser.Scene
 
             //make this an iteration of some sort. for the other exposed fields
             var propertyMenu = document.getElementById("properties");
+            var buttonMenu = document.getElementById("propertyButtons");
             propertyMenu.innerHTML= "";
-            
+            buttonMenu.innerHTML = "";
+
+            var propertyInputs = []; //Inputfields for all the user defined fields
+
             var x_label = document.createTextNode("X: ");
             var x_input = document.createElement("input");
             x_input.setAttribute("type","number");
@@ -276,8 +295,13 @@ class mainScene extends Phaser.Scene
             var y_input = document.createElement("input");
             y_input.setAttribute("type","number");
             y_input.value = activeObject.y; 
+
+            var solid_label=document.createTextNode("Solid: ");
+            var solid_check = document.createElement("input");
+            solid_check.setAttribute('type','checkbox');
+            solid_check.checked = activeObject.solid;            
             
-            //@TODO add new field button.
+            //@Need to tidy up the property menu
             
             var updateButton = document.createElement("button");    
             updateButton.onclick= function(){
@@ -285,10 +309,84 @@ class mainScene extends Phaser.Scene
                 //movement still broken.               
                 //rework selection. 
                 this.moveObject(activeObject,x_input.value,y_input.value);
+                activeObject.solid = solid_check.checked;
 
+                //iterate through all new fields updating them too.
+                for (var newFields in propertyInputs){                    
+
+                    //inputs all become strings.
+
+                    if (typeof fieldValue == "string"){
+                        activeObject.addStringField(newFields);                        
+                        activeObject.exposed_fields[newFields] = fieldValue;
+
+                    }else if (typeof fieldValue == "number"){
+                        //@TODO broken for numbers
+                        activeObject.addNumberField(newFields);
+                        activeObject.exposed_fields[newFields] = fieldValue;
+
+                    }else if (typeof fieldValue == "boolean"){
+                        activeObject.addBooleanField(newFields);
+                        activeObject.exposed_fields[newFields] = fieldValue;
+                    }
+                }
             }.bind(this);
             updateButton.innerHTML = "Update"; 
-   
+
+            var addStringFieldButton = document.createElement("button"); //Need to tidy the formatting up
+            addStringFieldButton.onclick=function(){
+                var fieldName = window.prompt("Name of new field");                                
+                if (fieldName && fieldName.length>1 && !(fieldName in activeObject.exposed_fields) && !(fieldName in propertyInputs)){
+                    propertyMenu.appendChild(document.createTextNode(fieldName + ": "));
+                    propertyInputs[fieldName] = document.createElement("input");
+                    propertyInputs[fieldName].setAttribute("type","text");                   
+
+                    propertyMenu.appendChild(propertyInputs[fieldName]);
+                }else if(fieldName in activeObject.exposed_fields || fieldName in propertyInputs){
+                    console.log("Propety name taken");
+                }               
+            }
+            addStringFieldButton.innerHTML = "Add String Property"; // Split this into three buttons, number, string, boolean.
+            
+            //Broken
+            var addNumberFieldButton = document.createElement("button");
+            addNumberFieldButton.onclick=function(){
+                var fieldName = window.prompt("Name of new field") 
+                if (fieldName && fieldName.length>1 && !(fieldName in activeObject.exposed_fields) && !(fieldName in propertyInputs)){                  
+                    propertyMenu.appendChild(document.createTextNode(fieldName +": "));
+                    propertyInputs[fieldName] = document.createElement("input");
+                    propertyInputs[fieldName].setAttribute("type","number");
+                    propertyInputs[fieldName].value = 0;
+
+                    propertyMenu.appendChild(propertyInputs[fieldName]);
+                    }else if(fieldName in activeObject.exposed_fields || fieldName in propertyInputs){
+                        console.log("Propety name taken");
+                    }    
+                }
+            addNumberFieldButton.innerHTML="Add Number Property";
+
+            var addBooleanFieldButton = document.createElement("button");
+            addBooleanFieldButton.onclick = function(){
+                var fieldName = window.prompt("Name of new field");
+                if (fieldName && fieldName.length>1 && !(fieldName in activeObject.exposed_fields) && !(fieldName in propertyInputs)){     
+                    //@TODO refactor the button creation.
+
+                    propertyMenu.appendChild(document.createTextNode(fieldName +": "));
+                    propertyInputs[fieldName] = document.createElement("input");
+                    propertyInputs[fieldName].setAttribute("type","checkbox");
+                    propertyInputs[fieldName].value = false;
+
+                    propertyMenu.appendChild(propertyInputs[fieldName]);
+                    }else if(fieldName in activeObject.exposed_fields || fieldName in propertyInputs){
+                        console.log("Propety name taken");
+                    }
+            }
+            addBooleanFieldButton.innerHTML = "Add True/False Property";
+
+            buttonMenu.appendChild(addNumberFieldButton);
+            buttonMenu.appendChild(addStringFieldButton); 
+            buttonMenu.appendChild(addBooleanFieldButton);
+            buttonMenu.appendChild(updateButton);
 
             propertyMenu.appendChild(name_label);
             propertyMenu.appendChild(name_input);
@@ -299,7 +397,30 @@ class mainScene extends Phaser.Scene
             propertyMenu.appendChild(y_label);
             propertyMenu.appendChild(y_input);
 
-            propertyMenu.appendChild(updateButton);           
+            propertyMenu.appendChild(solid_label);
+            propertyMenu.appendChild(solid_check);
+
+            for (var index in activeObject.exposed_fields){
+               
+                propertyMenu.appendChild(document.createTextNode(index +": "));                
+
+                //TODO, everything gets turned into a string.
+                propertyInputs[index] = document.createElement("input");
+                if (typeof activeObject.exposed_fields[index] == "string"){
+                    propertyInputs[index].setAttribute("type","text"); 
+                    propertyInputs[index].value = activeObject.exposed_fields[index];
+
+                }else if (typeof activeObject.exposed_fields[index] == "number"){
+                    propertyInputs[index].setAttribute("type","number");
+                    propertyInputs[index].value = activeObject.exposed_fields[index];
+
+                }else if (typeof activeObject.exposed_fields[index] == "boolean"){
+                    propertyInputs[index].setAttribute("type","checkbox");
+                    propertyInputs[index].checked = activeObject.exposed_fields[index];
+                }                          
+                
+                propertyMenu.appendChild(propertyInputs[index]);
+            }                       
 
             }
         }             
@@ -311,7 +432,7 @@ class mainScene extends Phaser.Scene
                 this.focusObject.name = name;
                 this.spriteNamespace[name] = this.focusObject;            
             }else if (this.spriteNamespace[name]==this.focusObject){
-                //Probably more elegangt way.
+                //Probably more elegant way.
             }else{
                 console.log("Name taken");
             }
