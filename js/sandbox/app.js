@@ -313,21 +313,22 @@ class mainScene extends Phaser.Scene
 
                 //iterate through all new fields updating them too.
                 for (var newFields in propertyInputs){                    
-
+                    let fieldValue = propertyInputs[newFields].value;
+                    let fieldType = propertyInputs[newFields].type;
                     //inputs all become strings.
 
-                    if (typeof fieldValue == "string"){
+                    if (fieldType == "text"){
                         activeObject.addStringField(newFields);                        
                         activeObject.exposed_fields[newFields] = fieldValue;
 
-                    }else if (typeof fieldValue == "number"){
+                    }else if (fieldType == "number"){
                         //@TODO broken for numbers
                         activeObject.addNumberField(newFields);
                         activeObject.exposed_fields[newFields] = fieldValue;
 
-                    }else if (typeof fieldValue == "boolean"){
+                    }else if (fieldType == "checkbox"){
                         activeObject.addBooleanField(newFields);
-                        activeObject.exposed_fields[newFields] = fieldValue;
+                        activeObject.exposed_fields[newFields] = propertyInputs[newFields].checked;
                     }
                 }
             }.bind(this);
@@ -407,10 +408,12 @@ class mainScene extends Phaser.Scene
                 //TODO, everything gets turned into a string.
                 propertyInputs[index] = document.createElement("input");
                 if (typeof activeObject.exposed_fields[index] == "string"){
+                    //@TODO not currently allowing spaces.
                     propertyInputs[index].setAttribute("type","text"); 
                     propertyInputs[index].value = activeObject.exposed_fields[index];
 
                 }else if (typeof activeObject.exposed_fields[index] == "number"){
+                    //TODO broken for numbers
                     propertyInputs[index].setAttribute("type","number");
                     propertyInputs[index].value = activeObject.exposed_fields[index];
 
