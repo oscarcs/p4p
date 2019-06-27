@@ -61,6 +61,10 @@ class BasicTile
             this.sprite.y = this.world.utils.gridYtoTrueY(this.y);           
         } 
 
+        if (this.solid){
+            this.world.worldGrid[this.x][this.y] = 1;
+        }
+
     }
 
     destroy(){
@@ -70,10 +74,6 @@ class BasicTile
         this.sprite.destroy(); 
     }
 
-    //Events should be in the update loop and will be exectured if the flag is set. (Ensures unison.)
-    cursorAction(cursor, action){
-        //Nothing as of now    
-    }
 
     addStringField(field){
         //need to check if field already exists
@@ -99,8 +99,7 @@ class BasicTile
 }
 
 class mainScene extends Phaser.Scene
-{   
-      
+{         
     constructor ()
     {
         super("Game_Scene");
@@ -142,11 +141,18 @@ class mainScene extends Phaser.Scene
 
         this.worldGrid = this.initializeWorldGrid();
 
-        this.marker = this.add.rectangle(0, 32, 16, 16).setStrokeStyle(1,0xffffff);       
+        //Marker for what the mouse is currently over.
+        this.marker = this.add.rectangle(0, 32, 16, 16).setStrokeStyle(1,0xffffff);  
+        this.marker.depth = 100; //magic numbered to always be on top.
         
-        this.deleteKey = this.input.keyboard.addKey('DELETE'); //@TODO refactor for more generality        
-        this.cursorKeys = this.input.keyboard.createCursorKeys();//initial keyboard event for arrow keys.
+        //Indicator to which block is currently selected. Need to rework when we have to deal with more than one block.
+        this.selectionIndicator = this.add.rectangle(0, 32, 16, 16).setStrokeStyle(1,0x008000); 
+        this.selectionIndicator.visible=false;
+        this.selectionIndicator.depth = 99;
+        
+        this.deleteKey = this.input.keyboard.addKey('DELETE'); //@TODO refactor for more generality, fix deletion to be an alternate input.
 
+        
         this.prevTime = 0;
 
         this.scene.launch("Block_Menu");  
@@ -169,9 +175,15 @@ class mainScene extends Phaser.Scene
             }
         }
 
+        if (this.focusObject){
+            this.selectionIndicator.visible = true;
+            this.selectionIndicator.setPosition(this.utils.gridXtoTrueX(this.focusObject.x),this.utils.gridYtoTrueY(this.focusObject.y));
+        }else{
+            this.selectionIndicator.visible = false;
+        }
+
         //DEMO for moving object with keyboard. Currently can only move the object being focused. 
         if ((Date.now() - this.prevTime > 100)&&this.focusObject){            
-            this.focusObject.cursorAction(this.cursorKeys);
             this.prevTime = Date.now();
             //New method of taking input, poll in the update loop and if a key is pressed, set a flag. 
             //update method in each sprite will then take care of the flag.
@@ -181,7 +193,6 @@ class mainScene extends Phaser.Scene
         if (y>=0 && x >=0 && x <this.worldWidth && y<this.worldHeight){
             this.marker.setPosition(this.utils.gridXtoTrueX(x),this.utils.gridYtoTrueY(y));            
 
-            this.marker.depth = 100; //magic numbered to always be on top.
             this.marker.visible=true;
 
             if (selected){
@@ -205,14 +216,13 @@ class mainScene extends Phaser.Scene
                         }                    
                     }
                 }
-                this.moveObject(this.focusObject,this.utils.TrueXtoGridX(this.marker.x),this.utils.TrueYtoGridY(this.marker.y))                   
+                this.moveObject(this.focusObject,this.utils.TrueXtoGridX(this.marker.x),this.utils.TrueYtoGridY(this.marker.y)) 
+
                 this.displayProperties(this.focusObject); //ouput the focused objects relevant fields
                 }
         }else{
             this.marker.visible=false;
-            this.movingTile=false;
         }
-
         //need a warn "Are you sure"
         if (this.deleteKey.isDown){
             this.deleteFocusObject();
@@ -265,12 +275,21 @@ class mainScene extends Phaser.Scene
             this.focusObject.destroy();
             this.focusObject = undefined;
 
-            var propertyMenu = document.getElementById("properties");
-            propertyMenu.innerHTML= "";
+            //@TODO reshuffle into another function.
+            this.clearPropertyFields();
         }
     }
 
+    clearPropertyFields(){
+        var propertyMenu = document.getElementById("properties");
+        var buttonMenu = document.getElementById("propertyButtons");
+        propertyMenu.innerHTML= "";
+        buttonMenu.innerHTML="";
+    }
+
+    //@TODO, this kinda deserves a big refactor. 
     displayProperties(activeObject){
+        //Graphical prototype definition should use a similar method.
         if (activeObject){
             var name_label = document.createTextNode("Name: ")
             var name_input = document.createElement("input");
@@ -278,14 +297,15 @@ class mainScene extends Phaser.Scene
                 name_input.value = activeObject.name;
             }            
 
+            this.clearPropertyFields();
+
             //make this an iteration of some sort. for the other exposed fields
             var propertyMenu = document.getElementById("properties");
             var buttonMenu = document.getElementById("propertyButtons");
-            propertyMenu.innerHTML= "";
-            buttonMenu.innerHTML = "";
 
             var propertyInputs = []; //Inputfields for all the user defined fields
 
+            //Need to restrict these to only allow numbers
             var x_label = document.createTextNode("X: ");
             var x_input = document.createElement("input");
             x_input.setAttribute("type","number");
@@ -301,8 +321,7 @@ class mainScene extends Phaser.Scene
             solid_check.setAttribute('type','checkbox');
             solid_check.checked = activeObject.solid;            
             
-            //@Need to tidy up the property menu
-            
+            //@Need to tidy up the property menu            
             var updateButton = document.createElement("button");    
             updateButton.onclick= function(){
                 this.renameObject(name_input.value);
@@ -322,9 +341,8 @@ class mainScene extends Phaser.Scene
                         activeObject.exposed_fields[newFields] = fieldValue;
 
                     }else if (fieldType == "number"){
-                        //@TODO broken for numbers
                         activeObject.addNumberField(newFields);
-                        activeObject.exposed_fields[newFields] = fieldValue;
+                        activeObject.exposed_fields[newFields] = Number(fieldValue);
 
                     }else if (fieldType == "checkbox"){
                         activeObject.addBooleanField(newFields);
@@ -347,9 +365,8 @@ class mainScene extends Phaser.Scene
                     console.log("Propety name taken");
                 }               
             }
-            addStringFieldButton.innerHTML = "Add String Property"; // Split this into three buttons, number, string, boolean.
+            addStringFieldButton.innerHTML = "Add String Property"; // Split this into three buttons, number, string, boolean.            
             
-            //Broken
             var addNumberFieldButton = document.createElement("button");
             addNumberFieldButton.onclick=function(){
                 var fieldName = window.prompt("Name of new field") 
@@ -383,12 +400,14 @@ class mainScene extends Phaser.Scene
                     }
             }
             addBooleanFieldButton.innerHTML = "Add True/False Property";
-
+            
+            //Need to space out the buttons a bit in  the CSS.
             buttonMenu.appendChild(addNumberFieldButton);
             buttonMenu.appendChild(addStringFieldButton); 
             buttonMenu.appendChild(addBooleanFieldButton);
             buttonMenu.appendChild(updateButton);
 
+            //Core exposed values are hard coded in.
             propertyMenu.appendChild(name_label);
             propertyMenu.appendChild(name_input);
             
@@ -401,29 +420,28 @@ class mainScene extends Phaser.Scene
             propertyMenu.appendChild(solid_label);
             propertyMenu.appendChild(solid_check);
 
-            for (var index in activeObject.exposed_fields){
-               
-                propertyMenu.appendChild(document.createTextNode(index +": "));                
-
-                //TODO, everything gets turned into a string.
+            for (var index in activeObject.exposed_fields){               
+                propertyMenu.appendChild(document.createTextNode(index +": "));               
+                
                 propertyInputs[index] = document.createElement("input");
+
                 if (typeof activeObject.exposed_fields[index] == "string"){
-                    //@TODO not currently allowing spaces.
+                    
                     propertyInputs[index].setAttribute("type","text"); 
                     propertyInputs[index].value = activeObject.exposed_fields[index];
 
                 }else if (typeof activeObject.exposed_fields[index] == "number"){
-                    //TODO broken for numbers
+                   
                     propertyInputs[index].setAttribute("type","number");
                     propertyInputs[index].value = activeObject.exposed_fields[index];
 
                 }else if (typeof activeObject.exposed_fields[index] == "boolean"){
                     propertyInputs[index].setAttribute("type","checkbox");
                     propertyInputs[index].checked = activeObject.exposed_fields[index];
-                }                          
+                    }                          
                 
                 propertyMenu.appendChild(propertyInputs[index]);
-            }                       
+                }                      
 
             }
         }             
@@ -482,15 +500,6 @@ class mainScene extends Phaser.Scene
 }
 
 class tileSelection extends Phaser.Scene{
-//Menu to select which block to drag out. 
-//@TODO indication as to which block is selected
-    /*
-    buttons = [];
-    selected; //which button has been selected
-    baseScene;
-
-    debugText; //Text, only for debugging.
-    */
 
     constructor ()
     {
