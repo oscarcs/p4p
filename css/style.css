@@ -42,3 +42,25 @@ button:hover {
 .game *:not(:last-child) {
     margin-bottom: 1rem;
 }
+
+.propertyList {
+    overflow-y: auto;
+    
+}
+
+.propertyInput{  
+    display: inline-block;  
+    float: left;
+    margin-top: 0.2em;
+
+}
+
+.propertyLabel{  
+    display: inline-block;  
+    float: left;
+    clear: left;
+    width: 200px;
+    text-align: right;
+    margin-top: 0.2em;
+}
+
