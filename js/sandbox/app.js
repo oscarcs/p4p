@@ -141,6 +141,8 @@ class mainScene extends Phaser.Scene
 
         this.sprites = []; //all sprites
         this.spriteNamespace = []; //Name dictionary to map exisiting tiles to names
+
+        this.prototypes = {}; //map each prototype name to a new prototype.
         
         this.spriteDict["deer"] = 1;
         this.spriteDict["snow"] = 12;
@@ -163,8 +165,10 @@ class mainScene extends Phaser.Scene
 
         this.utils = new Utils();
 
+        this.UI = new userInterface(this);
+
         this.worldGrid = this.initializeWorldGrid();
-        //make it so the world grid has two different values 1 for occupation and 2 for solid.
+        //@TODO make it so the world grid has two different values 1 for occupation and 2 for solid.
 
         //Marker for what the mouse is currently over.
         this.marker = this.add.rectangle(0, 32, 16, 16).setStrokeStyle(1,0xffffff);  
@@ -175,13 +179,7 @@ class mainScene extends Phaser.Scene
         this.selectionIndicator.visible=false;
         this.selectionIndicator.depth = 99;
         
-        this.deleteKey = this.input.keyboard.addKey('DELETE'); //@TODO refactor for more generality, fix deletion to be an alternate input.
-
-        this.prevTime = 0;
-        this.scene.launch("Block_Menu");
-
-        this.selectionPane = this.scene.get("Block_Menu");        
-        
+        this.deleteKey = this.input.keyboard.addKey('DELETE'); //@TODO refactor for more generality, fix deletion to be an alternate input.  
     }
 
     update () {        
@@ -209,13 +207,6 @@ class mainScene extends Phaser.Scene
             this.selectionIndicator.visible = false;
         }
 
-        //DEMO for moving object with keyboard. Currently can only move the object being focused. 
-        if ((Date.now() - this.prevTime > 100)&&this.focusObject){            
-            this.prevTime = Date.now();
-            //New method of taking input, poll in the update loop and if a key is pressed, set a flag. 
-            //update method in each sprite will then take care of the flag.
-        }
-
         //Marker handling        
         if (y>=0 && x >=0 && x <this.worldWidth && y<this.worldHeight){
             this.marker.setPosition(this.utils.gridXtoTrueX(x),this.utils.gridYtoTrueY(y));           
@@ -235,23 +226,21 @@ class mainScene extends Phaser.Scene
                         //On click, the object clicked on becomes focused.                    
                     }else{
                         //tile placement on click 
-                        if (this.selected_prototype){
+                        if (this.UI.selectionPane.value){
                             var tileSprite = new BasicTile(this,x,y,"tree");
-                            console.log(this.selected_prototype);
-
-                            if (this.selected_prototype !== "base"){
+                            if (this.UI.selectionPane.value != "Basic tile"){
                                 console.log("Working");
-                                tileSprite.applyProtoType(this.selected_prototype);
-                           }                            
+                                tileSprite.applyProtoType(this.prototypes[this.UI.selectionPane.value]);   
+                            }                         
                             //@TODO, tilesprite based off prototype.
                             this.sprites.push(tileSprite);
                             this.focusObject = tileSprite;                  
                         }                    
                     }
                 }
-                this.moveObject(this.focusObject,this.utils.TrueXtoGridX(this.marker.x),this.utils.TrueYtoGridY(this.marker.y)) 
+                this.moveObject(this.focusObject,this.utils.TrueXtoGridX(this.marker.x),this.utils.TrueYtoGridY(this.marker.y));
 
-                this.displayProperties(this.focusObject); //ouput the focused objects relevant fields
+                this.UI.displayProperties(this.focusObject); //ouput the focused objects relevant fields
                 }
         }else{
             this.marker.visible=false;
@@ -309,29 +298,41 @@ class mainScene extends Phaser.Scene
             this.focusObject.destroy();
             this.focusObject = undefined;
 
-            this.clearPropertyFields();
+            this.UI.clearPropertyFields();
         }
+    }    
+}
+
+//Class for all non main-scene elements.
+class userInterface{
+    constructor(world){
+        this.world = world;
+        this.propertyMenu = document.getElementById("properties");
+        this.buttonMenu = document.getElementById("propertyButtons");
+        this.selectionPane = document.getElementById("selectionMenu");
+
+        var option = document.createElement("option");
+        option.textContent = "Basic tile";
+        this.selectionPane.appendChild(option);
     }
 
-    clearPropertyFields(){
-        var propertyMenu = document.getElementById("properties");
-        var buttonMenu = document.getElementById("propertyButtons");
-        propertyMenu.innerHTML= "";
-        buttonMenu.innerHTML="";
+     clearPropertyFields(){
+        this.propertyMenu.innerHTML= "";
+        this.buttonMenu.innerHTML="";
     }
 
     //@TODO, this kinda deserves a big refactor. 
     displayProperties(activeObject){
         //Graphical prototype definition should use a similar method.
+                
         if (activeObject){
-
             this.clearPropertyFields();
 
-            var propertyMenu = document.getElementById("properties");
-            propertyMenu.setAttribute("class","propertyList");
+            this.propertyMenu = document.getElementById("properties");
+            this.propertyMenu.setAttribute("class","propertyList");
 
-            var buttonMenu = document.getElementById("propertyButtons");
-            buttonMenu.setAttribute("class","buttonMenu");
+            this.buttonMenu = document.getElementById("propertyButtons");
+            this.buttonMenu.setAttribute("class","buttonMenu");
 
             var propertyInputs = []; //Inputfields for all the user defined fields
 
@@ -352,7 +353,7 @@ class mainScene extends Phaser.Scene
             var sprite_input = document.createElement("select");
             sprite_input.setAttribute("class", "propertyInput");
 
-            for (var spriteName in this.spriteDict){
+            for (var spriteName in this.world.spriteDict){
                 var option = document.createElement("option");
                 option.textContent = spriteName; //TODO, change to a name.
                 sprite_input.appendChild(option);
@@ -391,7 +392,7 @@ class mainScene extends Phaser.Scene
             var addStringFieldButton = document.createElement("button"); //Need to tidy the formatting up
             addStringFieldButton.onclick=function(){
                 var fieldName = window.prompt("Name of new field");                                
-                this.addField(propertyMenu,activeObject,propertyInputs,fieldName,"string");              
+                this.addField(activeObject,propertyInputs,fieldName,"string");              
             }.bind(this);
             addStringFieldButton.innerHTML = "Add String Property";            
             
@@ -399,7 +400,7 @@ class mainScene extends Phaser.Scene
             var addNumberFieldButton = document.createElement("button");
             addNumberFieldButton.onclick=function(){
                 var fieldName = window.prompt("Name of new field") 
-                this.addField(propertyMenu,activeObject,propertyInputs,fieldName,"number");    
+                this.addField(activeObject,propertyInputs,fieldName,"number");    
                 }.bind(this);
             addNumberFieldButton.innerHTML="Add Number Property";
             
@@ -407,7 +408,7 @@ class mainScene extends Phaser.Scene
             var addBooleanFieldButton = document.createElement("button");
             addBooleanFieldButton.onclick = function(){
                 var fieldName = window.prompt("Name of new field");
-                this.addField(propertyMenu,activeObject,propertyInputs,fieldName,"boolean");
+                this.addField(activeObject,propertyInputs,fieldName,"boolean");
             }.bind(this);
             addBooleanFieldButton.innerHTML = "Add True/False Property";
 
@@ -417,7 +418,7 @@ class mainScene extends Phaser.Scene
            updateButton.onclick= function(){
                //set all the fixed fields.
                this.renameObject(name_input.value);
-               this.moveObject(activeObject,x_input.value,y_input.value);
+               this.world.moveObject(activeObject,x_input.value,y_input.value);
                activeObject.solid = solid_check.checked;
                activeObject.changeSprite(sprite_input.value);
 
@@ -426,10 +427,10 @@ class mainScene extends Phaser.Scene
            updateButton.innerHTML = "Update"; 
            
            //Enter key triggers update as well when pressed. 
-           propertyMenu.addEventListener("keyup", function(event) {
+           this.propertyMenu.addEventListener("keyup", function(event) {
            if (event.key === "Enter") {
                this.renameObject(name_input.value);
-               this.moveObject(activeObject,x_input.value,y_input.value);
+               this.world.moveObject(activeObject,x_input.value,y_input.value);
                activeObject.solid = solid_check.checked;
                activeObject.changeSprite(sprite_input.value);
 
@@ -440,52 +441,56 @@ class mainScene extends Phaser.Scene
            var newBaseTypeButton = document.createElement("button");
            newBaseTypeButton.setAttribute("class", "wideButton");
            newBaseTypeButton.onclick= function(){
-               var newBaseTypeName = prompt("Name your new tile type");
-               
-               if (newBaseTypeName && newBaseTypeName.length>1 && !(newBaseTypeName in this.selectionPane.prototypes)){
-                    this.selectionPane.addPrototype(newBaseTypeName,activeObject);
-               }
-               
+               var newBaseTypeName = prompt("Name your new tile type");               
+                if (newBaseTypeName && newBaseTypeName.length>1 && !(newBaseTypeName in this.world.prototypes)){
+                    this.world.prototypes[newBaseTypeName] = new Prototype(newBaseTypeName, activeObject);
+                    
+                    var option = document.createElement("option");
+                    option.textContent=newBaseTypeName;
+                    this.selectionPane.appendChild(option);
+                }else{
+                   console.log("invalid base type name");
+               }               
            }.bind(this);
            newBaseTypeButton.innerHTML = "Save as new base type";
             
             //Need to space out the buttons a bit in the CSS.
-            buttonMenu.appendChild(addNumberFieldButton);
-            buttonMenu.appendChild(addStringFieldButton); 
-            buttonMenu.appendChild(addBooleanFieldButton);
-            buttonMenu.appendChild(document.createElement("br"));
-            buttonMenu.appendChild(updateButton);
-            buttonMenu.appendChild(document.createElement("br"));
-            buttonMenu.appendChild(newBaseTypeButton);
+            this.buttonMenu.appendChild(addNumberFieldButton);
+            this.buttonMenu.appendChild(addStringFieldButton); 
+            this.buttonMenu.appendChild(addBooleanFieldButton);
+            this.buttonMenu.appendChild(document.createElement("br"));
+            this.buttonMenu.appendChild(updateButton);
+            this.buttonMenu.appendChild(document.createElement("br"));
+            this.buttonMenu.appendChild(newBaseTypeButton);
 
             //Core exposed values are hard coded in.
             //Yet to add, depth property and sprite property.
             //Depth is a number, sprite should be a dropdown of all available sprites.
-            propertyMenu.appendChild(name_label);
-            propertyMenu.appendChild(name_input);
-            propertyMenu.appendChild(document.createElement("br"));
+            this.propertyMenu.appendChild(name_label);
+            this.propertyMenu.appendChild(name_input);
+            this.propertyMenu.appendChild(document.createElement("br"));
 
-            propertyMenu.appendChild(sprite_label);
-            propertyMenu.appendChild(sprite_input);
-            propertyMenu.appendChild(document.createElement("br"));
+            this.propertyMenu.appendChild(sprite_label);
+            this.propertyMenu.appendChild(sprite_input);
+            this.propertyMenu.appendChild(document.createElement("br"));
 
-            propertyMenu.appendChild(x_label);
-            propertyMenu.appendChild(x_input);
-            propertyMenu.appendChild(document.createElement("br"));
+            this.propertyMenu.appendChild(x_label);
+            this.propertyMenu.appendChild(x_input);
+            this.propertyMenu.appendChild(document.createElement("br"));
 
-            propertyMenu.appendChild(y_label);
-            propertyMenu.appendChild(y_input);
-            propertyMenu.appendChild(document.createElement("br"));
+            this.propertyMenu.appendChild(y_label);
+            this.propertyMenu.appendChild(y_input);
+            this.propertyMenu.appendChild(document.createElement("br"));
 
-            propertyMenu.appendChild(solid_label);
-            propertyMenu.appendChild(solid_check);
-            propertyMenu.appendChild(document.createElement("br"));
+            this.propertyMenu.appendChild(solid_label);
+            this.propertyMenu.appendChild(solid_check);
+            this.propertyMenu.appendChild(document.createElement("br"));
 
             for (var index in activeObject.exposed_fields){               
                 var label = document.createElement("span");
                 label.textContent = index +": ";
                 label.setAttribute("class","propertyLabel");
-                propertyMenu.appendChild(label);              
+                this.propertyMenu.appendChild(label);              
                 
                 propertyInputs[index] = document.createElement("input");
                 propertyInputs[index].setAttribute("class", "propertyInput");
@@ -505,22 +510,22 @@ class mainScene extends Phaser.Scene
                     propertyInputs[index].checked = activeObject.exposed_fields[index];
                     }                          
                 
-                propertyMenu.appendChild(propertyInputs[index]);
-                propertyMenu.appendChild(document.createElement("br"));
+                this.propertyMenu.appendChild(propertyInputs[index]);
+                this.propertyMenu.appendChild(document.createElement("br"));
                 }                      
 
             }
-        }             
+        }         
 
-    //function to add a field label + input to the tile, 
+   //function to add a field label + input to the tile, 
     //two string inputs, one for the name of the field and one for the type  of the field
     //"string", "number", "boolean"
-    addField(propertyMenu,activeObject,propertyInputs,fieldName, fieldType){ 
+    addField(activeObject,propertyInputs,fieldName, fieldType){ 
         if (fieldName && fieldName.length>1 && !(fieldName in activeObject.exposed_fields) && !(fieldName in propertyInputs)){                  
             var label = document.createElement("span");
             label.textContent = fieldName + ": ";
             label.setAttribute("class", "propertyLabel");
-            propertyMenu.appendChild(label);
+            this.propertyMenu.appendChild(label);
 
             propertyInputs[fieldName] = document.createElement("input");
             propertyInputs[fieldName].setAttribute("class", "propertyInput");
@@ -536,8 +541,8 @@ class mainScene extends Phaser.Scene
                 propertyInputs[fieldName].checked = false;
             }
 
-            propertyMenu.appendChild(propertyInputs[fieldName]);
-            propertyMenu.appendChild(document.createElement("br"));
+            this.propertyMenu.appendChild(propertyInputs[fieldName]);
+            this.propertyMenu.appendChild(document.createElement("br"));
             }else if(fieldName in activeObject.exposed_fields || fieldName in propertyInputs){
                 console.log("Propety name taken");
             }
@@ -569,100 +574,15 @@ class mainScene extends Phaser.Scene
     renameObject(name){
         if (name){            
             //@TODO, more extensive namespace checking
-            if (!this.spriteNamespace[name]){
-                this.focusObject.name = name;
-                this.spriteNamespace[name] = this.focusObject;            
-            }else if (this.spriteNamespace[name]==this.focusObject){
+            if (!this.world.spriteNamespace[name]){
+                this.world.focusObject.name = name;
+                this.world.spriteNamespace[name] = this.world.focusObject;            
+            }else if (this.world.spriteNamespace[name]==this.world.focusObject){
                 //Probably more elegant way.
             }else{
                 console.log("Name taken");
             }
         }
-    }
-
-    createSnowDrift(x, y) {
-        //this.map.putTileAt(12, x, y, 'base');
-        let snowDrift = this.add.sprite(x, y, 'tiles',12);
-        snowDrift.depth = 1;
-        return snowDrift;
-    }
-
-    createTree(x, y) {
-        //TODO groups
-        let tree = this.add.group();
-
-        tree.add(this.add.sprite(x, y, 'tiles',20));
-        tree.add(this.add.sprite(x, y-16, 'tiles',10));
-        tree.add(this.add.sprite(x, y-32, 'tiles',0));
-
-        return tree;
-        //this.map.putTileAt(0, x, y, 'objects');
-        //this.map.putTileAt(10, x, y + 1, 'objects');
-        //this.map.putTileAt(20, x, y + 2, 'objects');
-    }
-
-    createHouse(x, y) {
-        this.map.putTileAt(3, x, y, 'objects');
-        this.map.putTileAt(4, x + 1, y, 'objects');
-        this.map.putTileAt(5, x + 2, y, 'objects');
-        this.map.putTileAt(13, x, y + 1, 'objects');
-        this.map.putTileAt(14, x + 1, y + 1, 'objects');
-        this.map.putTileAt(15, x + 2, y + 1, 'objects');
-    }
-    createDeer(x, y) {
-        let deer = this.add.sprite(x, y, 'tiles',1);
-        deer.depth = 1;        
-        //let deer = this.map.putTileAt(1, x, y, 'objects');
-        return deer;        
-    }
-}
-
-//@TODO, need some deselection deadzone. 
-class tileSelection extends Phaser.Scene{
-
-    constructor ()
-    {
-        super("Block_Menu");
-    }
-
-    create(){
-        this.baseScene = this.scene.get("Game_Scene");
-        this.buttons = []; //array of all the buttons
-
-        this.prototypes = {}; //map each prototype name to a new prototype.
-
-        //Buttons should be autogenerated from existing prototypes. 
-        var baseButton = this.add.text(10, 10, 'BaseTile')
-        .setInteractive()
-        .on('pointerdown', () => { 
-            this.baseScene.selected_prototype = 'base'; 
-            this.selected = baseButton;      
-        });
-        this.buttons.push(baseButton);
-        
-    }
-    update(){  
-        //colour in the selected button
-        for (var i=0;i<this.buttons.length;i++){
-            if (this.buttons[i] == this.selected){
-                this.buttons[i].setStyle({ fill: '#49B62E'});
-            }else{
-                this.buttons[i].setStyle({ fill: '#FFFFFF'});
-            } 
-        }
-    }
-
-    addPrototype(name, tile){
-        this.prototypes[name] = new Prototype(name, tile);
-               //Buttons should be autogenerated from existing prototypes. 
-        var baseButton = this.add.text(140, 10, name)
-        .setInteractive()
-        .on('pointerdown', () => { 
-            this.baseScene.selected_prototype = this.prototypes[name]; 
-            this.selected = baseButton;      
-        });
-        this.buttons.push(baseButton);
-
     }
 }
 
@@ -673,7 +593,7 @@ var config = {
     parent: 'sandbox',
     pixelArt: true,
     zoom: 2,
-    scene: [mainScene, tileSelection]
+    scene: [mainScene]
 }
 
 let game = new Phaser.Game(config);

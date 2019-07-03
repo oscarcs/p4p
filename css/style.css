@@ -47,11 +47,10 @@ button:hover {
     display: inline-block; 
 }
 
-.propertyList {
+.propertyList{
     overflow-y: auto;
     width: 100%;
-    height: 35%;   
-
+    height: 35%;  
 }
 
 .propertyInput{  
@@ -75,5 +74,10 @@ button:hover {
 .wideButton{
     margin-top: 0.2em;
     width: 100%;
+}
+
+.selectionPanel{
+    display: flex;
+    flex-direction: column;
 }
 
