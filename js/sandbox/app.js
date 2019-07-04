@@ -8,7 +8,7 @@ class Utils{
     }
 
     gridYtoTrueY(y){
-        return y*16+40;
+        return y*16+8;
     }
 
     TrueXtoGridX(grid_x){
@@ -16,7 +16,7 @@ class Utils{
     }
     
     TrueYtoGridY(grid_y){
-        return(grid_y-40)/16;
+        return(grid_y-8)/16;
     }
 }
 
@@ -135,7 +135,7 @@ class mainScene extends Phaser.Scene
             frameHeight: 16
         });         
 
-        this.worldHeight = 13;
+        this.worldHeight = 15;
         this.worldWidth = 20;
 
         this.spriteDict = []; //dictionary mapping sprites to indexes, used for tilesheets
@@ -185,7 +185,7 @@ class mainScene extends Phaser.Scene
 
     update () {        
         var x = Math.round(this.input.mousePointer.x/16); 
-        var y = Math.round(this.input.mousePointer.y/16)-2;   
+        var y = Math.round(this.input.mousePointer.y/16);   
                         
         var selected = false; // is an tile selected?
         var tentativeSelect; //tentative selection       
