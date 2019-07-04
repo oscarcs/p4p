@@ -1,5 +1,6 @@
 class Utils{
     //Helper class to manage grid location conversions.
+    //@TODO rework the mainscene co-cordinates.
 
     //get the true value postion on screen given the grid position
     gridXtoTrueX(x){
@@ -314,6 +315,15 @@ class userInterface{
         var option = document.createElement("option");
         option.textContent = "Basic tile";
         this.selectionPane.appendChild(option);
+
+        //ugh
+        this.deleteButton = document.getElementById("deleteButton");
+        this.deleteButton.onclick = function(){
+            if (this.selectionPane.value != "Basic tile"){
+                delete this.world.prototypes[this.selectionPane.value];
+                this.selectionPane.remove(this.selectionPane.selectedIndex);               
+            }            
+        }.bind(this);
     }
 
      clearPropertyFields(){
@@ -321,7 +331,7 @@ class userInterface{
         this.buttonMenu.innerHTML="";
     }
 
-    //@TODO, this kinda deserves a big refactor. 
+   
     displayProperties(activeObject){
         //Graphical prototype definition should use a similar method.
                 
@@ -444,7 +454,7 @@ class userInterface{
                var newBaseTypeName = prompt("Name your new tile type");               
                 if (newBaseTypeName && newBaseTypeName.length>1 && !(newBaseTypeName in this.world.prototypes)){
                     this.world.prototypes[newBaseTypeName] = new Prototype(newBaseTypeName, activeObject);
-                    
+
                     var option = document.createElement("option");
                     option.textContent=newBaseTypeName;
                     this.selectionPane.appendChild(option);
@@ -518,7 +528,7 @@ class userInterface{
         }         
 
    //function to add a field label + input to the tile, 
-    //two string inputs, one for the name of the field and one for the type  of the field
+    //two string inputs, one for the name of the field and one for the type of the field
     //"string", "number", "boolean"
     addField(activeObject,propertyInputs,fieldName, fieldType){ 
         if (fieldName && fieldName.length>1 && !(fieldName in activeObject.exposed_fields) && !(fieldName in propertyInputs)){                  
