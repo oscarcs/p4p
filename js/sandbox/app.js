@@ -23,22 +23,37 @@ class Utils{
 class Prototype{
     constructor(type,tile){
         this.type = type;
-        this.spriteName = tile.spriteName;
-        this.solid = tile.solid;
-        this.fields = {};
 
-        for (var keys in tile.exposed_fields){
-            this.fields[keys] = tile.exposed_fields[keys];
+        if (tile){
+            this.spriteName = tile.spriteName;
+            this.solid = tile.solid;
+            this.fields = {};
+            this.actions = {};
+
+            for (var keys in tile.exposed_fields){
+                this.fields[keys] = tile.exposed_fields[keys];
+            }
+
+            for (var action in tile.action){
+                this.actions[action] = tile.actions[action];
+            }
         }
     }
+
+    serialize(){
+        return JSON.stringify(this);
+    }
+
 }
 
 class BasicTile{   
     //TODO, need to include an immutable "type" property.
     constructor(world,x,y,spriteName,name=undefined){
         this.world=world;
-        this.type = "BasicTile";
+        this.type = "Basic Tile";
         this.exposed_fields = {}; //array of exposed fields mapped to their values. 
+
+        this.actions = {}; //array of functions mapped to the function name.
 
         this.x = x;
         this.y = y;
@@ -61,7 +76,6 @@ class BasicTile{
         for (var key in prototype.fields){
             this.exposed_fields[key] = prototype.fields[key];
         } 
-        
     }
 
     update(){               
@@ -72,7 +86,6 @@ class BasicTile{
             this.sprite.x = this.world.utils.gridXtoTrueX(this.x);
             this.sprite.y = this.world.utils.gridYtoTrueY(this.y);           
         } 
-
         this.world.worldGrid[this.x][this.y].add(this);
     }
 
@@ -112,8 +125,23 @@ class BasicTile{
     //@TODO need to make a some way to set an interval between actions without blocking.
     //Use getTime() and a variable. prevTime. i.e. if getTime() - prevTime> some threshhold,
     //sprite can do action. 
+
+    serialize(){
+        var saveSprite = {};
+        saveSprite.type = this.type;
+        saveSprite.name = this.name;
+        saveSprite.spriteName=this.spriteName;        
+
+        saveSprite.x = this.x;
+        saveSprite.y = this.y;
+        saveSprite.exposed_fields = this.exposed_fields;
+        
+        saveSprite.solid = this.solid;
+        return JSON.stringify(saveSprite);
+    }
    
 }
+
 
 //@TODO, need some dead zone to click so we can deselect.
 class mainScene extends Phaser.Scene
@@ -135,15 +163,17 @@ class mainScene extends Phaser.Scene
         this.spriteDict = []; //dictionary mapping sprites to indexes, used for tilesheets
 
         this.sprites = []; //all sprites
-        this.spriteNamespace = []; //Name dictionary to map exisiting tiles to names
+        this.spriteNamespace = {}; //Name dictionary to map exisiting tiles to names
 
-        this.prototypes = {}; //map each prototype name to a new prototype.
+        this.prototypes = {}; //map each prototype name to a new prototype. 
         
         this.spriteDict["deer"] = 1;
         this.spriteDict["snow"] = 12;
         this.spriteDict["tree"] = 0; 
 
         //treat blocks that span more than 1 block differrently.
+        this.utils = new Utils();
+        this.UI = new userInterface(this);
     }    
 
     create () {
@@ -158,11 +188,7 @@ class mainScene extends Phaser.Scene
         let base = this.map.createBlankDynamicLayer('base', tiles);
         this.map.fill(2, 0, 0, this.map.width, this.map.height, 'base');
 
-        this.utils = new Utils();
-
-        this.UI = new userInterface(this);
-
-        this.worldGrid = this.initializeWorldGrid();
+        this.worldGrid = this.initializeWorldGrid(); //Serialize this.
         //@TODO make it so the world grid has two different values 1 for occupation and 2 for solid.
 
         //Marker for what the mouse is currently over.
@@ -173,8 +199,10 @@ class mainScene extends Phaser.Scene
         this.selectionIndicator = this.add.rectangle(0, 32, 16, 16).setStrokeStyle(1,0x008000); 
         this.selectionIndicator.visible=false;
         this.selectionIndicator.depth = 99;
+
+        //this.loadGame(); Game should now autoload if it exists.
         
-        this.deleteKey = this.input.keyboard.addKey('DELETE'); //@TODO refactor for more generality, fix deletion to be an alternate input.  
+        this.deleteKey = this.input.keyboard.addKey('DELETE'); //@TODO refactor for more generality, fix deletion to be an alternate input.
     }
 
     update () {        
@@ -200,8 +228,7 @@ class mainScene extends Phaser.Scene
         }
 
         //Marker handling        
-        if (y>=0 && x >=0 && x <this.worldWidth && y<this.worldHeight){
-            
+        if (y>=0 && x >=0 && x <this.worldWidth && y<this.worldHeight){            
             if (this.worldGrid[x][y].size > 0){
                 selected = true;
                 tentativeSelect = this.worldGrid[x][y].values().next().value;
@@ -280,13 +307,14 @@ class mainScene extends Phaser.Scene
                     validMove = false;
                 }
             }
-
+            //check if all the tiles in the landing zone are not solid
             for (var tile of this.worldGrid[new_x][new_y]){
                 if (tile.solid){
                     validMove = false;
                     break;
                 }
             }
+            //do the move.
             if (validMove){
                 focus_tile.x= new_x;
                 focus_tile.y = new_y;
@@ -306,14 +334,58 @@ class mainScene extends Phaser.Scene
             if (this.focusObject.name){
                 delete this.spriteNamespace[this.focusObject.name];
             }
-
             //Delete the object
             this.focusObject.destroy();
             this.focusObject = undefined;
 
             this.UI.clearPropertyFields();
         }
-    }    
+    }
+    
+    saveGame(){
+
+        var saveGameObject = {};
+
+        saveGameObject.prototypes = this.prototypes;
+
+        saveGameObject.sprites = this.sprites.map(function(sprite){
+            return sprite.serialize();
+        });
+        localStorage.setItem("2DSandbox",JSON.stringify(saveGameObject));
+    }
+
+    loadGame(){
+        var state = localStorage.getItem("2DSandbox");
+        this.resetGame();
+        //flush storage. 
+        console.log("Loading state");
+        var saveState = JSON.parse(state);              
+
+        for (var i = 0; i<saveState.sprites.length;i++){
+            var spriteData =  JSON.parse(saveState.sprites[i]) 
+            
+            //Need to repopulate the worldGrid as well as the sprites array.
+            this.sprites[i] = new BasicTile(this, spriteData.x,spriteData.y,spriteData.spriteName);
+            
+            this.UI.renameObject(this.sprites[i], spriteData.name);    
+            for (var field in spriteData.exposed_fields){
+                this.sprites[i].exposed_fields[field] = spriteData.exposed_fields[field];
+            }       
+        }
+
+        for (var prototype in saveState.prototypes){
+            this.prototypes[prototype] = saveState.prototypes[prototype];
+            //@TODO prototype doesn't hold.
+            this.UI.addPrototypeToList(prototype);
+        }
+    }
+
+    resetGame(){
+        this.prototypes ={};
+        this.sprites = [];     
+        this.spriteNamespace = {};   
+        this.worldGrid = this.initializeWorldGrid();
+    }
 }
 
 //Class for all non main-scene elements.
@@ -460,6 +532,7 @@ class userInterface{
                activeObject.changeSprite(sprite_input.value);
 
                this.updateFields(activeObject,propertyInputs);
+
            }.bind(this);
            updateButton.innerHTML = "Update"; 
            
@@ -482,10 +555,8 @@ class userInterface{
                var newBaseTypeName = prompt("Name your new tile type");               
                 if (newBaseTypeName && newBaseTypeName.length>1 && !(newBaseTypeName in this.world.prototypes)){
                     this.world.prototypes[newBaseTypeName] = new Prototype(newBaseTypeName, activeObject);
+                    this.addPrototypeToList(newBaseTypeName);
 
-                    var option = document.createElement("option");
-                    option.textContent=newBaseTypeName;
-                    this.selectionPane.appendChild(option);
                 }else{
                    console.log("invalid base type name");
                }               
@@ -612,7 +683,12 @@ class userInterface{
             }
         }
     }
-
+    
+    addPrototypeToList(newBaseTypeName){
+        var option = document.createElement("option");
+        option.textContent=newBaseTypeName;
+        this.selectionPane.appendChild(option);
+    }
     
     renameObject(activeObject, name){
         if (name){            
