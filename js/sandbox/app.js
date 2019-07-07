@@ -73,17 +73,11 @@ class BasicTile{
             this.sprite.y = this.world.utils.gridYtoTrueY(this.y);           
         } 
 
-        if (this.solid){
-            this.world.worldGrid[this.x][this.y] = 1;
-        }else{
-            this.world.worldGrid[this.x][this.y] = 0;
-        }
+        this.world.worldGrid[this.x][this.y].add(this);
     }
 
-    destroy(){
-        if (this.solid){
-            this.world.worldGrid[this.x][this.y] = 0;
-        }
+    destroy(){        
+        this.world.worldGrid[this.x][this.y].delete(this);        
         this.sprite.destroy(); 
     }
 
@@ -190,15 +184,12 @@ class mainScene extends Phaser.Scene
         var selected = false; // is an tile selected?
         var tentativeSelect; //tentative selection       
 
-        //check if marker is over a sprite.
+        //update all the sprites
         for (var i = 0;i <this.sprites.length;i++){ 
             this.sprites[i].update();
-
-            if (this.sprites[i].x == x && this.sprites[i].y == y){                
-                selected = true;
-                tentativeSelect = i;               
-            }
         }
+
+        //iterate through all grids in the world, if there is an overlap, fire the collision event for all sprites to all sprites. (Could be expensive)
 
         //if there is a objecct being focused, the selection indicator goes to true.
         if (this.focusObject){
@@ -210,6 +201,13 @@ class mainScene extends Phaser.Scene
 
         //Marker handling        
         if (y>=0 && x >=0 && x <this.worldWidth && y<this.worldHeight){
+            
+            if (this.worldGrid[x][y].size > 0){
+                selected = true;
+                tentativeSelect = this.worldGrid[x][y].values().next().value;
+                //@TODO rework this to handle multiple select. Easier now we hav a set to iterate through.
+            }
+
             this.marker.setPosition(this.utils.gridXtoTrueX(x),this.utils.gridYtoTrueY(y));           
             this.marker.visible=true;
 
@@ -221,10 +219,10 @@ class mainScene extends Phaser.Scene
 
             if (this.input.activePointer.primaryDown) {                
                 if (this.input.activePointer.justDown){ //If the click was just done.  
-
                     if (typeof tentativeSelect != "undefined"){
-                        this.focusObject = this.sprites[tentativeSelect];                        
-                        //On click, the object clicked on becomes focused.                    
+                        this.focusObject = tentativeSelect;                       
+                        //On click, the object clicked on becomes focused. 
+                        //@TODO Maybe rework to have a stamp tool and a edit tool. More intuitive?                   
                     }else{
                         //tile placement on click 
                         if (this.UI.selectionPane.value){
@@ -233,7 +231,6 @@ class mainScene extends Phaser.Scene
                                 console.log("Working");
                                 tileSprite.applyProtoType(this.prototypes[this.UI.selectionPane.value]);   
                             }                         
-                            //@TODO, tilesprite based off prototype.
                             this.sprites.push(tileSprite);
                             this.focusObject = tileSprite;                  
                         }                    
@@ -255,7 +252,10 @@ class mainScene extends Phaser.Scene
     initializeWorldGrid(){
         let grid = [];
         for (var i =0;i<this.worldWidth;i++){
-            grid[i] = new Array(this.worldHeight)
+            grid[i] = new Array(this.worldHeight);
+            for (var j = 0; j<this.worldHeight;j++){
+                grid[i][j] = new Set();
+            }
         }
         return grid;
     }
@@ -265,22 +265,34 @@ class mainScene extends Phaser.Scene
         //Check the new position is in bounds
         //@TODO, make a warning for the user depening on which bound is over
         if(new_x < 0 || new_x >= this.worldWidth ||new_y < 0||new_y>= this.worldHeight){
-            console.log("collided");
+            console.log("collided with world edge");
             return;
         }
         if (focus_tile){
             let currentX = focus_tile.x;
             let currentY = focus_tile.y;
 
-            if (this.worldGrid[new_x][new_y] != 1){
+            var validMove = true;
+
+            //if the focus tile is solid, it should not be able to stack on anything.
+            if (focus_tile.solid){
+                if (this.worldGrid[new_x][new_y].size > 0){
+                    validMove = false;
+                }
+            }
+
+            for (var tile of this.worldGrid[new_x][new_y]){
+                if (tile.solid){
+                    validMove = false;
+                    break;
+                }
+            }
+            if (validMove){
                 focus_tile.x= new_x;
                 focus_tile.y = new_y;
+                this.worldGrid[currentX][currentY].delete(focus_tile);
+                this.worldGrid[focus_tile.x][focus_tile.y].add(focus_tile);
 
-                //if solid, occupy upon the world grid.
-                if (focus_tile.solid){
-                    this.worldGrid[currentX][currentY] = 0;
-                    this.worldGrid[focus_tile.x][focus_tile.y] = 1;
-                }
             }                                                  
         }
     }
@@ -333,8 +345,7 @@ class userInterface{
 
    
     displayProperties(activeObject){
-        //Graphical prototype definition should use a similar method.
-                
+                       
         if (activeObject){
             this.clearPropertyFields();
 
@@ -346,6 +357,16 @@ class userInterface{
 
             var propertyInputs = []; //Inputfields for all the user defined fields
 
+            var type_label  = document.createElement("span");
+            type_label.textContent = "Tile Type: "
+            type_label.setAttribute("class", "propertyLabel");
+
+            var type_input = document.createElement("span");
+            type_input.textContent = activeObject.type;
+            type_input.setAttribute("class","propertyInput");
+            
+
+            //Label for name data for a tile.
             var name_label = document.createElement("span");
             name_label.textContent = "Name: ";
             name_label.setAttribute("class", "propertyLabel");
@@ -356,6 +377,7 @@ class userInterface{
                 name_input.value = activeObject.name;
             }          
 
+            //Sprite information of a tile
             var sprite_label = document.createElement("span");
             sprite_label.textContent = "Sprite: ";
             sprite_label.setAttribute("class", "propertyLabel")
@@ -369,8 +391,11 @@ class userInterface{
                 sprite_input.appendChild(option);
             }
             sprite_input.value = activeObject.spriteName;
+            sprite_input.onchange = function(){
+                activeObject.changeSprite(this.value);
+            }
 
-            //Really begging for a refactor this one.
+            //X Position information about a tile
             var x_label = document.createElement("span");
             x_label.textContent = "X: ";
             x_label.setAttribute("class", "propertyLabel");
@@ -380,6 +405,7 @@ class userInterface{
             x_input.setAttribute("class","propertyInput");
             x_input.value = activeObject.x; 
 
+            //Y Position information about a tile
             var y_label = document.createElement("span");
             y_label.textContent = "Y: ";
             y_label.setAttribute("class", "propertyLabel");
@@ -389,6 +415,7 @@ class userInterface{
             y_input.value = activeObject.y; 
             y_input.setAttribute("class","propertyInput");
 
+            //Solid/passable information about a tile
             var solid_label=document.createElement("span");
             solid_label.textContent="Solid: ";
             solid_label.setAttribute("class","propertyLabel");
@@ -398,7 +425,7 @@ class userInterface{
             solid_check.setAttribute("class", "propertyInput");
             solid_check.checked = activeObject.solid;            
             
-             //StringButton
+             //Add new String property Button
             var addStringFieldButton = document.createElement("button"); //Need to tidy the formatting up
             addStringFieldButton.onclick=function(){
                 var fieldName = window.prompt("Name of new field");                                
@@ -406,7 +433,7 @@ class userInterface{
             }.bind(this);
             addStringFieldButton.innerHTML = "Add String Property";            
             
-            //NumberButton
+            //Add new Number Property Button
             var addNumberFieldButton = document.createElement("button");
             addNumberFieldButton.onclick=function(){
                 var fieldName = window.prompt("Name of new field") 
@@ -414,7 +441,7 @@ class userInterface{
                 }.bind(this);
             addNumberFieldButton.innerHTML="Add Number Property";
             
-            //Boolean(True/False) Button
+            //Add new Boolean(True/False) Button
             var addBooleanFieldButton = document.createElement("button");
             addBooleanFieldButton.onclick = function(){
                 var fieldName = window.prompt("Name of new field");
@@ -427,7 +454,7 @@ class userInterface{
            updateButton.setAttribute("class","wideButton");    
            updateButton.onclick= function(){
                //set all the fixed fields.
-               this.renameObject(name_input.value);
+               this.renameObject(activeObject, name_input.value);
                this.world.moveObject(activeObject,x_input.value,y_input.value);
                activeObject.solid = solid_check.checked;
                activeObject.changeSprite(sprite_input.value);
@@ -439,7 +466,7 @@ class userInterface{
            //Enter key triggers update as well when pressed. 
            this.propertyMenu.addEventListener("keyup", function(event) {
            if (event.key === "Enter") {
-               this.renameObject(name_input.value);
+               this.renameObject(activeObject, name_input.value);
                this.world.moveObject(activeObject,x_input.value,y_input.value);
                activeObject.solid = solid_check.checked;
                activeObject.changeSprite(sprite_input.value);
@@ -448,6 +475,7 @@ class userInterface{
                }
            }.bind(this));
 
+           //Save as new base type button
            var newBaseTypeButton = document.createElement("button");
            newBaseTypeButton.setAttribute("class", "wideButton");
            newBaseTypeButton.onclick= function(){
@@ -474,8 +502,12 @@ class userInterface{
             this.buttonMenu.appendChild(newBaseTypeButton);
 
             //Core exposed values are hard coded in.
-            //Yet to add, depth property and sprite property.
+            //Yet to add, depth property 
             //Depth is a number, sprite should be a dropdown of all available sprites.
+            this.propertyMenu.appendChild(type_label);
+            this.propertyMenu.appendChild(type_input);
+            this.propertyMenu.appendChild(document.createElement("br"));
+
             this.propertyMenu.appendChild(name_label);
             this.propertyMenu.appendChild(name_input);
             this.propertyMenu.appendChild(document.createElement("br"));
@@ -495,7 +527,8 @@ class userInterface{
             this.propertyMenu.appendChild(solid_label);
             this.propertyMenu.appendChild(solid_check);
             this.propertyMenu.appendChild(document.createElement("br"));
-
+           
+            //Non core fields lables and inputs. 
             for (var index in activeObject.exposed_fields){               
                 var label = document.createElement("span");
                 label.textContent = index +": ";
@@ -580,14 +613,14 @@ class userInterface{
         }
     }
 
-    //Rework to take ref instead of using field
-    renameObject(name){
+    
+    renameObject(activeObject, name){
         if (name){            
             //@TODO, more extensive namespace checking
             if (!this.world.spriteNamespace[name]){
-                this.world.focusObject.name = name;
-                this.world.spriteNamespace[name] = this.world.focusObject;            
-            }else if (this.world.spriteNamespace[name]==this.world.focusObject){
+                activeObject.name = name;
+                this.world.spriteNamespace[name] = activeObject;            
+            }else if (this.world.spriteNamespace[name]==activeObject){
                 //Probably more elegant way.
             }else{
                 console.log("Name taken");

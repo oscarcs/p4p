@@ -65,6 +65,7 @@ button:hover {
     float: left;
     clear: left;
     width: 25%;
+    padding-right: 0.5em;
     text-align: right;
     margin-top: 0.2em;
 }
