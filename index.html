@@ -2,6 +2,7 @@
     <head>
         <title>2D Sandbox</title>
         <link rel="stylesheet" type="text/css" href="css/style.css">
+        <script src="js/lang/reserved.js"></script>
         <script src="js/lang/lexer.js"></script>
         <script src="js/lang/parser.js"></script>
         <script>
@@ -13,7 +14,6 @@
             // console.log(lexer.lex()); 
             
             window.onload = function () {
-                console.log('test!');
                 document.getElementById('tokenize').addEventListener('click', () => {
                     let code = document.getElementById('input').value;
     
