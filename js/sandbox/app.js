@@ -39,7 +39,6 @@ class Prototype{
             }
         }
     }
-
     serialize(){
         return JSON.stringify(this);
     }
@@ -60,6 +59,7 @@ class BasicTile{
 
         this.spriteName = spriteName;
         var index = world.spriteDict[spriteName];
+        
         this.sprite = this.world.add.sprite(world.utils.gridXtoTrueX(x), world.utils.gridYtoTrueY(y),'tiles',index); //This shouldn't be exposed.
 
         this.sprite.depth = 1;  
@@ -124,7 +124,7 @@ class BasicTile{
     }
     //@TODO need to make a some way to set an interval between actions without blocking.
     //Use getTime() and a variable. prevTime. i.e. if getTime() - prevTime> some threshhold,
-    //sprite can do action. 
+    //sprite can do action.
 
     serialize(){
         var saveSprite = {};
@@ -188,8 +188,7 @@ class mainScene extends Phaser.Scene
         let base = this.map.createBlankDynamicLayer('base', tiles);
         this.map.fill(2, 0, 0, this.map.width, this.map.height, 'base');
 
-        this.worldGrid = this.initializeWorldGrid(); //Serialize this.
-        //@TODO make it so the world grid has two different values 1 for occupation and 2 for solid.
+        this.worldGrid = this.initializeWorldGrid();
 
         //Marker for what the mouse is currently over.
         this.marker = this.add.rectangle(0, 32, 16, 16).setStrokeStyle(1,0xffffff);  
@@ -200,9 +199,10 @@ class mainScene extends Phaser.Scene
         this.selectionIndicator.visible=false;
         this.selectionIndicator.depth = 99;
 
-        //this.loadGame(); Game should now autoload if it exists.
+        //this.loadGame(); Game intergrate autoloading of the game.
         
         this.deleteKey = this.input.keyboard.addKey('DELETE'); //@TODO refactor for more generality, fix deletion to be an alternate input.
+
     }
 
     update () {        
@@ -228,7 +228,8 @@ class mainScene extends Phaser.Scene
         }
 
         //Marker handling        
-        if (y>=0 && x >=0 && x <this.worldWidth && y<this.worldHeight){            
+        if (y>=0 && x >=0 && x <this.worldWidth && y<this.worldHeight){         
+
             if (this.worldGrid[x][y].size > 0){
                 selected = true;
                 tentativeSelect = this.worldGrid[x][y].values().next().value;
@@ -249,13 +250,13 @@ class mainScene extends Phaser.Scene
                     if (typeof tentativeSelect != "undefined"){
                         this.focusObject = tentativeSelect;                       
                         //On click, the object clicked on becomes focused. 
-                        //@TODO Maybe rework to have a stamp tool and a edit tool. More intuitive?                   
+                        //@TODO Maybe rework to have a stamp tool and a edit tool. More intuitive? 
+
                     }else{
                         //tile placement on click 
                         if (this.UI.selectionPane.value){
                             var tileSprite = new BasicTile(this,x,y,"tree");
                             if (this.UI.selectionPane.value != "Basic tile"){
-                                console.log("Working");
                                 tileSprite.applyProtoType(this.prototypes[this.UI.selectionPane.value]);   
                             }                         
                             this.sprites.push(tileSprite);
@@ -269,6 +270,7 @@ class mainScene extends Phaser.Scene
                 }
         }else{
             this.marker.visible=false;
+
         }
         //need a warn "Are you sure"
         if (this.deleteKey.isDown){
@@ -295,6 +297,12 @@ class mainScene extends Phaser.Scene
             console.log("collided with world edge");
             return;
         }
+
+        if (new_x.length == 0 || new_y.length == 0){
+            console.log("No Input");
+            return;
+        }
+        
         if (focus_tile){
             let currentX = focus_tile.x;
             let currentY = focus_tile.y;
@@ -357,7 +365,7 @@ class mainScene extends Phaser.Scene
     loadGame(){
         var state = localStorage.getItem("2DSandbox");
         this.resetGame();
-        //flush storage. 
+        //flush the current map
         console.log("Loading state");
         var saveState = JSON.parse(state);              
 
@@ -372,7 +380,6 @@ class mainScene extends Phaser.Scene
                 this.sprites[i].exposed_fields[field] = spriteData.exposed_fields[field];
             }       
         }
-
         for (var prototype in saveState.prototypes){
             this.prototypes[prototype] = saveState.prototypes[prototype];
             //@TODO prototype doesn't hold.
@@ -400,7 +407,7 @@ class userInterface{
         option.textContent = "Basic tile";
         this.selectionPane.appendChild(option);
 
-        //ugh
+        
         this.deleteButton = document.getElementById("deleteButton");
         this.deleteButton.onclick = function(){
             if (this.selectionPane.value != "Basic tile"){
@@ -463,9 +470,6 @@ class userInterface{
                 sprite_input.appendChild(option);
             }
             sprite_input.value = activeObject.spriteName;
-            sprite_input.onchange = function(){
-                activeObject.changeSprite(this.value);
-            }
 
             //X Position information about a tile
             var x_label = document.createElement("span");
@@ -505,6 +509,7 @@ class userInterface{
             }.bind(this);
             addStringFieldButton.innerHTML = "Add String Property";            
             
+
             //Add new Number Property Button
             var addNumberFieldButton = document.createElement("button");
             addNumberFieldButton.onclick=function(){
@@ -512,6 +517,7 @@ class userInterface{
                 this.addField(activeObject,propertyInputs,fieldName,"number");    
                 }.bind(this);
             addNumberFieldButton.innerHTML="Add Number Property";
+
             
             //Add new Boolean(True/False) Button
             var addBooleanFieldButton = document.createElement("button");
@@ -520,33 +526,17 @@ class userInterface{
                 this.addField(activeObject,propertyInputs,fieldName,"boolean");
             }.bind(this);
             addBooleanFieldButton.innerHTML = "Add True/False Property";
+                      
 
-           //Update button and enter key should both do the same thing.         
-           var updateButton = document.createElement("button");
-           updateButton.setAttribute("class","wideButton");    
-           updateButton.onclick= function(){
-               //set all the fixed fields.
-               this.renameObject(activeObject, name_input.value);
-               this.world.moveObject(activeObject,x_input.value,y_input.value);
-               activeObject.solid = solid_check.checked;
-               activeObject.changeSprite(sprite_input.value);
+            this.propertyMenu.oninput=function(){
+            this.renameObject(activeObject, name_input.value);
+            this.world.moveObject(activeObject,x_input.value,y_input.value);
+            activeObject.solid = solid_check.checked;
+            activeObject.changeSprite(sprite_input.value);
 
-               this.updateFields(activeObject,propertyInputs);
-
+            this.updateFields(activeObject,propertyInputs);
            }.bind(this);
-           updateButton.innerHTML = "Update"; 
-           
-           //Enter key triggers update as well when pressed. 
-           this.propertyMenu.addEventListener("keyup", function(event) {
-           if (event.key === "Enter") {
-               this.renameObject(activeObject, name_input.value);
-               this.world.moveObject(activeObject,x_input.value,y_input.value);
-               activeObject.solid = solid_check.checked;
-               activeObject.changeSprite(sprite_input.value);
 
-               this.updateFields(activeObject,propertyInputs);                
-               }
-           }.bind(this));
 
            //Save as new base type button
            var newBaseTypeButton = document.createElement("button");
@@ -556,6 +546,9 @@ class userInterface{
                 if (newBaseTypeName && newBaseTypeName.length>1 && !(newBaseTypeName in this.world.prototypes)){
                     this.world.prototypes[newBaseTypeName] = new Prototype(newBaseTypeName, activeObject);
                     this.addPrototypeToList(newBaseTypeName);
+                    activeObject.type = newBaseTypeName;
+                    
+                    this.displayProperties(activeObject);
 
                 }else{
                    console.log("invalid base type name");
@@ -563,12 +556,11 @@ class userInterface{
            }.bind(this);
            newBaseTypeButton.innerHTML = "Save as new base type";
             
+
             //Need to space out the buttons a bit in the CSS.
             this.buttonMenu.appendChild(addNumberFieldButton);
             this.buttonMenu.appendChild(addStringFieldButton); 
             this.buttonMenu.appendChild(addBooleanFieldButton);
-            this.buttonMenu.appendChild(document.createElement("br"));
-            this.buttonMenu.appendChild(updateButton);
             this.buttonMenu.appendChild(document.createElement("br"));
             this.buttonMenu.appendChild(newBaseTypeButton);
 
