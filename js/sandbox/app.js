@@ -1,6 +1,5 @@
 //@TODO, need some dead zone to click so we can deselect.
-class mainScene extends Phaser.Scene
-{         
+class mainScene extends Phaser.Scene{         
     constructor ()
     {
         super("Game_Scene");
@@ -21,8 +20,8 @@ class mainScene extends Phaser.Scene
         this.spriteDict = []; //dictionary mapping sprites to indexes, used for tilesheets
 
         this.sprites = []; //all sprites
-        this.spriteNamespace = {}; //Name dictionary to map exisiting tiles to names
 
+        this.spriteNamespace = {}; //Name dictionary to map exisiting tiles to names
         this.prototypes = {}; //map each prototype name to a new prototype. 
         
         this.spriteDict["deer"] = 1;
@@ -70,8 +69,11 @@ class mainScene extends Phaser.Scene
         //update all the sprites
         for (var i = 0;i <this.sprites.length;i++){ 
             this.sprites[i].update();
+            if (this.worldGrid[this.sprites[i].x][this.sprites[i].y].size>1){
+                console.log("overlap");
+                //@TODO hook in the broacasts of collision.
+            }
         }
-        //iterate through all grids in the world, if there is an overlap, fire the collision event for all sprites to all sprites. (Could be expensive)
 
         //if there is a objecct being focused, the selection indicator goes to true.
         if (this.focusObject){
@@ -84,10 +86,13 @@ class mainScene extends Phaser.Scene
         //Marker handling        
         if (y>=0 && x >=0 && x <this.worldWidth && y<this.worldHeight){         
 
-            if (this.worldGrid[x][y].size > 0){
+            if (this.worldGrid[x][y].size ==1){
                 selected = true;
                 tentativeSelect = this.worldGrid[x][y].values().next().value;
                 //@TODO rework this to handle multiple select. Easier now we hav a set to iterate through.
+            }else if (this.worldGrid[x][y].size >1){
+                console.log("Multiple select");
+                //Here spawn a small menu to toggle between the sprites in this square.
             }
 
             this.marker.setPosition(this.utils.gridXtoTrueX(x),this.utils.gridYtoTrueY(y));           
@@ -254,6 +259,14 @@ class mainScene extends Phaser.Scene
         this.spriteNamespace = {};   
         this.worldGrid = this.initializeWorldGrid();
     }
+}
+
+class overlapSceneSelect extends Phaser.Scene{
+    create(data){   
+        //@TODO list of buttons containing all the tiles stacked.
+        
+    }
+
 }
 
 

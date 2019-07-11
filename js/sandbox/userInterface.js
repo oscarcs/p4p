@@ -10,6 +10,7 @@ class userInterface{
         option.textContent = "Basic tile";
         this.selectionPane.appendChild(option);
 
+        //@TODO pressing delete when focsued on this will also delete the prototype.
         
         this.deleteButton = document.getElementById("deleteButton");
         this.deleteButton.onclick = function(){
