@@ -71,7 +71,6 @@ class mainScene extends Phaser.Scene
         for (var i = 0;i <this.sprites.length;i++){ 
             this.sprites[i].update();
         }
-
         //iterate through all grids in the world, if there is an overlap, fire the collision event for all sprites to all sprites. (Could be expensive)
 
         //if there is a objecct being focused, the selection indicator goes to true.
@@ -123,13 +122,22 @@ class mainScene extends Phaser.Scene
                 this.UI.displayProperties(this.focusObject); //ouput the focused objects relevant fields
                 }
         }else{
-            this.marker.visible=false;
-
+            this.marker.visible=false;             
         }
-        //need a warn "Are you sure"
+
+        //Somewhat detection of whether or not the canvas is focused
+        if (document.activeElement.nodeName == "BODY"){
+            this.deleteKey.enabled = true;
+            this.input.keyboard.addCapture("DELETE");
+        }else{
+            this.deleteKey.enabled = false;  
+            this.input.keyboard.removeCapture("DELETE");               
+        }
+        
         if (this.deleteKey.isDown){
             this.deleteFocusObject();
         }
+        
     }
 
     initializeWorldGrid(){
