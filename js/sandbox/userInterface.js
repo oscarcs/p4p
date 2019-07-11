@@ -2,6 +2,7 @@
 class userInterface{
     constructor(world){
         this.world = world;
+
         this.propertyMenu = document.getElementById("properties");
         this.buttonMenu = document.getElementById("propertyButtons");
         this.selectionPane = document.getElementById("selectionMenu");
@@ -19,14 +20,15 @@ class userInterface{
                 this.selectionPane.remove(this.selectionPane.selectedIndex);               
             }            
         }.bind(this);
+
+        this.multipleSelect = false; 
     }
 
      clearPropertyFields(){
         this.propertyMenu.innerHTML= "";
         this.buttonMenu.innerHTML="";
     }
-
-   
+    
     displayProperties(activeObject){
                        
         if (activeObject){
@@ -37,6 +39,31 @@ class userInterface{
 
             this.buttonMenu = document.getElementById("propertyButtons");
             this.buttonMenu.setAttribute("class","buttonMenu");
+
+            if (this.multipleSelect.size>1){
+                var nextButton = document.createElement("button");
+                nextButton.setAttribute("class","wideButton");
+                nextButton.innerHTML= "Next Tile";
+
+                nextButton.onclick = function(){
+                    var nextTile = this.multipleIterator.next();
+
+                    if (nextTile.done){
+                        this.multipleIterator = this.multipleSelect.values();
+                        nextTile = this.multipleIterator.next();
+                    }
+                    this.world.focusObject = nextTile.value;
+                    this.displayProperties(nextTile.value);                         
+
+                    
+                }.bind(this);
+
+                this.buttonMenu.append(nextButton)
+
+                this.buttonMenu.append(document.createElement("br"));
+                this.buttonMenu.append(document.createElement("br"));
+            }
+
 
             var propertyInputs = []; //Inputfields for all the user defined fields
 
@@ -159,7 +186,7 @@ class userInterface{
                }               
            }.bind(this);
            newBaseTypeButton.innerHTML = "Save as new base type";
-            
+
 
             //Need to space out the buttons a bit in the CSS.
             this.buttonMenu.appendChild(addNumberFieldButton);
@@ -298,5 +325,11 @@ class userInterface{
                 console.log("Name taken");
             }
         }
+    }
+
+    handleMultipleTargets(multipleSet){
+        this.multipleSelect = multipleSet;
+        this.multipleIterator = multipleSet.values();
+
     }
 }

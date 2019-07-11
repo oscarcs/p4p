@@ -13,9 +13,11 @@ class BasicTile{
         this.spriteName = spriteName;
         var index = world.spriteDict[spriteName];
         
-        this.sprite = this.world.add.sprite(world.utils.gridXtoTrueX(x), world.utils.gridYtoTrueY(y),'tiles',index); //This shouldn't be exposed.
+        this.sprite = this.world.add.sprite(world.utils.gridToTrue(x), world.utils.gridToTrue(y),'tiles',index); //This shouldn't be exposed.
 
         this.sprite.depth = 1;  
+        this.depth = 1; 
+        
         this.solid = false;
         this.name = name;
     }
@@ -34,10 +36,10 @@ class BasicTile{
     update(){               
         //further instructions for each block type to be hooked into here
         //Parser.getnextInstruction for example        
-        if (this.world.utils.gridXtoTrueX(this.x)!==this.sprite.x || this.world.utils.gridYtoTrueY(this.y)!==this.sprite.y){
+        if (this.world.utils.gridToTrue(this.x)!==this.sprite.x || this.world.utils.gridToTrue(this.y)!==this.sprite.y){
             //lazy update position
-            this.sprite.x = this.world.utils.gridXtoTrueX(this.x);
-            this.sprite.y = this.world.utils.gridYtoTrueY(this.y);           
+            this.sprite.x = this.world.utils.gridToTrue(this.x);
+            this.sprite.y = this.world.utils.gridToTrue(this.y);           
         } 
         this.world.worldGrid[this.x][this.y].add(this);
     }
@@ -72,7 +74,7 @@ class BasicTile{
 
             //Dirty
             this.sprite.destroy();            
-            this.sprite = this.world.add.sprite(this.world.utils.gridXtoTrueX(this.x), this.world.utils.gridYtoTrueY(this.y),'tiles',index);
+            this.sprite = this.world.add.sprite(this.world.utils.gridToTrue(this.x), this.world.utils.gridToTrue(this.y),'tiles',index);
         }
     }
     //@TODO need to make a some way to set an interval between actions without blocking.

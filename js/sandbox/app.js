@@ -54,6 +54,7 @@ class mainScene extends Phaser.Scene{
         this.selectionIndicator.depth = 99;
 
         //this.loadGame(); Game intergrate autoloading of the game.
+
         
         this.deleteKey = this.input.keyboard.addKey('DELETE'); //@TODO refactor for more generality, fix deletion to be an alternate input.
 
@@ -73,12 +74,18 @@ class mainScene extends Phaser.Scene{
                 console.log("overlap");
                 //@TODO hook in the broacasts of collision.
             }
+
+            if (this.focusObject == this.sprites[i]){
+                this.sprites[i].sprite.depth = 2;
+            }else{
+                this.sprites[i].sprite.depth = this.sprites[i].depth;
+            }
         }
 
         //if there is a objecct being focused, the selection indicator goes to true.
         if (this.focusObject){
             this.selectionIndicator.visible = true;
-            this.selectionIndicator.setPosition(this.utils.gridXtoTrueX(this.focusObject.x),this.utils.gridYtoTrueY(this.focusObject.y));
+            this.selectionIndicator.setPosition(this.utils.gridToTrue(this.focusObject.x),this.utils.gridToTrue(this.focusObject.y));
         }else{
             this.selectionIndicator.visible = false;
         }
@@ -91,23 +98,33 @@ class mainScene extends Phaser.Scene{
                 tentativeSelect = this.worldGrid[x][y].values().next().value;
                 //@TODO rework this to handle multiple select. Easier now we hav a set to iterate through.
             }else if (this.worldGrid[x][y].size >1){
-                console.log("Multiple select");
-                //Here spawn a small menu to toggle between the sprites in this square.
+                selected = true;
+                tentativeSelect = this.worldGrid[x][y];
             }
 
-            this.marker.setPosition(this.utils.gridXtoTrueX(x),this.utils.gridYtoTrueY(y));           
+            this.marker.setPosition(this.utils.gridToTrue(x),this.utils.gridToTrue(y));           
             this.marker.visible=true;
 
+            //Marker color
             if (selected){
                 this.marker.setStrokeStyle(1,0xfff000);                
             }else{              
                 this.marker.setStrokeStyle(1,0xffffff);
-            }           
+            }  
 
+            //On click
             if (this.input.activePointer.primaryDown) {                
                 if (this.input.activePointer.justDown){ //If the click was just done.  
                     if (typeof tentativeSelect != "undefined"){
-                        this.focusObject = tentativeSelect;                       
+                        if  (tentativeSelect.size){
+
+                            this.UI.handleMultipleTargets(tentativeSelect); //Dirty way of notifying the UI that we have more than 1 potential select.                            
+                            this.focusObject = tentativeSelect.values().next().value;                    
+                        }else{
+                            this.UI.multipleSelect = new Set(); //Empty the multiple select if not needed.
+                            this.focusObject = tentativeSelect; 
+                                                        
+                        }                                              
                         //On click, the object clicked on becomes focused. 
                         //@TODO Maybe rework to have a stamp tool and a edit tool. More intuitive? 
                     }else{
@@ -118,12 +135,11 @@ class mainScene extends Phaser.Scene{
                                 tileSprite.applyProtoType(this.prototypes[this.UI.selectionPane.value]);   
                             }                         
                             this.sprites.push(tileSprite);
-                            this.focusObject = tileSprite;                  
+                            this.focusObject = tileSprite;                 
                         }                    
                     }
                 }
-                this.moveObject(this.focusObject,this.utils.TrueXtoGridX(this.marker.x),this.utils.TrueYtoGridY(this.marker.y));
-
+                this.moveObject(this.focusObject,this.utils.trueToGrid(this.marker.x),this.utils.trueToGrid(this.marker.y));
                 this.UI.displayProperties(this.focusObject); //ouput the focused objects relevant fields
                 }
         }else{
@@ -196,6 +212,9 @@ class mainScene extends Phaser.Scene{
                 this.worldGrid[currentX][currentY].delete(focus_tile);
                 this.worldGrid[focus_tile.x][focus_tile.y].add(focus_tile);
 
+                if (this.worldGrid[focus_tile.x][focus_tile.y].size>1){
+                    this.UI.handleMultipleTargets(this.worldGrid[focus_tile.x][focus_tile.y]);
+                }
             }                                                  
         }
     }
@@ -260,15 +279,6 @@ class mainScene extends Phaser.Scene{
         this.worldGrid = this.initializeWorldGrid();
     }
 }
-
-class overlapSceneSelect extends Phaser.Scene{
-    create(data){   
-        //@TODO list of buttons containing all the tiles stacked.
-        
-    }
-
-}
-
 
 
 var config = {
