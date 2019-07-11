@@ -16,6 +16,7 @@ class mainScene extends Phaser.Scene{
 
         this.worldHeight = 15;
         this.worldWidth = 20;
+        this.worldLayers = 10; 
 
         this.spriteDict = []; //dictionary mapping sprites to indexes, used for tilesheets
 
@@ -76,7 +77,7 @@ class mainScene extends Phaser.Scene{
             }
 
             if (this.focusObject == this.sprites[i]){
-                this.sprites[i].sprite.depth = 2;
+                this.sprites[i].sprite.depth = this.worldLayers+1;
             }else{
                 this.sprites[i].sprite.depth = this.sprites[i].depth;
             }
@@ -117,7 +118,6 @@ class mainScene extends Phaser.Scene{
                 if (this.input.activePointer.justDown){ //If the click was just done.  
                     if (typeof tentativeSelect != "undefined"){
                         if  (tentativeSelect.size){
-
                             this.UI.handleMultipleTargets(tentativeSelect); //Dirty way of notifying the UI that we have more than 1 potential select.                            
                             this.focusObject = tentativeSelect.values().next().value;                    
                         }else{
@@ -139,6 +139,7 @@ class mainScene extends Phaser.Scene{
                         }                    
                     }
                 }
+
                 this.moveObject(this.focusObject,this.utils.trueToGrid(this.marker.x),this.utils.trueToGrid(this.marker.y));
                 this.UI.displayProperties(this.focusObject); //ouput the focused objects relevant fields
                 }

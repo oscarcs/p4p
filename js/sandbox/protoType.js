@@ -5,6 +5,7 @@ class Prototype{
         if (tile){
             this.spriteName = tile.spriteName;
             this.solid = tile.solid;
+            this.depth = tile.depth;
             this.fields = {};
             this.actions = {};
 

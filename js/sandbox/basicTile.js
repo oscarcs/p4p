@@ -17,7 +17,7 @@ class BasicTile{
 
         this.sprite.depth = 1;  
         this.depth = 1; 
-        
+
         this.solid = false;
         this.name = name;
     }
@@ -27,6 +27,7 @@ class BasicTile{
         this.solid = prototype.solid;
         this.type = prototype.type;
         this.changeSprite(prototype.spriteName);
+        this.depth = prototype.depth;
         
         for (var key in prototype.fields){
             this.exposed_fields[key] = prototype.fields[key];
@@ -75,6 +76,16 @@ class BasicTile{
             //Dirty
             this.sprite.destroy();            
             this.sprite = this.world.add.sprite(this.world.utils.gridToTrue(this.x), this.world.utils.gridToTrue(this.y),'tiles',index);
+        }
+    }
+
+    changeDepth(depth){
+        if (depth<1){
+            this.depth = 1;
+        }else if (depth>10){
+            this.depth = 10;
+        }else{
+            this.depth = depth;
         }
     }
     //@TODO need to make a some way to set an interval between actions without blocking.

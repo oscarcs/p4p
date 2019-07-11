@@ -122,6 +122,17 @@ class userInterface{
             y_input.value = activeObject.y; 
             y_input.setAttribute("class","propertyInput");
 
+            
+            //Depth/ Layer of the sprite
+            var depth_label = document.createElement("span");
+            depth_label.textContent = "Layer: ";
+            depth_label.setAttribute("class", "propertyLabel");
+
+            var depth_input = document.createElement("input");
+            depth_input.setAttribute("type","number");
+            depth_input.value = activeObject.depth;
+            depth_input.setAttribute("class","propertyInput")
+
             //Solid/passable information about a tile
             var solid_label=document.createElement("span");
             solid_label.textContent="Solid: ";
@@ -164,6 +175,7 @@ class userInterface{
             this.world.moveObject(activeObject,x_input.value,y_input.value);
             activeObject.solid = solid_check.checked;
             activeObject.changeSprite(sprite_input.value);
+            activeObject.changeDepth(depth_input.value);
 
             this.updateFields(activeObject,propertyInputs);
            }.bind(this);
@@ -216,6 +228,10 @@ class userInterface{
 
             this.propertyMenu.appendChild(y_label);
             this.propertyMenu.appendChild(y_input);
+            this.propertyMenu.appendChild(document.createElement("br"));
+
+            this.propertyMenu.appendChild(depth_label);
+            this.propertyMenu.appendChild(depth_input);
             this.propertyMenu.appendChild(document.createElement("br"));
 
             this.propertyMenu.appendChild(solid_label);
