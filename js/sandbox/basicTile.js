@@ -20,6 +20,10 @@ class BasicTile{
 
         this.solid = false;
         this.name = name;
+
+        this.queuedActions = [];  
+        var date = new Date();      
+        this.waitTimer = date.getTime();
     }
     
     //Takes a base tile and then applies the prototype, i.e. changing the internal elements as neccessary. 
@@ -35,8 +39,13 @@ class BasicTile{
     }
 
     update(){               
-        //further instructions for each block type to be hooked into here
-        //Parser.getnextInstruction for example        
+        //For now, the update loop will take a function from the queue and execute it at every tick
+        var date = new Date();
+        if (this.queuedActions.length>0 && date.getTime()>this.waitTimer){
+            var action = this.queuedActions.shift();
+            action();
+        }        
+        
         if (this.world.utils.gridToTrue(this.x)!==this.sprite.x || this.world.utils.gridToTrue(this.y)!==this.sprite.y){
             //lazy update position
             this.sprite.x = this.world.utils.gridToTrue(this.x);

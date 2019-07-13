@@ -56,9 +56,9 @@ class mainScene extends Phaser.Scene{
 
         //this.loadGame(); Game intergrate autoloading of the game.
 
+        this.dummyFunctions = new DummyFunctions(); //For debugging and stuff.
         
         this.deleteKey = this.input.keyboard.addKey('DELETE'); //@TODO refactor for more generality, fix deletion to be an alternate input.
-
     }
 
     update () {        
@@ -66,11 +66,13 @@ class mainScene extends Phaser.Scene{
         var y = Math.round(this.input.mousePointer.y/16);   
                         
         var selected = false; // is an tile selected?
-        var tentativeSelect; //tentative selection       
+        var tentativeSelect; //tentative selection, I.E which tile is being hovered over.   
 
+        //This tick can be slowed down.
         //update all the sprites
         for (var i = 0;i <this.sprites.length;i++){ 
             this.sprites[i].update();
+
             if (this.worldGrid[this.sprites[i].x][this.sprites[i].y].size>1){
                 console.log("overlap");
                 //@TODO hook in the broacasts of collision.
@@ -123,14 +125,14 @@ class mainScene extends Phaser.Scene{
                         }else{
                             this.UI.multipleSelect = new Set(); //Empty the multiple select if not needed.
                             this.focusObject = tentativeSelect; 
-                                                        
                         }                                              
                         //On click, the object clicked on becomes focused. 
                         //@TODO Maybe rework to have a stamp tool and a edit tool. More intuitive? 
                     }else{
                         //tile placement on click 
                         if (this.UI.selectionPane.value){
-                            var tileSprite = new BasicTile(this,x,y,"tree");
+                            var tileSprite = new BasicTile(this,x,y,"tree");                       
+
                             if (this.UI.selectionPane.value != "Basic tile"){
                                 tileSprite.applyProtoType(this.prototypes[this.UI.selectionPane.value]);   
                             }                         
@@ -202,6 +204,7 @@ class mainScene extends Phaser.Scene{
             //check if all the tiles in the landing zone are not solid
             for (var tile of this.worldGrid[new_x][new_y]){
                 if (tile.solid){
+                    console.log("blocked by an impassable tile")
                     validMove = false;
                     break;
                 }
