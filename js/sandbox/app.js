@@ -61,25 +61,24 @@ class mainScene extends Phaser.Scene{
         this.deleteKey = this.input.keyboard.addKey('DELETE'); //@TODO refactor for more generality, fix deletion to be an alternate input.
     }
 
-    update () {        
-        var x = Math.round(this.input.mousePointer.x/16); 
-        var y = Math.round(this.input.mousePointer.y/16);   
-                                
+    update () {                        
         //UPDATING SPRITES
         for (var i = 0;i <this.sprites.length;i++){ 
             this.sprites[i].update();
-
             if (this.worldGrid[this.sprites[i].x][this.sprites[i].y].size>1){
                 console.log("overlap");
-                //@TODO hook in the broacasts of collision.
+                //@TODO hook in the broadcasts of collision.
             }
-
+            //Bring the focused Tile to the top.
             if (this.focusObject == this.sprites[i]){
                 this.sprites[i].sprite.depth = this.worldLayers+1;
             }else{
                 this.sprites[i].sprite.depth = this.sprites[i].depth;
             }
         }
+
+        //@TODO different pointers for different tools.
+        this.handleMarker();
 
         //SELECTION MARKER
         //if there is a objecct being focused, the selection indicator goes to true.
@@ -89,42 +88,61 @@ class mainScene extends Phaser.Scene{
         }else{
             this.selectionIndicator.visible = false;
         }
+       
+        //Somewhat detection of whether or not the canvas is focused, need to click out of elements to renable the sandbox. (@TODO fix this)
+        if (document.activeElement.nodeName == "BODY"){
+            this.deleteKey.enabled = true;
+            this.input.keyboard.addCapture("DELETE");
+        }else{
+            this.deleteKey.enabled = false;  
+            this.input.keyboard.removeCapture("DELETE");               
+        }
 
-        var tentativeSelect; //tentative selection, I.E which tile is being hovered over. 
+        if (this.deleteKey.isDown){
+            this.deleteFocusObject();
+        }        
+    }
+
+    //Used to handle the mouse marker.
+    handleMarker(){
+        var x = Math.round(this.input.mousePointer.x/16); 
+        var y = Math.round(this.input.mousePointer.y/16);         
+        var tentativeSelect; //tentative selection, I.e which tile is being hovered over. 
 
         //MARKER HANDLING     
         if (y>=0 && x >=0 && x <this.worldWidth && y<this.worldHeight){ 
             this.marker.setPosition(this.utils.gridToTrue(x),this.utils.gridToTrue(y));           
             this.marker.visible=true;
-            
-            if (this.worldGrid[x][y].size ==1){
+
+            //Hover over in select mode.
+            if (this.worldGrid[x][y].size ==1 && this.tool == "select"){
                 this.marker.setStrokeStyle(1,0xfff000); //Set the color of the selector.
                 tentativeSelect = this.worldGrid[x][y].values().next().value;
-
-            }else if (this.worldGrid[x][y].size > 1){
+            }else if (this.worldGrid[x][y].size > 1 && this.tool == "select"){
                 this.marker.setStrokeStyle(1,0xfff000);
                 tentativeSelect = this.worldGrid[x][y];
             }else{
                 this.marker.setStrokeStyle(1,0xffffff);
-            }            
+            }           
 
-            //On click
-            if (this.input.activePointer.primaryDown) {                
+            //On Click
+            if (this.input.activePointer.primaryDown){                
                 if (this.input.activePointer.justDown){ //If the click was just done.  
                     if (this.tool == "select"){
-                        if (typeof tentativeSelect === "undefined"){
+                        if (typeof tentativeSelect === "undefined"){ //If the hovered area has no object
                             this.focusObject = false;
-                        }else if (tentativeSelect.size){
+                            this.UI.clearPropertyFields();
+                        }else if (tentativeSelect.size){ //If hovered area has more than 1 object, i.e. is a set
                             this.UI.handleMultipleTargets(tentativeSelect); //Dirty way of notifying the UI that we have more than 1 potential select.                            
                             this.focusObject = tentativeSelect.values().next().value;                    
                         }else{
                             this.UI.multipleSelect = new Set(); //Empty the multiple select if not needed.
                             this.focusObject = tentativeSelect; 
                         } 
-
                     }else if (this.tool == "create"){
                         //tile placement on click 
                         if (this.UI.selectionPane.value){
+                            //Should we be able to create on an solid tile?
                             var tileSprite = new BasicTile(this,x,y,"tree");                       
 
                             if (this.UI.selectionPane.value != "Basic tile"){
@@ -135,26 +153,15 @@ class mainScene extends Phaser.Scene{
                         }                    
                     }
                 }
+                //Moving and displaying should be done even if the key is being held down.
                 this.moveObject(this.focusObject,this.utils.trueToGrid(this.marker.x),this.utils.trueToGrid(this.marker.y));
                 this.UI.displayProperties(this.focusObject); //ouput the focused objects relevant fields
                 }
         }else{
             this.marker.visible=false;             
         }
-
-        //Somewhat detection of whether or not the canvas is focused, need to click out of elements to renable the sandbox. (@TODO fix this)
-        if (document.activeElement.nodeName == "BODY"){
-            this.deleteKey.enabled = true;
-            this.input.keyboard.addCapture("DELETE");
-        }else{
-            this.deleteKey.enabled = false;  
-            this.input.keyboard.removeCapture("DELETE");               
-        }
-        
-        if (this.deleteKey.isDown){
-            this.deleteFocusObject();
-        }        
     }
+
 
     initializeWorldGrid(){
         let grid = [];
