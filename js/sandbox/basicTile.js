@@ -21,7 +21,8 @@ class BasicTile{
         this.solid = false;
         this.name = name;
 
-        this.queuedActions = [];  
+        this.queuedActions = []; //push tasks in, shift tasks out.
+        
         var date = new Date();      
         this.waitTimer = date.getTime();
     }
@@ -41,6 +42,7 @@ class BasicTile{
     update(){               
         //For now, the update loop will take a function from the queue and execute it at every tick
         var date = new Date();
+        //For use with the wait primitive function.
         if (this.queuedActions.length>0 && date.getTime()>this.waitTimer){
             var action = this.queuedActions.shift();
             action();
@@ -97,9 +99,11 @@ class BasicTile{
             this.depth = depth;
         }
     }
-    //@TODO need to make a some way to set an interval between actions without blocking.
-    //Use getTime() and a variable. prevTime. i.e. if getTime() - prevTime> some threshhold,
-    //sprite can do action.
+    
+    wait(duration){
+        var date = new Date();
+        this.waitTimer = date.getTime()+duration;
+    }
 
     serialize(){
         var saveSprite = {};

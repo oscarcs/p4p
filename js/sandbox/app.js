@@ -1,9 +1,9 @@
-//@TODO, need some dead zone to click so we can deselect.
 class mainScene extends Phaser.Scene{         
     constructor ()
     {
         super("Game_Scene");
     }
+    //@TODO, need some dead zone to click so we can deselect
 
     preload () {
         this.load.spritesheet('tiles', '../assets/tilesheet.png', {
@@ -28,7 +28,6 @@ class mainScene extends Phaser.Scene{
         this.spriteDict["deer"] = 1;
         this.spriteDict["snow"] = 12;
         this.spriteDict["tree"] = 0; 
-
     }    
 
     create () {
@@ -52,11 +51,9 @@ class mainScene extends Phaser.Scene{
         //Indicator to which block is currently selected. Need to rework when we have to deal with more than one block.
         this.selectionIndicator = this.add.rectangle(0, 32, 16, 16).setStrokeStyle(1,0x008000); 
         this.selectionIndicator.visible=false;
-        this.selectionIndicator.depth = 99;
+        this.selectionIndicator.depth = 99; //selection indicator always on top.
 
         //this.loadGame(); Game intergrate autoloading of the game.
-
-        this.dummyFunctions = new DummyFunctions(); //For debugging and stuff.
         
         this.deleteKey = this.input.keyboard.addKey('DELETE'); //@TODO refactor for more generality, fix deletion to be an alternate input.
     }
@@ -68,8 +65,7 @@ class mainScene extends Phaser.Scene{
         var selected = false; // is an tile selected?
         var tentativeSelect; //tentative selection, I.E which tile is being hovered over.   
 
-        //This tick can be slowed down.
-        //update all the sprites
+        //UPDATING SPRITES
         for (var i = 0;i <this.sprites.length;i++){ 
             this.sprites[i].update();
 
@@ -85,6 +81,7 @@ class mainScene extends Phaser.Scene{
             }
         }
 
+        //SELECTION
         //if there is a objecct being focused, the selection indicator goes to true.
         if (this.focusObject){
             this.selectionIndicator.visible = true;
@@ -93,13 +90,13 @@ class mainScene extends Phaser.Scene{
             this.selectionIndicator.visible = false;
         }
 
-        //Marker handling        
+
+        //MARKER HANDLING     
         if (y>=0 && x >=0 && x <this.worldWidth && y<this.worldHeight){         
 
             if (this.worldGrid[x][y].size ==1){
                 selected = true;
                 tentativeSelect = this.worldGrid[x][y].values().next().value;
-                //@TODO rework this to handle multiple select. Easier now we hav a set to iterate through.
             }else if (this.worldGrid[x][y].size >1){
                 selected = true;
                 tentativeSelect = this.worldGrid[x][y];
@@ -141,7 +138,6 @@ class mainScene extends Phaser.Scene{
                         }                    
                     }
                 }
-
                 this.moveObject(this.focusObject,this.utils.trueToGrid(this.marker.x),this.utils.trueToGrid(this.marker.y));
                 this.UI.displayProperties(this.focusObject); //ouput the focused objects relevant fields
                 }
@@ -149,7 +145,7 @@ class mainScene extends Phaser.Scene{
             this.marker.visible=false;             
         }
 
-        //Somewhat detection of whether or not the canvas is focused
+        //Somewhat detection of whether or not the canvas is focused, need to click out of elements to renable the sandbox. (@TODO fix this)
         if (document.activeElement.nodeName == "BODY"){
             this.deleteKey.enabled = true;
             this.input.keyboard.addCapture("DELETE");
@@ -160,8 +156,7 @@ class mainScene extends Phaser.Scene{
         
         if (this.deleteKey.isDown){
             this.deleteFocusObject();
-        }
-        
+        }        
     }
 
     initializeWorldGrid(){
@@ -248,6 +243,7 @@ class mainScene extends Phaser.Scene{
         saveGameObject.sprites = this.sprites.map(function(sprite){
             return sprite.serialize();
         });
+
         localStorage.setItem("2DSandbox",JSON.stringify(saveGameObject));
     }
 
@@ -281,6 +277,11 @@ class mainScene extends Phaser.Scene{
         this.sprites = [];     
         this.spriteNamespace = {};   
         this.worldGrid = this.initializeWorldGrid();
+    }
+
+    //When a user changes a prototype and wants the change to happen on all created prototypes
+    changeAllPrototypes(prototype){
+
     }
 }
 

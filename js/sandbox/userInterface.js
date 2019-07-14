@@ -21,6 +21,11 @@ class userInterface{
             }            
         }.bind(this);
 
+        this.editButton = document.getElementById("editButton");
+        this.editButton.onclick = function(){
+            console.log("nice");
+        }.bind(this);
+
         this.multipleSelect = false; 
     }
 
@@ -29,6 +34,7 @@ class userInterface{
         this.buttonMenu.innerHTML="";
     }
     
+    //@TODO make a edit prototypes version of this, will have sprite, layer and solid as well as user defined fields.
     displayProperties(activeObject){
                        
         if (activeObject){
@@ -54,7 +60,6 @@ class userInterface{
                     }
                     this.world.focusObject = nextTile.value;
                     this.displayProperties(nextTile.value);                         
-
                     
                 }.bind(this);
 
@@ -121,7 +126,6 @@ class userInterface{
             y_input.setAttribute("type","number");
             y_input.value = activeObject.y; 
             y_input.setAttribute("class","propertyInput");
-
             
             //Depth/ Layer of the sprite
             var depth_label = document.createElement("span");
@@ -179,7 +183,6 @@ class userInterface{
 
             this.updateFields(activeObject,propertyInputs);
            }.bind(this);
-
 
            //Save as new base type button
            var newBaseTypeButton = document.createElement("button");
@@ -261,12 +264,11 @@ class userInterface{
                 }else if (typeof activeObject.exposed_fields[index] == "boolean"){
                     propertyInputs[index].setAttribute("type","checkbox");
                     propertyInputs[index].checked = activeObject.exposed_fields[index];
-                    }                          
+                    }                         
                 
                 this.propertyMenu.appendChild(propertyInputs[index]);
                 this.propertyMenu.appendChild(document.createElement("br"));
-                }                      
-
+                }                     
             }
         }         
 
