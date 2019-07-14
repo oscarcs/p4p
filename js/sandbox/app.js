@@ -47,11 +47,14 @@ class mainScene extends Phaser.Scene{
         //Marker for what the mouse is currently over.
         this.marker = this.add.rectangle(0, 32, 16, 16).setStrokeStyle(1,0xffffff);  
         this.marker.depth = 100; //magic numbered to always be on top.
+
         
         //Indicator to which block is currently selected. Need to rework when we have to deal with more than one block.
         this.selectionIndicator = this.add.rectangle(0, 32, 16, 16).setStrokeStyle(1,0x008000); 
         this.selectionIndicator.visible=false;
         this.selectionIndicator.depth = 99; //selection indicator always on top.
+
+        this.tool = "select"; //Current tool
 
         //this.loadGame(); Game intergrate autoloading of the game.
         
@@ -61,10 +64,7 @@ class mainScene extends Phaser.Scene{
     update () {        
         var x = Math.round(this.input.mousePointer.x/16); 
         var y = Math.round(this.input.mousePointer.y/16);   
-                        
-        var selected = false; // is an tile selected?
-        var tentativeSelect; //tentative selection, I.E which tile is being hovered over.   
-
+                                
         //UPDATING SPRITES
         for (var i = 0;i <this.sprites.length;i++){ 
             this.sprites[i].update();
@@ -81,7 +81,7 @@ class mainScene extends Phaser.Scene{
             }
         }
 
-        //SELECTION
+        //SELECTION MARKER
         //if there is a objecct being focused, the selection indicator goes to true.
         if (this.focusObject){
             this.selectionIndicator.visible = true;
@@ -90,42 +90,39 @@ class mainScene extends Phaser.Scene{
             this.selectionIndicator.visible = false;
         }
 
+        var tentativeSelect; //tentative selection, I.E which tile is being hovered over. 
 
         //MARKER HANDLING     
-        if (y>=0 && x >=0 && x <this.worldWidth && y<this.worldHeight){         
-
-            if (this.worldGrid[x][y].size ==1){
-                selected = true;
-                tentativeSelect = this.worldGrid[x][y].values().next().value;
-            }else if (this.worldGrid[x][y].size >1){
-                selected = true;
-                tentativeSelect = this.worldGrid[x][y];
-            }
-
+        if (y>=0 && x >=0 && x <this.worldWidth && y<this.worldHeight){ 
             this.marker.setPosition(this.utils.gridToTrue(x),this.utils.gridToTrue(y));           
             this.marker.visible=true;
+            
+            if (this.worldGrid[x][y].size ==1){
+                this.marker.setStrokeStyle(1,0xfff000); //Set the color of the selector.
+                tentativeSelect = this.worldGrid[x][y].values().next().value;
 
-            //Marker color
-            if (selected){
-                this.marker.setStrokeStyle(1,0xfff000);                
-            }else{              
+            }else if (this.worldGrid[x][y].size > 1){
+                this.marker.setStrokeStyle(1,0xfff000);
+                tentativeSelect = this.worldGrid[x][y];
+            }else{
                 this.marker.setStrokeStyle(1,0xffffff);
-            }  
+            }            
 
             //On click
             if (this.input.activePointer.primaryDown) {                
                 if (this.input.activePointer.justDown){ //If the click was just done.  
-                    if (typeof tentativeSelect != "undefined"){
-                        if  (tentativeSelect.size){
+                    if (this.tool == "select"){
+                        if (typeof tentativeSelect === "undefined"){
+                            this.focusObject = false;
+                        }else if (tentativeSelect.size){
                             this.UI.handleMultipleTargets(tentativeSelect); //Dirty way of notifying the UI that we have more than 1 potential select.                            
                             this.focusObject = tentativeSelect.values().next().value;                    
                         }else{
                             this.UI.multipleSelect = new Set(); //Empty the multiple select if not needed.
                             this.focusObject = tentativeSelect; 
-                        }                                              
-                        //On click, the object clicked on becomes focused. 
-                        //@TODO Maybe rework to have a stamp tool and a edit tool. More intuitive? 
-                    }else{
+                        } 
+
+                    }else if (this.tool == "create"){
                         //tile placement on click 
                         if (this.UI.selectionPane.value){
                             var tileSprite = new BasicTile(this,x,y,"tree");                       

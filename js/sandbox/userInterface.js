@@ -11,8 +11,21 @@ class userInterface{
         option.textContent = "Basic tile";
         this.selectionPane.appendChild(option);
 
-        //@TODO pressing delete when focsued on this will also delete the prototype.
-        
+
+        //EDITING TOOL OPTIONS
+        this.selectTool = document.getElementById("selectTool");
+        this.selectTool.onclick = function(){
+            this.world.tool = "select";
+        }.bind(this);
+
+        this.createTool = document.getElementById("createTool");
+        this.createTool.onclick = function(){
+            this.world.tool = "create";
+        }.bind(this);
+
+        //@TODO worthwhile to create a delete tool as well.
+
+        //PROTOTYPE HANDLING BUTTONS        
         this.deleteButton = document.getElementById("deleteButton");
         this.deleteButton.onclick = function(){
             if (this.selectionPane.value != "Basic tile"){
@@ -24,7 +37,9 @@ class userInterface{
         this.editButton = document.getElementById("editButton");
         this.editButton.onclick = function(){
             console.log("nice");
+            //@TODO, implement this so we can edit prototypes.
         }.bind(this);
+
 
         this.multipleSelect = false; 
     }
