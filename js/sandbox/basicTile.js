@@ -21,7 +21,7 @@ class BasicTile{
         this.solid = false;
         this.name = name;
 
-        this.queuedActions = []; //push tasks in, shift tasks out.
+        this.queuedActions = []; //push tasks in, shift tasks out. Pushed actions need to use bind.
         
         var date = new Date();      
         this.waitTimer = date.getTime();
@@ -42,6 +42,7 @@ class BasicTile{
     update(){               
         //For now, the update loop will take a function from the queue and execute it at every tick
         var date = new Date();
+
         //For use with the wait primitive function.
         if (this.queuedActions.length>0 && date.getTime()>this.waitTimer){
             var action = this.queuedActions.shift();
@@ -63,7 +64,6 @@ class BasicTile{
 
 
     addStringField(field){
-        //need to check if field already exists
         this.exposed_fields[field] = " ";
     }
 
@@ -84,12 +84,12 @@ class BasicTile{
             this.spriteName = newSprite;
             var index = this.world.spriteDict[newSprite];
 
-            //Dirty
             this.sprite.destroy();            
             this.sprite = this.world.add.sprite(this.world.utils.gridToTrue(this.x), this.world.utils.gridToTrue(this.y),'tiles',index);
         }
     }
 
+    //Limit depth to 10 layers for the sake of simplicity.
     changeDepth(depth){
         if (depth<1){
             this.depth = 1;
@@ -100,11 +100,13 @@ class BasicTile{
         }
     }
     
+    //Primitive funciton to wait before the next action.
     wait(duration){
         var date = new Date();
         this.waitTimer = date.getTime()+duration;
     }
 
+    //For saving state.
     serialize(){
         var saveSprite = {};
         saveSprite.type = this.type;

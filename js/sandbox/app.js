@@ -3,7 +3,6 @@ class mainScene extends Phaser.Scene{
     {
         super("Game_Scene");
     }
-    //@TODO, need some dead zone to click so we can deselect
 
     preload () {
         this.load.spritesheet('tiles', '../assets/tilesheet.png', {
@@ -54,11 +53,16 @@ class mainScene extends Phaser.Scene{
         this.selectionIndicator.visible=false;
         this.selectionIndicator.depth = 99; //selection indicator always on top.
 
-        this.tool = "select"; //Current tool
-
-        //this.loadGame(); Game intergrate autoloading of the game.
-        
         this.deleteKey = this.input.keyboard.addKey('DELETE'); //@TODO refactor for more generality, fix deletion to be an alternate input.
+
+
+        this.loadGame(); //Game intergrate autoloading of the game
+
+        //Save on exit. 
+        window.addEventListener("beforeunload", function(event){
+            this.saveGame();
+        }.bind(this));
+
     }
 
     update () {                        
@@ -87,15 +91,16 @@ class mainScene extends Phaser.Scene{
             this.selectionIndicator.setPosition(this.utils.gridToTrue(this.focusObject.x),this.utils.gridToTrue(this.focusObject.y));
         }else{
             this.selectionIndicator.visible = false;
-        }
-       
-        //Somewhat detection of whether or not the canvas is focused, need to click out of elements to renable the sandbox. (@TODO fix this)
-        if (document.activeElement.nodeName == "BODY"){
+        }        
+
+        
+        //Deletion no work when on text areas and input.
+        if (document.activeElement.nodeName == "INPUT"|| document.activeElement.nodeName == "TEXTAREA"){
+            this.deleteKey.enabled = false;  
+            this.input.keyboard.removeCapture("DELETE"); 
+        }else{           
             this.deleteKey.enabled = true;
             this.input.keyboard.addCapture("DELETE");
-        }else{
-            this.deleteKey.enabled = false;  
-            this.input.keyboard.removeCapture("DELETE");               
         }
 
         if (this.deleteKey.isDown){
@@ -109,26 +114,29 @@ class mainScene extends Phaser.Scene{
         var y = Math.round(this.input.mousePointer.y/16);         
         var tentativeSelect; //tentative selection, I.e which tile is being hovered over. 
 
+        var tool = this.UI.getTool();
+        
         //MARKER HANDLING     
         if (y>=0 && x >=0 && x <this.worldWidth && y<this.worldHeight){ 
             this.marker.setPosition(this.utils.gridToTrue(x),this.utils.gridToTrue(y));           
             this.marker.visible=true;
 
             //Hover over in select mode.
-            if (this.worldGrid[x][y].size ==1 && this.tool == "select"){
+            if (this.worldGrid[x][y].size ==1 && tool == "select"){
                 this.marker.setStrokeStyle(1,0xfff000); //Set the color of the selector.
                 tentativeSelect = this.worldGrid[x][y].values().next().value;
-            }else if (this.worldGrid[x][y].size > 1 && this.tool == "select"){
+            }else if (this.worldGrid[x][y].size > 1 && tool == "select"){
                 this.marker.setStrokeStyle(1,0xfff000);
                 tentativeSelect = this.worldGrid[x][y];
             }else{
                 this.marker.setStrokeStyle(1,0xffffff);
-            }           
+            }          
+
 
             //On Click
             if (this.input.activePointer.primaryDown){                
                 if (this.input.activePointer.justDown){ //If the click was just done.  
-                    if (this.tool == "select"){
+                    if (tool == "select"){
                         if (typeof tentativeSelect === "undefined"){ //If the hovered area has no object
                             this.focusObject = false;
                             this.UI.clearPropertyFields();
@@ -139,7 +147,7 @@ class mainScene extends Phaser.Scene{
                             this.UI.multipleSelect = new Set(); //Empty the multiple select if not needed.
                             this.focusObject = tentativeSelect; 
                         } 
-                    }else if (this.tool == "create"){
+                    }else if (tool == "create"){
                         //tile placement on click 
                         if (this.UI.selectionPane.value){
                             //Should we be able to create on an solid tile?
@@ -162,7 +170,7 @@ class mainScene extends Phaser.Scene{
         }
     }
 
-
+    //Called to create the grid of Game Objects
     initializeWorldGrid(){
         let grid = [];
         for (var i =0;i<this.worldWidth;i++){
@@ -174,9 +182,10 @@ class mainScene extends Phaser.Scene{
         return grid;
     }
 
-    //general method to move a tile around
+    //General method to move a tile around
     moveObject(focus_tile,new_x,new_y){
         //Check the new position is in bounds
+        
         //@TODO, make a warning for the user depening on which bound is over
         if(new_x < 0 || new_x >= this.worldWidth ||new_y < 0||new_y>= this.worldHeight){
             console.log("collided with world edge");
@@ -282,7 +291,6 @@ class mainScene extends Phaser.Scene{
         this.spriteNamespace = {};   
         this.worldGrid = this.initializeWorldGrid();
     }
-
     //When a user changes a prototype and wants the change to happen on all created prototypes
     changeAllPrototypes(prototype){
 

@@ -11,19 +11,7 @@ class userInterface{
         option.textContent = "Basic tile";
         this.selectionPane.appendChild(option);
 
-
-        //EDITING TOOL OPTIONS
-        this.selectTool = document.getElementById("selectTool");
-        this.selectTool.onclick = function(){
-            this.world.tool = "select";
-        }.bind(this);
-
-        this.createTool = document.getElementById("createTool");
-        this.createTool.onclick = function(){
-            this.world.tool = "create";
-        }.bind(this);
-
-        //@TODO worthwhile to create a delete tool as well.
+        //@TODO probably worthwhile to create a delete tool as well.
 
         //PROTOTYPE HANDLING BUTTONS        
         this.deleteButton = document.getElementById("deleteButton");
@@ -39,7 +27,6 @@ class userInterface{
             console.log("nice");
             //@TODO, implement this so we can edit prototypes.
         }.bind(this);
-
 
         this.multipleSelect = false; 
     }
@@ -363,6 +350,16 @@ class userInterface{
     handleMultipleTargets(multipleSet){
         this.multipleSelect = multipleSet;
         this.multipleIterator = multipleSet.values();
+    }
+    
 
+    getTool(){
+        var tools = document.getElementsByName("tool");
+        //Could make this lazy but eh.
+        for (var i = 0; i<tools.length;i++){
+            if (tools[i].checked){
+                return (tools[i].value);
+            }
+        }
     }
 }
