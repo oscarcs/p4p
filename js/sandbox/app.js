@@ -185,7 +185,7 @@ class mainScene extends Phaser.Scene{
     //General method to move a tile around
     moveObject(focus_tile,new_x,new_y){
         //Check the new position is in bounds
-        
+
         //@TODO, make a warning for the user depening on which bound is over
         if(new_x < 0 || new_x >= this.worldWidth ||new_y < 0||new_y>= this.worldHeight){
             console.log("collided with world edge");
@@ -262,8 +262,15 @@ class mainScene extends Phaser.Scene{
 
     loadGame(){
         var state = localStorage.getItem("2DSandbox");
+
+        if (state === null){
+            return;
+        }
+        
         this.resetGame();
         //flush the current map
+        console.log(state);
+
         console.log("Loading state");
         var saveState = JSON.parse(state);              
 
