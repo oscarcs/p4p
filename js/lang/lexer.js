@@ -50,7 +50,6 @@ class Lexer {
         }
         
         let c = this.char();
-        console.log(c);
         
         if (Lexer.isLinebreak(c)) {
             return this.linebreak();
@@ -64,14 +63,18 @@ class Lexer {
             return this.identifier();
         }
 
-        if (c === '-') {
-            if (Lexer.isNumeric(this.next())) {
-                return this.number();
-            }
+        if (Lexer.isQuote(c)) {
+            return this.stringLiteral();
+        }
 
-            if (Lexer.isWhitespace()) {
-                return this.operator();
-            }
+        if (c === '(') {
+            this.advance();
+            return new Token('lparen', '(');
+        }
+
+        if (c === ')') {
+            this.advance();
+            return new Token('rparen', ')');
         }
 
         if (c === '=') {
@@ -81,6 +84,10 @@ class Lexer {
             else {
                 return this.assignment();
             }
+        }
+
+        if (c !== '') {
+            return this.operator();
         }
 
         return null;
@@ -102,13 +109,19 @@ class Lexer {
     operator() {
         let op = '';
 
-        while (!Lexer.isNumeric(this.char()) && !Lexer.isWhitespace(this.char())) {
-            op += char();
+        while (
+            !Lexer.isNumeric(this.char()) &&
+            !Lexer.isWhitespace(this.char()) && 
+            !Lexer.isQuote(this.char()) &&
+            !Lexer.isLinebreak(this.char()) &&
+            this.char() !== ''
+        ) {
+            op += this.char();
+            this.advance();
         }
 
         if (Reserved.getOperator(op)) {
             let token = new Token('op', op);
-            this.advance();
             return token;
         }
         else {
@@ -124,14 +137,16 @@ class Lexer {
             this.advance();
         }
 
-        console.log(ident);
-
         if (Reserved.getOperator(ident)) {
             return new Token('op', ident);
         }
 
         if (Reserved.getKeyword(ident)) {
             return new Token('keyword', ident);
+        }
+
+        if (ident === 'true' || ident === 'false') {
+            return new Token('boolean', ident);
         }
 
         return new Token('ident', ident);
@@ -150,6 +165,24 @@ class Lexer {
             this.advance();
         }
         return new Token('numeric', number);
+    }
+
+    stringLiteral() {
+        let str = '';
+        let quoteType = this.char();
+
+        this.advance();
+        while (this.char() !== quoteType && this.char() !== '') {
+            str += this.char();
+            this.advance();
+        }
+        this.advance();
+
+        if (this.char() === '') {
+            //@@ERROR
+        }
+
+        return new Token('string', str);
     }
 
     assignment() {
@@ -174,6 +207,10 @@ class Lexer {
 
     static isLinebreak(c) {
         return c === '\n' || c === '\r';
+    }
+
+    static isQuote(c) {
+        return c === '"' || c === "'";
     }
 
     static printTokens(output) {

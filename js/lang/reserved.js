@@ -27,12 +27,11 @@ let Reserved = {
     keywords: {
         'if': {},
         'for': {},
+        'to': {},
         'while': {},
         'action': {},
         'return': {},
         'loop': {},
-        'true': {},
-        'false': {},
         'end': {},
     },
 
