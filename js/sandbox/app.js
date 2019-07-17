@@ -55,7 +55,6 @@ class mainScene extends Phaser.Scene{
 
         this.deleteKey = this.input.keyboard.addKey('DELETE'); //@TODO refactor for more generality, fix deletion to be an alternate input.
 
-
         this.loadGame(); //Game intergrate autoloading of the game
 
         this.queuedActions = [];
@@ -101,7 +100,6 @@ class mainScene extends Phaser.Scene{
     updateMarker(){
         var x = Math.round(this.input.mousePointer.x/16); 
         var y = Math.round(this.input.mousePointer.y/16);         
-        var tentativeSelect; //tentative selection, I.e which tile is being hovered over. 
 
         var tool = this.UI.getTool(); //Which tool is currently in use.
         
@@ -113,28 +111,26 @@ class mainScene extends Phaser.Scene{
             //Hover over in select mode.
             if (this.worldGrid[x][y].size ==1 && tool == "select"){
                 this.marker.setStrokeStyle(1,0xfff000); //Set the color of the selector.
-                tentativeSelect = this.worldGrid[x][y].values().next().value;
             }else if (this.worldGrid[x][y].size > 1 && tool == "select"){
                 this.marker.setStrokeStyle(1,0xfff000);
-                tentativeSelect = this.worldGrid[x][y];
             }else{
                 this.marker.setStrokeStyle(1,0xffffff);
             }          
-
 
             //On Click
             if (this.input.activePointer.primaryDown){                
                 if (this.input.activePointer.justDown){ //If the click was just done.  
                     if (tool == "select"){
-                        if (typeof tentativeSelect === "undefined"){ //If the hovered area has no object
+                        if (this.worldGrid[x][y].size == 0){ //If the hovered area has no object
                             this.focusObject = false;
                             this.UI.clearPropertyFields();
-                        }else if (tentativeSelect.size){ //If hovered area has more than 1 object, i.e. is a set
-                            this.UI.handleMultipleTargets(tentativeSelect); //Dirty way of notifying the UI that we have more than 1 potential select.                            
-                            this.focusObject = tentativeSelect.values().next().value;                    
-                        }else{
+                        }else if (this.worldGrid[x][y].size == 1){ //If hovered area has more than 1 object, i.e. is a set
                             this.UI.multipleSelect = new Set(); //Empty the multiple select if not needed.
-                            this.focusObject = tentativeSelect; 
+                            this.focusObject = this.worldGrid[x][y].values().next().value; 
+
+                        }else if (this.worldGrid[x][y] > 1){                            
+                            this.UI.handleMultipleTargets(this.worldGrid[x][y]); //Dirty way of notifying the UI that we have more than 1 potential select.                         
+                            this.focusObject = this.worldGrid[x][y].values().next().value; 
                         } 
 
                     }else if (tool == "create"){
@@ -184,7 +180,7 @@ class mainScene extends Phaser.Scene{
 
         //Delete key polling.
         if (this.deleteKey.isDown){
-            this.deleteFocusObject();
+            this.deleteTile(this.focusObject);
         } 
 
     }
@@ -201,6 +197,8 @@ class mainScene extends Phaser.Scene{
         }
         return grid;
     }
+
+
 
     //General method to move a tile around
     moveObject(focus_tile,new_x,new_y){
@@ -250,20 +248,21 @@ class mainScene extends Phaser.Scene{
         }
     }
 
-    deleteFocusObject(){
-        if (this.focusObject){
-            let index = this.sprites.indexOf(this.focusObject);
+    deleteTile(tile){
+        if (tile){
+            let index = this.sprites.indexOf(tile);
             this.sprites.splice(index,1);
 
             //remove the tile from namespace if it has a name
-            if (this.focusObject.name){
+            if (tile.name){
                 delete this.spriteNamespace[this.focusObject.name];
             }
             //Delete the object
-            this.focusObject.destroy();
-            this.focusObject = undefined;
-
-            this.UI.clearPropertyFields();
+            tile.destroy();
+            if (this.focusObject == tile){
+                this.focusObject = false;
+                this.UI.clearPropertyFields();
+            }            
         }
     }
     
@@ -311,6 +310,10 @@ class mainScene extends Phaser.Scene{
     }
 
     resetGame(){
+        for (var i =0;i<this.sprites.length;i++){
+            this.deleteTile(this.sprites[i]);
+        }
+
         this.prototypes ={};
         this.sprites = [];     
         this.spriteNamespace = {};   
@@ -320,12 +323,7 @@ class mainScene extends Phaser.Scene{
     changeAllPrototypes(prototype){
 
     }
-<<<<<<< HEAD
-
-=======
->>>>>>> sandbox
 }
-
 
 var config = {
     type: Phaser.AUTO,
