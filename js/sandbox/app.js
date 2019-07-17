@@ -16,7 +16,6 @@ class mainScene extends Phaser.Scene{
         this.worldHeight = 15;
         this.worldWidth = 20;
         this.worldLayers = 10; 
-        this.maxSprites = 100; //For performance sake.
 
         this.spriteDict = []; //dictionary mapping sprites to indexes, used for tilesheets
 
@@ -70,9 +69,7 @@ class mainScene extends Phaser.Scene{
 
     }
 
-    update () {                        
-
-
+    update () {                      
         //@TODO different pointers for different tools.
         this.updateSprites();
         this.updateMarker();   
@@ -81,6 +78,7 @@ class mainScene extends Phaser.Scene{
     }
 
 
+    //UPDATE HELPERS
     updateSprites(){
         //UPDATING SPRITES
         for (var i = 0;i <this.sprites.length;i++){ 
@@ -102,14 +100,8 @@ class mainScene extends Phaser.Scene{
     //Used to handle the mouse marker.
     updateMarker(){
         var x = Math.round(this.input.mousePointer.x/16); 
-        var y = Math.round(this.input.mousePointer.y/16); 
-        
-        //Really Sketchy support for touchscreen.
-        var pointer = this.input.activePointer;
-        if (pointer.isDown) {
-            x = Math.round(pointer.x/16);
-            y = Math.round(pointer.y/16);
-        }
+        var y = Math.round(this.input.mousePointer.y/16);         
+        var tentativeSelect; //tentative selection, I.e which tile is being hovered over. 
 
         var tool = this.UI.getTool(); //Which tool is currently in use.
         
@@ -118,35 +110,32 @@ class mainScene extends Phaser.Scene{
             this.marker.setPosition(this.utils.gridToTrue(x),this.utils.gridToTrue(y));           
             this.marker.visible=true;
 
-
             //Hover over in select mode.
             if (this.worldGrid[x][y].size ==1 && tool == "select"){
                 this.marker.setStrokeStyle(1,0xfff000); //Set the color of the selector.
-                //Has to be a more general way to do this.
+                tentativeSelect = this.worldGrid[x][y].values().next().value;
             }else if (this.worldGrid[x][y].size > 1 && tool == "select"){
-                this.marker.setStrokeStyle(1,0x5f9ea0); //Multiple items, different color.
+                this.marker.setStrokeStyle(1,0xfff000);
+                tentativeSelect = this.worldGrid[x][y];
             }else{
                 this.marker.setStrokeStyle(1,0xffffff);
             }          
 
+
             //On Click
             if (this.input.activePointer.primaryDown){                
                 if (this.input.activePointer.justDown){ //If the click was just done.  
-                    this.UI.displayProperties(this.focusObject); //ouput the focused objects relevant fields
                     if (tool == "select"){
-                        if (this.worldGrid[x][y].size == 0){ //If the hovered area has no object
+                        if (typeof tentativeSelect === "undefined"){ //If the hovered area has no object
                             this.focusObject = false;
                             this.UI.clearPropertyFields();
-                            console.log("what");
-                        }else if(this.worldGrid[x][y].size == 1){
-                            //single Select
+                        }else if (tentativeSelect.size){ //If hovered area has more than 1 object, i.e. is a set
+                            this.UI.handleMultipleTargets(tentativeSelect); //Dirty way of notifying the UI that we have more than 1 potential select.                            
+                            this.focusObject = tentativeSelect.values().next().value;                    
+                        }else{
                             this.UI.multipleSelect = new Set(); //Empty the multiple select if not needed.
-                            this.focusObject = this.worldGrid[x][y].values().next().value; 
-                        
-                        }else if (this.worldGrid[x][y].size > 1){ //If hovered area has more than 1 object, i.e. is a set
-                            this.UI.handleMultipleTargets(this.worldGrid[x][y]); //Dirty way of notifying the UI that we have more than 1 potential select.                                                       
-                            this.focusObject = this.worldGrid[x][y].values().next().value;                    
-                        }
+                            this.focusObject = tentativeSelect; 
+                        } 
 
                     }else if (tool == "create"){
                         //tile placement on click 
@@ -155,9 +144,8 @@ class mainScene extends Phaser.Scene{
                             var tileSprite = new BasicTile(this,x,y,"tree");                       
 
                             if (this.UI.selectionPane.value != "Basic tile"){
-                                tileSprite.applyProtoType(this.prototypes[this.UI.selectionPane.value]);  
-                            }   
-
+                                tileSprite.applyProtoType(this.prototypes[this.UI.selectionPane.value]);   
+                            }                         
                             this.sprites.push(tileSprite);
                             this.focusObject = tileSprite;                 
                         }                    
@@ -165,6 +153,7 @@ class mainScene extends Phaser.Scene{
                 }
                 //Moving and displaying should be done even if the key is being held down.
                 this.moveObject(this.focusObject,this.utils.trueToGrid(this.marker.x),this.utils.trueToGrid(this.marker.y));
+                this.UI.displayProperties(this.focusObject); //ouput the focused objects relevant fields
                 }
         }else{
             this.marker.visible=false;             
@@ -246,16 +235,13 @@ class mainScene extends Phaser.Scene{
                     break;
                 }
             }
+
             //do the move.
             if (validMove){
                 focus_tile.x= new_x;
                 focus_tile.y = new_y;
                 this.worldGrid[currentX][currentY].delete(focus_tile);
                 this.worldGrid[focus_tile.x][focus_tile.y].add(focus_tile);
-
-                if (this.focusObject == focus_tile){
-                    this.UI.displayProperties(focus_tile);
-                }
 
                 if (this.worldGrid[focus_tile.x][focus_tile.y].size>1){
                     this.UI.handleMultipleTargets(this.worldGrid[focus_tile.x][focus_tile.y]);
@@ -317,10 +303,9 @@ class mainScene extends Phaser.Scene{
                 this.sprites[i].exposed_fields[field] = spriteData.exposed_fields[field];
             }       
         }
-
-        //Add prototypes to the selectionPane.
         for (var prototype in saveState.prototypes){
             this.prototypes[prototype] = saveState.prototypes[prototype];
+            //@TODO prototype doesn't hold.
             this.UI.addPrototypeToList(prototype);
         }
     }
@@ -335,8 +320,12 @@ class mainScene extends Phaser.Scene{
     changeAllPrototypes(prototype){
 
     }
+<<<<<<< HEAD
 
+=======
+>>>>>>> sandbox
 }
+
 
 var config = {
     type: Phaser.AUTO,
