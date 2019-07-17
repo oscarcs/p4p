@@ -59,6 +59,10 @@ class mainScene extends Phaser.Scene{
 
         this.loadGame(); //Game intergrate autoloading of the game
 
+        this.queuedActions = [];
+        var date = new Date();
+        this.waitTimer = date.getTime();
+
         //Save on exitting the window. 
         window.addEventListener("beforeunload", function(event){
             this.saveGame();
@@ -67,6 +71,17 @@ class mainScene extends Phaser.Scene{
     }
 
     update () {                        
+
+
+        //@TODO different pointers for different tools.
+        this.updateSprites();
+        this.updateMarker();   
+        this.updateSelectionMarker(); 
+        this.updateKeyboard();  
+    }
+
+
+    updateSprites(){
         //UPDATING SPRITES
         for (var i = 0;i <this.sprites.length;i++){ 
             this.sprites[i].update();
@@ -82,36 +97,10 @@ class mainScene extends Phaser.Scene{
             }
         }
 
-        //@TODO different pointers for different tools.
-        this.handleMarker();        
-
-        //SELECTION MARKER
-        //if there is a objecct being focused, the selection indicator goes to true.
-        if (this.focusObject){
-            this.selectionIndicator.visible = true;
-            this.selectionIndicator.setPosition(this.utils.gridToTrue(this.focusObject.x),this.utils.gridToTrue(this.focusObject.y));
-        }else{
-            this.selectionIndicator.visible = false;
-        }        
-
-        //Deletion shouldn't work when on text areas and input. 
-        var activeElementType = document.activeElement.type;
-        if (activeElementType == "text"|| activeElementType == "textarea"|| activeElementType == "number"){
-            this.deleteKey.enabled = false;  
-            this.input.keyboard.removeCapture("DELETE"); 
-        }else{           
-            this.deleteKey.enabled = true;
-            this.input.keyboard.addCapture("DELETE");
-        }
-
-        //Delete key polling.
-        if (this.deleteKey.isDown){
-            this.deleteFocusObject();
-        }        
     }
 
     //Used to handle the mouse marker.
-    handleMarker(){
+    updateMarker(){
         var x = Math.round(this.input.mousePointer.x/16); 
         var y = Math.round(this.input.mousePointer.y/16); 
         
@@ -181,6 +170,36 @@ class mainScene extends Phaser.Scene{
             this.marker.visible=false;             
         }
     }
+
+    updateSelectionMarker(){
+        //SELECTION MARKER
+        //if there is a objecct being focused, the selection indicator goes to true.
+        if (this.focusObject){
+            this.selectionIndicator.visible = true;
+            this.selectionIndicator.setPosition(this.utils.gridToTrue(this.focusObject.x),this.utils.gridToTrue(this.focusObject.y));
+        }else{
+            this.selectionIndicator.visible = false;
+        } 
+    }
+
+    updateKeyboard(){
+        //Deletion shouldn't work when on text areas and input. 
+        var activeElementType = document.activeElement.type;
+        if (activeElementType == "text"|| activeElementType == "textarea"|| activeElementType == "number"){
+            this.deleteKey.enabled = false;  
+            this.input.keyboard.removeCapture("DELETE"); 
+        }else{           
+            this.deleteKey.enabled = true;
+            this.input.keyboard.addCapture("DELETE");
+        }
+
+        //Delete key polling.
+        if (this.deleteKey.isDown){
+            this.deleteFocusObject();
+        } 
+
+    }
+
     
     //Called to create the grid of Game Objects
     initializeWorldGrid(){
@@ -317,44 +336,6 @@ class mainScene extends Phaser.Scene{
 
     }
 
-    dummyMove(activeTile){        
-        console.log("What");
-        for (var i = 0; i<5;i++){
-            activeTile.queuedActions.push(function(){
-                activeTile.wait(1000);
-            }.bind(this));
-            activeTile.queuedActions.push(function(){
-                this.moveObject(activeTile,activeTile.x+1,activeTile.y);
-            }.bind(this)); 
-        }    
-
-        for (var i = 0; i<5;i++){
-            activeTile.queuedActions.push(function(){
-                activeTile.wait(1000);
-            }.bind(this));
-            activeTile.queuedActions.push(function(){
-                this.moveObject(activeTile,activeTile.x,activeTile.y-1);
-            }.bind(this)); 
-        }
-
-        for (var i = 0; i<5;i++){
-            activeTile.queuedActions.push(function(){
-                activeTile.wait(1000);
-            }.bind(this));
-            activeTile.queuedActions.push(function(){
-                this.moveObject(activeTile,activeTile.x-1,activeTile.y);
-            }.bind(this)); 
-        }
-
-        for (var i = 0; i<5;i++){
-            activeTile.queuedActions.push(function(){
-                activeTile.wait(1000);
-            }.bind(this));
-            activeTile.queuedActions.push(function(){
-                this.moveObject(activeTile,activeTile.x,activeTile.y+1);
-            }.bind(this)); 
-        }
-    }
 }
 
 var config = {
