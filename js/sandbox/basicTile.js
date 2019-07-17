@@ -16,7 +16,7 @@ class BasicTile{
         this.sprite = this.world.add.sprite(world.utils.gridToTrue(x), world.utils.gridToTrue(y),'tiles',index); //This shouldn't be exposed.
 
         this.sprite.depth = 1;  
-        this.depth = 1; 
+        this.layer = 1; 
 
         this.solid = false;
         this.name = name;
@@ -90,13 +90,13 @@ class BasicTile{
     }
 
     //Limit depth to 10 layers for the sake of simplicity.
-    changeDepth(depth){
-        if (depth<1){
+    changeDepth(layer){
+        if (layer<1){
             this.depth = 1;
-        }else if (depth>10){
-            this.depth = 10;
+        }else if (layer>10){
+            this.layer = 10;
         }else{
-            this.depth = depth;
+            this.layer = layer;
         }
     }
     

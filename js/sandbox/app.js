@@ -58,7 +58,7 @@ class mainScene extends Phaser.Scene{
 
         this.loadGame(); //Game intergrate autoloading of the game
 
-        //Save on exit. 
+        //Save on exitting the window. 
         window.addEventListener("beforeunload", function(event){
             this.saveGame();
         }.bind(this));
@@ -77,7 +77,7 @@ class mainScene extends Phaser.Scene{
             if (this.focusObject == this.sprites[i]){
                 this.sprites[i].sprite.depth = this.worldLayers+1;
             }else{
-                this.sprites[i].sprite.depth = this.sprites[i].depth;
+                this.sprites[i].sprite.depth = this.sprites[i].layer;
             }
         }
 
@@ -93,9 +93,9 @@ class mainScene extends Phaser.Scene{
             this.selectionIndicator.visible = false;
         }        
 
-        
-        //Deletion no work when on text areas and input.
-        if (document.activeElement.nodeName == "INPUT"|| document.activeElement.nodeName == "TEXTAREA"){
+        //Deletion shouldn't work when on text areas and input. 
+        var activeElementType = document.activeElement.type;
+        if (activeElementType == "text"|| activeElementType == "textarea"|| activeElementType == "number"){
             this.deleteKey.enabled = false;  
             this.input.keyboard.removeCapture("DELETE"); 
         }else{           
@@ -103,6 +103,7 @@ class mainScene extends Phaser.Scene{
             this.input.keyboard.addCapture("DELETE");
         }
 
+        //Delete key polling.
         if (this.deleteKey.isDown){
             this.deleteFocusObject();
         }        
@@ -114,7 +115,7 @@ class mainScene extends Phaser.Scene{
         var y = Math.round(this.input.mousePointer.y/16);         
         var tentativeSelect; //tentative selection, I.e which tile is being hovered over. 
 
-        var tool = this.UI.getTool();
+        var tool = this.UI.getTool(); //Which tool is currently in use.
         
         //MARKER HANDLING     
         if (y>=0 && x >=0 && x <this.worldWidth && y<this.worldHeight){ 
@@ -147,6 +148,7 @@ class mainScene extends Phaser.Scene{
                             this.UI.multipleSelect = new Set(); //Empty the multiple select if not needed.
                             this.focusObject = tentativeSelect; 
                         } 
+
                     }else if (tool == "create"){
                         //tile placement on click 
                         if (this.UI.selectionPane.value){
@@ -170,6 +172,7 @@ class mainScene extends Phaser.Scene{
         }
     }
 
+    
     //Called to create the grid of Game Objects
     initializeWorldGrid(){
         let grid = [];
@@ -185,8 +188,6 @@ class mainScene extends Phaser.Scene{
     //General method to move a tile around
     moveObject(focus_tile,new_x,new_y){
         //Check the new position is in bounds
-
-        //@TODO, make a warning for the user depening on which bound is over
         if(new_x < 0 || new_x >= this.worldWidth ||new_y < 0||new_y>= this.worldHeight){
             console.log("collided with world edge");
             return;
@@ -211,12 +212,13 @@ class mainScene extends Phaser.Scene{
             }
             //check if all the tiles in the landing zone are not solid
             for (var tile of this.worldGrid[new_x][new_y]){
-                if (tile.solid){
+                if (tile.solid && tile!=focus_tile){
                     console.log("blocked by an impassable tile")
                     validMove = false;
                     break;
                 }
             }
+
             //do the move.
             if (validMove){
                 focus_tile.x= new_x;
@@ -265,11 +267,9 @@ class mainScene extends Phaser.Scene{
 
         if (state === null){
             return;
-        }
-        
+        }        
         this.resetGame();
         //flush the current map
-        console.log(state);
 
         console.log("Loading state");
         var saveState = JSON.parse(state);              
@@ -279,8 +279,9 @@ class mainScene extends Phaser.Scene{
                         
             //Need to repopulate the worldGrid as well as the sprites array.
             this.sprites[i] = new BasicTile(this, spriteData.x,spriteData.y,spriteData.spriteName);
-            
+            this.sprites[i].type = spriteData.type;
             this.UI.renameObject(this.sprites[i], spriteData.name);    
+
             for (var field in spriteData.exposed_fields){
                 this.sprites[i].exposed_fields[field] = spriteData.exposed_fields[field];
             }       

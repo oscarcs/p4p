@@ -44,30 +44,39 @@ button:hover {
 }
 
 
-
 .tileEditPane{
     display: inline-block; 
 }
 
 .tileEditPane .propertyList{
+    display: inline-block;
     overflow-y: auto;
     width: 100%;
-    height: 35%;  
+    height: 40%;  
 }
 
-.propertyInput{  
-    float: left;
-    margin-top: 0.2em;
-    width: 60%;
+.tileEditPane .propertyList button{
+    font-size:10;
+    height: 100%;
+    margin-left: auto;
 }
 
-.propertyLabel{   
-    float: left;
-    clear: left;
-    width: 25%;
-    padding-right: 0.5em;
-    text-align: right;
-    margin-top: 0.2em;
+.propertyDiv{
+    display: flex;
+    margin-top: 5px;
+    text-align: center;
+    position: relative;
+}
+
+.propertyDiv .propertyInput{ 
+    position: absolute;
+    left: 150px;
+    width: 200px;    
+}
+
+.propertyDiv .propertyLabel{
+    text-align: left;
+    
 }
 
 .buttonMenu{
