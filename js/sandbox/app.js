@@ -66,6 +66,8 @@ class mainScene extends Phaser.Scene{
             this.saveGame();
         }.bind(this));
 
+        this.dummySpawn();
+
     }
 
     update () {                      
@@ -194,6 +196,11 @@ class mainScene extends Phaser.Scene{
 
     }
 
+    wait(duration){
+        var date = new Date();
+        this.waitTimer = date.getTime()+duration;
+    }
+
     
     //Called to create the grid of Game Objects
     initializeWorldGrid(){
@@ -288,16 +295,17 @@ class mainScene extends Phaser.Scene{
             return false;
         }
 
-        if (prototype == "BasicTile"){
-            return new BasicTile(this,x,y,"tree");
+        if (prototype == "BasicTile"){           
+            var tileSprite =new BasicTile(this,x,y,"tree");
+
         }else if (prototype in this.prototypes){
             var tileSprite = new BasicTile(this,x,y,"tree");
-            
-            tileSprite.applyProtoType(this.prototypes[prototype]);
-            this.sprites.push(tileSprite);
 
-            return tileSprite;
+            tileSprite.applyProtoType(this.prototypes[prototype]);
         }
+
+        this.sprites.push(tileSprite);
+        return tileSprite;
     }
     
     saveGame(){
@@ -354,10 +362,43 @@ class mainScene extends Phaser.Scene{
         this.spriteNamespace = {};   
         this.worldGrid = this.initializeWorldGrid();
     }
-    //When a user changes a prototype and wants the change to happen on all created prototypes
-    changeAllPrototypes(prototype){
 
+    dummySpawn(){
+        this.resetGame();
+
+        for (var i =0; i <10; i++){
+            this.queuedActions.push(function(){
+                this.wait(1000);
+            }.bind(this));
+
+            this.queuedActions.push(function(){
+                var x = Math.round(Math.random()*this.worldWidth-1);
+                var y = Math.round(Math.random()*this.worldHeight-1);
+
+                var tile = this.makeTile(x,y,"BasicTile");
+                if (tile){
+                    this.dummyMove(tile);
+                }
+                
+            }.bind(this));
+        }
     }
+    
+    dummyMove(activeTile){
+        for (var j = 0; j<10;j++){
+            activeTile.queuedActions.push(function(){
+                var x = Math.round(Math.random()*this.worldWidth-1);
+                var y = Math.round(Math.random()*this.worldHeight-1);
+
+                this.moveObject(activeTile,x,y);
+            }.bind(this));
+
+            activeTile.queuedActions.push(function(){
+                activeTile.wait(1000);
+            }.bind(this));
+        }
+    }
+   
 }
 
 var config = {
