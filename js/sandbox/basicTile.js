@@ -2,7 +2,7 @@ class BasicTile{
     //TODO, need to include an immutable "type" property.
     constructor(world,x,y,spriteName,name=undefined){
         this.world=world;
-        this.type = "Basic Tile";
+        this.type = "BasicTile";
         this.exposed_fields = {}; //array of exposed fields mapped to their values. 
 
         this.actions = {}; //array of functions mapped to the function name.
@@ -48,13 +48,24 @@ class BasicTile{
             var action = this.queuedActions.shift();
             action();
         }        
-        
+
+        this.limitPosition(); 
+
         if (this.world.utils.gridToTrue(this.x)!==this.sprite.x || this.world.utils.gridToTrue(this.y)!==this.sprite.y){
             //lazy update position
             this.sprite.x = this.world.utils.gridToTrue(this.x);
             this.sprite.y = this.world.utils.gridToTrue(this.y);           
         } 
         this.world.worldGrid[this.x][this.y].add(this);
+    }
+
+
+    limitPosition(){
+        this.x = Math.max(this.x,0);
+        this.x = Math.min(this.x ,this.world.worldWidth-1);
+
+        this.y = Math.max(this.y,0);
+        this.y = Math.min(this.y,this.world.worldHeight-1);
     }
 
     destroy(){        

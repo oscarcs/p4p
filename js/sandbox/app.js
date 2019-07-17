@@ -70,6 +70,7 @@ class mainScene extends Phaser.Scene{
 
     update () {                      
         //@TODO different pointers for different tools.
+        this.updateSelf();
         this.updateSprites();
         this.updateMarker();   
         this.updateSelectionMarker(); 
@@ -93,7 +94,16 @@ class mainScene extends Phaser.Scene{
                 this.sprites[i].sprite.depth = this.sprites[i].layer;
             }
         }
+    }
 
+    //Used for programmed events.
+    updateSelf(){
+        var date = new Date();
+        //For use with the wait primitive function.
+        if (this.queuedActions.length>0 && date.getTime()>this.waitTimer){
+            var action = this.queuedActions.shift();
+            action();
+        }    
     }
 
     //Used to handle the mouse marker.
@@ -137,13 +147,12 @@ class mainScene extends Phaser.Scene{
                         //tile placement on click 
                         if (this.UI.selectionPane.value){
                             //Should we be able to create on an solid tile?
-                            var tileSprite = new BasicTile(this,x,y,"tree");                       
+                            var tileSprite = this.makeTile(x,y,this.UI.selectionPane.value);                       
 
-                            if (this.UI.selectionPane.value != "Basic tile"){
-                                tileSprite.applyProtoType(this.prototypes[this.UI.selectionPane.value]);   
+                            if (tileSprite){
+                                this.focusObject = tileSprite;     
                             }                         
-                            this.sprites.push(tileSprite);
-                            this.focusObject = tileSprite;                 
+                                           
                         }                    
                     }
                 }
@@ -265,6 +274,31 @@ class mainScene extends Phaser.Scene{
             }            
         }
     }
+
+    makeTile(x,y,prototype){
+        if (x < 0 || x >=this.worldWidth){
+            return false;
+        }
+
+        if (y <0 || y >= this.worldHeight){
+            return false;
+        }
+
+        if (!prototype in this.prototypes && prototype != "BasicTile"){
+            return false;
+        }
+
+        if (prototype == "BasicTile"){
+            return new BasicTile(this,x,y,"tree");
+        }else if (prototype in this.prototypes){
+            var tileSprite = new BasicTile(this,x,y,"tree");
+            
+            tileSprite.applyProtoType(this.prototypes[prototype]);
+            this.sprites.push(tileSprite);
+
+            return tileSprite;
+        }
+    }
     
     saveGame(){
         var saveGameObject = {};
@@ -294,6 +328,7 @@ class mainScene extends Phaser.Scene{
             var spriteData =  JSON.parse(saveState.sprites[i]) 
                         
             //Need to repopulate the worldGrid as well as the sprites array.
+            //Keep loadgame this way to deal with prototype being deleted when existing sprites are out.
             this.sprites[i] = new BasicTile(this, spriteData.x,spriteData.y,spriteData.spriteName);
             this.sprites[i].type = spriteData.type;
             this.UI.renameObject(this.sprites[i], spriteData.name);    

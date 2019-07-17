@@ -8,7 +8,7 @@ class userInterface{
         this.selectionPane = document.getElementById("selectionMenu");
 
         var option = document.createElement("option");
-        option.textContent = "Basic tile";
+        option.textContent = "BasicTile";
         this.selectionPane.appendChild(option);
 
         //@TODO probably worthwhile to create a delete tool as well.
@@ -16,7 +16,7 @@ class userInterface{
         //PROTOTYPE HANDLING BUTTONS        
         this.deleteButton = document.getElementById("deleteButton");
         this.deleteButton.onclick = function(){
-            if (this.selectionPane.value != "Basic tile"){
+            if (this.selectionPane.value != "BasicTile"){
                 delete this.world.prototypes[this.selectionPane.value];
                 this.selectionPane.remove(this.selectionPane.selectedIndex);               
             }            
