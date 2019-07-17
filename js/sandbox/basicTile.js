@@ -19,6 +19,7 @@ class BasicTile{
         this.layer = 1; 
 
         this.solid = false;
+        
         this.name = name;
 
         this.queuedActions = []; //push tasks in, shift tasks out. Pushed actions need to use bind.

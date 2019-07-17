@@ -5,8 +5,9 @@ class userInterface{
 
         this.propertyMenu = document.getElementById("properties");
         this.buttonMenu = document.getElementById("propertyButtons");
+        
+        //Start with one tile type.
         this.selectionPane = document.getElementById("selectionMenu");
-
         var option = document.createElement("option");
         option.textContent = "Basic tile";
         this.selectionPane.appendChild(option);
@@ -26,6 +27,7 @@ class userInterface{
         this.editButton.onclick = function(){
             console.log("nice");
             //@TODO, implement this so we can edit prototypes
+            //Show the properties of the prototype.
         }.bind(this);
         this.multipleSelect = false; 
     }
@@ -63,7 +65,7 @@ class userInterface{
                     this.displayProperties(nextTile.value);                       
                 }.bind(this);
 
-                this.buttonMenu.append(nextButton)
+                this.buttonMenu.append(nextButton);
 
                 this.buttonMenu.append(document.createElement("br"));
                 this.buttonMenu.append(document.createElement("br"));
@@ -113,7 +115,7 @@ class userInterface{
                    console.log("invalid base type name");
                }               
            }.bind(this);
-           newBaseTypeButton.innerHTML = "Save as new base type";
+           newBaseTypeButton.innerHTML = "Save as new tile type";
 
             //Need to space out the buttons a bit in the CSS.
             this.buttonMenu.appendChild(addNumberFieldButton);
@@ -128,7 +130,7 @@ class userInterface{
 
             //Sprite information of a tile @TODO Divify this.
             var sprite_label = document.createElement("span");
-            sprite_label.textContent = "Sprite: ";
+            sprite_label.textContent = "sprite: ";
             sprite_label.setAttribute("class", "propertyLabel")
 
             var sprite_input = document.createElement("select");
@@ -221,7 +223,6 @@ class userInterface{
             console.log("Field name too long");
             return;
         }
-
 
         if (fieldName in activeObject.exposed_fields || fieldName in propertyInputs){
             console.log("Field taken");
@@ -381,13 +382,14 @@ class userInterface{
         this.displayProperties(activeObject);
     }
     
+    //Attach our new prototype to our selection list.
     addPrototypeToList(newBaseTypeName){
         var option = document.createElement("option");
         option.textContent=newBaseTypeName;
         this.selectionPane.appendChild(option);
     }
     
-    
+
     renameObject(activeObject, name){
         if (name){            
             //@TODO, more extensive namespace checking
