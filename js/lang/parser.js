@@ -46,8 +46,16 @@ class Parser {
 
             'lparen': {
                 f: (token) => {
+                    this.advance();
+                    
                     let expression = this.expression(0);
-                    this.expect('rparen');
+                    this.advance();
+                    
+                    //@@TODO: This is probably indicative of an error but whatever. 
+                    if (this.token().type !== 'rparen') {
+                        //@@ERROR:
+                    } 
+
                     return expression;
                 },
                 precedence: 60
@@ -155,7 +163,7 @@ class Parser {
             return this.prefixFunctions[token.reproduction].precedence;
         } 
 
-        return null;
+        return 0;
     }
 
     advance() {
@@ -200,7 +208,8 @@ class Parser {
         }
 
         //@@ERROR
-        throw "Expected " + type + " but got " + Lexer.printToken(this.tokens[this.index]);
+        let msg = 'Expected ' + type + ' but got ' + Lexer.printToken(this.tokens[this.index]) + '\n';
+        throw msg;
     }
 
     parse() {
@@ -209,7 +218,6 @@ class Parser {
 
     program() {
         let program = new Node('program', '');
-
         let stmt;
         while (true) {
             stmt = this.statement();
@@ -222,6 +230,23 @@ class Parser {
         return program;
     }
 
+    block() {
+        let block = new Node('block', '');
+
+        this.expect('linebreak');
+
+        let stmt;
+        while (true) {
+            stmt = this.statement();
+            if (stmt === null) {
+                break;
+            }
+            block.addChild(stmt);
+        }
+
+        return block;
+    }
+
     statement() {
         let left = this.token();
         if (left === null) {
@@ -229,34 +254,114 @@ class Parser {
         }
 
         if (this.accept('if')) {
+            let node = new Node('if', 'if');
 
+            let condition = this.expression(0);
+            this.advance();
+            let body = this.block();
+
+            node.addChild(condition);
+            node.addChild(body);
+
+            while (!this.accept('end')) {
+                if (this.accept('else')) {
+                    if (this.accept('if')) {
+                        // Parse an 'else if'
+                        let childNode = new Node('else if', 'else if');
+
+                        let condition = this.expression(0);
+                        this.advance();
+                        let body = this.block();
+
+                        childNode.addChild(condition);
+                        childNode.addChild(body);
+                        node.addChild(childNode);
+                    }
+                    else {
+                        // Complete the block
+                        let childNode = new Node('else', 'else');
+                        
+                        let body = this.block();
+
+                        childNode.addChild(body);
+                        node.addChild(childNode);
+
+                        this.expect('end');
+                        break;
+                    }
+                }
+            }
+            return node;
         }
         else if (this.accept('for')) {
+            let node = new Node('for', 'for');
 
+            let ident = this.token();
+            this.expect('ident');
+            let identNode = new Node('ident', ident.reproduction);
+
+            this.expect('=');
+
+            let startNode = this.expression(0);
+            this.advance();
+            node.addChild(startNode);
+
+            this.expect('to');
+
+            let endNode = this.expression(0);
+            this.advance();
+            node.addChild(endNode);
+
+            let body = this.block();
+            node.addChild(body);
+
+            this.expect('end');
+
+            console.log(node);
+            return node;
         }
         else if (this.accept('while')) {
+            let node = new Node('while', 'while');
 
+            let condition = this.expression(0);
+            this.advance();
+            node.addChild(condition);
+            
+            let body = this.block();
+            node.addChild(body);
+
+            this.expect('end');
+
+            return node;
         }
         else if (this.accept('action')) {
 
         }
         else if (this.accept('return')) {
+            let node = new Node('return', 'return');
+            let body = this.expression(0);
+            this.advance();
+            node.addChild(body);
 
+            return node;
         }
         else if (this.accept('loop')) {
+            let node = new Node('loop', 'loop');
 
+            let body = this.block();
+            node.addChild(body);
+
+            this.expect('end');
+
+            return node;
         }
         else if (this.accept('ident')) {
             this.expect('=');
 
             let right = this.expression(0);
-            console.log(right);
 
-            console.log("1", this.token());
             this.advance();
-            console.log("2", this.token());
             this.accept('\n');
-            console.log("3", this.token());
 
             let node = new Node('assignment', '=');
             node.addChild(new Node('ident', left.reproduction));
@@ -274,11 +379,12 @@ class Parser {
             let prefix = this.prefix(this.token());
             let left = prefix(this.token(), null);
 
+            console.log(precedence, this.lookahead(), this.precedence(this.lookahead()));
+
             while (precedence < this.precedence(this.lookahead())) {
                 this.advance();
 
                 let infix = this.infix(this.token());
-                console.log(infix);
 
                 if (infix === null) {
                     break;
@@ -301,7 +407,7 @@ class Parser {
         while (nodes.length > 0) {
             let cur = nodes.shift();
             let depth = depths.shift();
-
+            
             nodes = cur.children.concat(nodes);
 
             for (let i of cur.children) {

@@ -26,6 +26,7 @@ let Reserved = {
 
     keywords: {
         'if': {},
+        'else': {},
         'for': {},
         'to': {},
         'while': {},
