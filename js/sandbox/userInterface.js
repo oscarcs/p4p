@@ -35,7 +35,7 @@ class userInterface{
         this.buttonMenu.innerHTML="";
     }
     
-    
+    //@TODO, need some way to broadcast the updated information without blocking.
     displayProperties(activeObject){
         if (activeObject){
             this.clearPropertyFields();
@@ -191,7 +191,7 @@ class userInterface{
                 
                 var propertyDiv = this.makeDiv(label,propertyInputs[index]);
                 propertyDiv.appendChild(this.makeDeleteButton(activeObject,index));
-
+                
                 this.propertyMenu.appendChild(propertyDiv); 
                 }  
                 

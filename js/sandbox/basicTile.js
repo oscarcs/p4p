@@ -6,7 +6,8 @@ class BasicTile{
         this.exposed_fields = {}; //array of exposed fields mapped to their values. 
 
         this.actions = {}; //array of functions mapped to the function name.
-
+        //Need to reserve somekeywords for primitives
+        
         this.x = x;
         this.y = y;
 
@@ -115,6 +116,21 @@ class BasicTile{
     wait(duration){
         var date = new Date();
         this.waitTimer = date.getTime()+duration;
+    }
+
+    //Setting some hook actions.
+    setWhenExitScene(exitAction){
+        if (typeof exitAction === "function"){
+            this.actions["whenExitScene"] = exitAction
+        }
+
+    }
+
+    onCollideEdge(){
+        if ("whenExitScene" in this.actions && typeof this.actions["whenExitScene"] == "function"){
+            this.actions["whenExitScene"]();
+        }
+
     }
 
     //For saving state.

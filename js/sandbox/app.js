@@ -20,6 +20,7 @@ class mainScene extends Phaser.Scene{
         this.spriteDict = []; //dictionary mapping sprites to indexes, used for tilesheets
 
         this.sprites = []; //all sprites
+        this.maxSprites = 100; //For now.
 
         this.spriteNamespace = {}; //Name dictionary to map exisiting tiles to names
         this.prototypes = {}; //map each prototype name to a new prototype. 
@@ -56,27 +57,28 @@ class mainScene extends Phaser.Scene{
         this.deleteKey = this.input.keyboard.addKey('DELETE'); //@TODO refactor for more generality, fix deletion to be an alternate input.
 
         this.loadGame(); //Game intergrate autoloading of the game
+        //Some bugs, breaks down on really large scenes.
 
         this.queuedActions = [];
         var date = new Date();
         this.waitTimer = date.getTime();
 
-        //Save on exitting the window. 
+        //this.dummySpawn();
+
+        //Save on exiting the window. 
         window.addEventListener("beforeunload", function(event){
             this.saveGame();
-        }.bind(this));
-
-        this.dummySpawn();
-
+        }.bind(this));       
     }
 
-    update () {                      
+    update () {                  
         //@TODO different pointers for different tools.
         this.updateSelf();
         this.updateSprites();
         this.updateMarker();   
         this.updateSelectionMarker(); 
         this.updateKeyboard();  
+
     }
 
 
@@ -85,16 +87,19 @@ class mainScene extends Phaser.Scene{
         //UPDATING SPRITES
         for (var i = 0;i <this.sprites.length;i++){ 
             this.sprites[i].update();
-            if (this.worldGrid[this.sprites[i].x][this.sprites[i].y].size>1){
-                console.log("overlap");
-                //@TODO hook in the broadcasts of collision.
-            }
-            //Bring the focused Tile to the top.
-            if (this.focusObject == this.sprites[i]){
-                this.sprites[i].sprite.depth = this.worldLayers+1;
-            }else{
-                this.sprites[i].sprite.depth = this.sprites[i].layer;
-            }
+
+            if (typeof this.sprites[i] !== "undefined"){
+                if (this.worldGrid[this.sprites[i].x][this.sprites[i].y].size>1){
+                    console.log("overlap");
+                    //@TODO hook in the broadcasts of collision.
+                }
+                //Bring the focused Tile to the top.
+                if (this.focusObject == this.sprites[i]){
+                    this.sprites[i].sprite.depth = this.worldLayers+1;
+                }else{
+                    this.sprites[i].sprite.depth = this.sprites[i].layer;
+                } 
+            }                      
         }
     }
 
@@ -122,9 +127,9 @@ class mainScene extends Phaser.Scene{
 
             //Hover over in select mode.
             if (this.worldGrid[x][y].size ==1 && tool == "select"){
-                this.marker.setStrokeStyle(1,0xfff000); //Set the color of the selector.
+                this.marker.setStrokeStyle(1,0x00008b); //Set the color of the selector.
             }else if (this.worldGrid[x][y].size > 1 && tool == "select"){
-                this.marker.setStrokeStyle(1,0xfff000);
+                this.marker.setStrokeStyle(1,0x0000ff);
             }else{
                 this.marker.setStrokeStyle(1,0xffffff);
             }          
@@ -219,8 +224,9 @@ class mainScene extends Phaser.Scene{
     //General method to move a tile around
     moveObject(focus_tile,new_x,new_y){
         //Check the new position is in bounds
-        if(new_x < 0 || new_x >= this.worldWidth ||new_y < 0||new_y>= this.worldHeight){
+        if(new_x < 0 || new_x >= this.worldWidth ||new_y < 0||new_y >= this.worldHeight){
             console.log("collided with world edge");
+            focus_tile.onCollideEdge();
             return;
         }
 
@@ -249,7 +255,6 @@ class mainScene extends Phaser.Scene{
                     break;
                 }
             }
-
             //do the move.
             if (validMove){
                 focus_tile.x= new_x;
@@ -257,9 +262,17 @@ class mainScene extends Phaser.Scene{
                 this.worldGrid[currentX][currentY].delete(focus_tile);
                 this.worldGrid[focus_tile.x][focus_tile.y].add(focus_tile);
 
-                if (this.worldGrid[focus_tile.x][focus_tile.y].size>1){
-                    this.UI.handleMultipleTargets(this.worldGrid[focus_tile.x][focus_tile.y]);
+                if (this.focusObject == focus_tile){
+                    if (document.activeElement.parentElement.className != "propertyDiv"){
+                        this.UI.displayProperties(focus_tile);
+                    }
+                    
+                    if (this.worldGrid[focus_tile.x][focus_tile.y].size>1){
+                        this.UI.handleMultipleTargets(this.worldGrid[focus_tile.x][focus_tile.y]);
+                    }
                 }
+
+                
             }                                                  
         }
     }
@@ -292,6 +305,11 @@ class mainScene extends Phaser.Scene{
         }
 
         if (!prototype in this.prototypes && prototype != "BasicTile"){
+            return false;
+        }
+
+        if  (this.sprites.length >= this.maxSprites){
+            console.log("Hit the sprite limit");
             return false;
         }
 
@@ -330,10 +348,11 @@ class mainScene extends Phaser.Scene{
         //flush the current map
 
         console.log("Loading state");
-        var saveState = JSON.parse(state);              
-
+        var saveState = JSON.parse(state);  
+        
+                
         for (var i = 0; i<saveState.sprites.length;i++){
-            var spriteData =  JSON.parse(saveState.sprites[i]) 
+            var spriteData =  JSON.parse(saveState.sprites[i]);
                         
             //Need to repopulate the worldGrid as well as the sprites array.
             //Keep loadgame this way to deal with prototype being deleted when existing sprites are out.
@@ -354,47 +373,53 @@ class mainScene extends Phaser.Scene{
 
     resetGame(){
         for (var i =0;i<this.sprites.length;i++){
-            this.deleteTile(this.sprites[i]);
+            this.sprites[i].destroy();
         }
-
         this.prototypes ={};
         this.sprites = [];     
         this.spriteNamespace = {};   
         this.worldGrid = this.initializeWorldGrid();
     }
 
+
+    //Testing functions.
     dummySpawn(){
         this.resetGame();
 
-        for (var i =0; i <10; i++){
+        for (var i = 0; i <5; i++){
             this.queuedActions.push(function(){
-                this.wait(1000);
+                this.wait(100);
             }.bind(this));
 
             this.queuedActions.push(function(){
-                var x = Math.round(Math.random()*this.worldWidth-1);
-                var y = Math.round(Math.random()*this.worldHeight-1);
+                var x = 0;
+                var y = 5;
 
                 var tile = this.makeTile(x,y,"BasicTile");
                 if (tile){
+
+                    //Can now set on trying to exit scene events.
+                    tile.setWhenExitScene(function(){
+                        console.log("Collide");
+                        this.deleteTile(tile);
+                    }.bind(this));
                     this.dummyMove(tile);
-                }
-                
+                }                
             }.bind(this));
         }
     }
     
     dummyMove(activeTile){
-        for (var j = 0; j<10;j++){
+        for (var j = 0; j<20;j++){
             activeTile.queuedActions.push(function(){
-                var x = Math.round(Math.random()*this.worldWidth-1);
-                var y = Math.round(Math.random()*this.worldHeight-1);
-
-                this.moveObject(activeTile,x,y);
+                var x = (activeTile.x + 1);
+                var y = activeTile.y;
+                //this.makeTile(activeTile.x,activeTile.y,"BasicTile");
+                this.moveObject(activeTile,x,y);                
             }.bind(this));
 
             activeTile.queuedActions.push(function(){
-                activeTile.wait(1000);
+                activeTile.wait(10);
             }.bind(this));
         }
     }
