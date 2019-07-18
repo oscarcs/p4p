@@ -1,82 +1,4 @@
-class Utils{
-    //Helper class to manage grid location conversions.
-
-    //get the true value postion on screen given the grid position
-    gridXtoTrueX(x){
-        return x*16+8;
-    }
-
-    gridYtoTrueY(y){
-        return y*16+40;
-    }
-
-    TrueXtoGridX(grid_x){
-        return (grid_x-8)/16;
-    }
-    
-    TrueYtoGridY(grid_y){
-        return(grid_y-40)/16;
-    }
-}
-
-class BasicTile
-{
-    world;
-    x; // x position in terms of the game grid
-    y;
-    sprite;   
-    
-    solid = false; //Should this block allow other blocks to "overlap"
-
-    constructor(world,x,y,index,name=undefined){
-        this.world=world;
-        this.x = x;
-        this.y = y;
-        this.sprite = this.world.add.sprite(world.utils.gridXtoTrueX(x), world.utils.gridYtoTrueY(y), 'tiles',index);
-        this.sprite.depth = 1;  
-        
-        if (index === 0){
-            this.solid = true;
-        }
-    }
-    
-    update(){               
-        //further instructions for each block type to be hooked into here
-        //Parser.getnextInstruction etc. 
-        if (this.world.utils.gridXtoTrueX(this.x)!==this.sprite.x || this.world.utils.gridYtoTrueY(this.y)!==this.sprite.y){
-            //lazy update position
-            this.sprite.x = this.world.utils.gridXtoTrueX(this.x);
-            this.sprite.y = this.world.utils.gridYtoTrueY(this.y);            
-        }
-    }
-
-     destroy(){
-        if (this.solid){
-            this.world.worldGrid[this.x][this.y] = 0;
-        }
-        this.sprite.destroy(); 
-    }
-}
-
-class mainScene extends Phaser.Scene
-{   
-    map; //the map that the sprites are placed upon  
-
-    marker; //selector tool    
-    pointer; //Mouse pointer
-    focusObject; //tile currently selected, to be manipulated    
-    selected_tile; //currently selected tiletype
-
-    deleteKey; //keyboard input for delete, @TODO refactor for more generality.
-
-    sprites = []; //array to keep track of all created sprites
-    spriteDict = []; // map the numerical positions of the tiles to names.
-
-    utils = new Utils();
-    worldGrid; //grid to represent every grid position. 
-    worldWidth = 20; //Very magic number-y.
-    worldHeight = 13;
-       
+class mainScene extends Phaser.Scene{         
     constructor ()
     {
         super("Game_Scene");
@@ -86,13 +8,26 @@ class mainScene extends Phaser.Scene
         this.load.spritesheet('tiles', '../assets/tilesheet.png', {
             frameWidth: 16,
             frameHeight: 16
-        });
+        });         
+
+        this.utils = new Utils();
+        this.UI = new userInterface(this);
+
+        this.worldHeight = 15;
+        this.worldWidth = 20;
+        this.worldLayers = 10; 
+
+        this.spriteDict = []; //dictionary mapping sprites to indexes, used for tilesheets
+
+        this.sprites = []; //all sprites
+        this.maxSprites = 100; //For now.
+
+        this.spriteNamespace = {}; //Name dictionary to map exisiting tiles to names
+        this.prototypes = {}; //map each prototype name to a new prototype. 
         
         this.spriteDict["deer"] = 1;
         this.spriteDict["snow"] = 12;
         this.spriteDict["tree"] = 0; 
-
-        //treat blocks that span more than 1 block differrently.
     }    
 
     create () {
@@ -109,210 +44,386 @@ class mainScene extends Phaser.Scene
 
         this.worldGrid = this.initializeWorldGrid();
 
-        this.marker = this.add.rectangle(0, 32, 16, 16).setStrokeStyle(1,0xffffff);       
+        //Marker for what the mouse is currently over.
+        this.marker = this.add.rectangle(0, 32, 16, 16).setStrokeStyle(1,0xffffff);  
+        this.marker.depth = 100; //magic numbered to always be on top.
+
         
-        this.deleteKey = this.input.keyboard.addKey('DELETE');
-        this.scene.launch("Block_Menu");  
+        //Indicator to which block is currently selected. Need to rework when we have to deal with more than one block.
+        this.selectionIndicator = this.add.rectangle(0, 32, 16, 16).setStrokeStyle(1,0x008000); 
+        this.selectionIndicator.visible=false;
+        this.selectionIndicator.depth = 99; //selection indicator always on top.
+
+        this.deleteKey = this.input.keyboard.addKey('DELETE'); //@TODO refactor for more generality, fix deletion to be an alternate input.
+
+        this.loadGame(); //Game intergrate autoloading of the game
+        //Some bugs, breaks down on really large scenes.
+
+        this.queuedActions = [];
+        var date = new Date();
+        this.waitTimer = date.getTime();
+
+        //this.dummySpawn();
+
+        //Save on exiting the window. 
+        window.addEventListener("beforeunload", function(event){
+            this.saveGame();
+        }.bind(this));       
     }
 
-    update () {        
-        var x = Math.round(this.input.mousePointer.x/16); 
-        var y = Math.round(this.input.mousePointer.y/16)-2;        
-        
-        var selected = false; // is an tile selected?
-        var tentativeSelect; //tentative selection
-    
-        //check if marker is over a sprite.
-        for (var i = 0;i <this.sprites.length;i++){                
+    update () {                  
+        //@TODO different pointers for different tools.
+        this.updateSelf();
+        this.updateSprites();
+        this.updateMarker();   
+        this.updateSelectionMarker(); 
+        this.updateKeyboard();  
+
+    }
+
+
+    //UPDATE HELPERS
+    updateSprites(){
+        //UPDATING SPRITES
+        for (var i = 0;i <this.sprites.length;i++){ 
             this.sprites[i].update();
-                       
-            if (this.sprites[i].x=== x && this.sprites[i].y===y){                
-                selected = true;
-                tentativeSelect = i;               
-            }
 
+            if (typeof this.sprites[i] !== "undefined"){
+                if (this.worldGrid[this.sprites[i].x][this.sprites[i].y].size>1){
+                    console.log("overlap");
+                    //@TODO hook in the broadcasts of collision.
+                }
+                //Bring the focused Tile to the top.
+                if (this.focusObject == this.sprites[i]){
+                    this.sprites[i].sprite.depth = this.worldLayers+1;
+                }else{
+                    this.sprites[i].sprite.depth = this.sprites[i].layer;
+                } 
+            }                      
         }
+    }
 
-        //Marker handling        
-        if (y>=0 && x >=0 && x <this.worldWidth && y<this.worldWidth){
-            this.marker.setPosition(this.utils.gridXtoTrueX(x),this.utils.gridYtoTrueY(y));
+    //Used for programmed events.
+    updateSelf(){
+        var date = new Date();
+        //For use with the wait primitive function.
+        if (this.queuedActions.length>0 && date.getTime()>this.waitTimer){
+            var action = this.queuedActions.shift();
+            action();
+        }    
+    }
 
-            this.marker.depth = 100; //magic numbered to always be on top.
+    //Used to handle the mouse marker.
+    updateMarker(){
+        var x = Math.round(this.input.mousePointer.x/16); 
+        var y = Math.round(this.input.mousePointer.y/16);         
+
+        var tool = this.UI.getTool(); //Which tool is currently in use.
+        
+        //MARKER HANDLING     
+        if (y>=0 && x >=0 && x <this.worldWidth && y<this.worldHeight){ 
+            this.marker.setPosition(this.utils.gridToTrue(x),this.utils.gridToTrue(y));           
             this.marker.visible=true;
 
-            if (selected){
-                this.marker.setStrokeStyle(1,0xfff000);                
+            //Hover over in select mode.
+            if (this.worldGrid[x][y].size ==1 && tool == "select"){
+                this.marker.setStrokeStyle(1,0x00008b); //Set the color of the selector.
+            }else if (this.worldGrid[x][y].size > 1 && tool == "select"){
+                this.marker.setStrokeStyle(1,0x0000ff);
             }else{
-                                
                 this.marker.setStrokeStyle(1,0xffffff);
-            }           
+            }          
 
-            if (this.input.activePointer.primaryDown) {                
-                if (this.input.activePointer.justDown){ //If the click was just done.                    
-                    if (typeof tentativeSelect != "undefined"){
-                        this.focusObject = this.sprites[tentativeSelect];
-                        //On click, the selected object becomes focused.                    
-                    }else{
-                        //tile placement
-                        if (this.selected_tile){                                
-                            let tileSprite = new BasicTile(this,x,y,this.spriteDict[this.selected_tile]);                             
-                            this.sprites.push(tileSprite);
-                            this.focusObject = tileSprite;                  
+            //On Click
+            if (this.input.activePointer.primaryDown){                
+                if (this.input.activePointer.justDown){ //If the click was just done.  
+                    if (tool == "select"){
+                        if (this.worldGrid[x][y].size == 0){ //If the hovered area has no object
+                            this.focusObject = false;
+                            this.UI.clearPropertyFields();
+                        }else if (this.worldGrid[x][y].size == 1){ //If hovered area has more than 1 object, i.e. is a set
+                            this.UI.multipleSelect = new Set(); //Empty the multiple select if not needed.
+                            this.focusObject = this.worldGrid[x][y].values().next().value; 
+
+                        }else if (this.worldGrid[x][y] > 1){                            
+                            this.UI.handleMultipleTargets(this.worldGrid[x][y]); //Dirty way of notifying the UI that we have more than 1 potential select.                         
+                            this.focusObject = this.worldGrid[x][y].values().next().value; 
+                        } 
+
+                    }else if (tool == "create"){
+                        //tile placement on click 
+                        if (this.UI.selectionPane.value){
+                            //Should we be able to create on an solid tile?
+                            var tileSprite = this.makeTile(x,y,this.UI.selectionPane.value);                       
+
+                            if (tileSprite){
+                                this.focusObject = tileSprite;     
+                            }                         
+                                           
                         }                    
                     }
                 }
-
-                this.moveFocusObject(this.utils.TrueXtoGridX(this.marker.x),this.utils.TrueYtoGridY(this.marker.y))
-          
-            }
+                //Moving and displaying should be done even if the key is being held down.
+                this.moveObject(this.focusObject,this.utils.trueToGrid(this.marker.x),this.utils.trueToGrid(this.marker.y));
+                this.UI.displayProperties(this.focusObject); //ouput the focused objects relevant fields
+                }
         }else{
-            this.marker.visible=false;
-            this.movingTile=false;
-        }
-        
-        if (this.deleteKey.isDown){
-            if (this.focusObject){
-                let index = this.sprites.indexOf(this.focusObject);
-                this.sprites.splice(index,1);
-
-                this.focusObject.destroy();
-                this.focusObject = undefined;
-            }
+            this.marker.visible=false;             
         }
     }
 
+    updateSelectionMarker(){
+        //SELECTION MARKER
+        //if there is a objecct being focused, the selection indicator goes to true.
+        if (this.focusObject){
+            this.selectionIndicator.visible = true;
+            this.selectionIndicator.setPosition(this.utils.gridToTrue(this.focusObject.x),this.utils.gridToTrue(this.focusObject.y));
+        }else{
+            this.selectionIndicator.visible = false;
+        } 
+    }
+
+    updateKeyboard(){
+        //Deletion shouldn't work when on text areas and input. 
+        var activeElementType = document.activeElement.type;
+        if (activeElementType == "text"|| activeElementType == "textarea"|| activeElementType == "number"){
+            this.deleteKey.enabled = false;  
+            this.input.keyboard.removeCapture("DELETE"); 
+        }else{           
+            this.deleteKey.enabled = true;
+            this.input.keyboard.addCapture("DELETE");
+        }
+
+        //Delete key polling.
+        if (this.deleteKey.isDown){
+            this.deleteTile(this.focusObject);
+        } 
+
+    }
+
+    wait(duration){
+        var date = new Date();
+        this.waitTimer = date.getTime()+duration;
+    }
+
+    
+    //Called to create the grid of Game Objects
     initializeWorldGrid(){
         let grid = [];
         for (var i =0;i<this.worldWidth;i++){
-            grid[i] = new Array(this.worldHeight)
+            grid[i] = new Array(this.worldHeight);
+            for (var j = 0; j<this.worldHeight;j++){
+                grid[i][j] = new Set();
+            }
         }
         return grid;
     }
 
-    //function to move an object to a new grid location, will do nothing if the position is taken.
-    //@TODO, could add more generality by making the focus object a parameter for a sprite.
-    moveFocusObject(new_x,new_y){
-        if (this.focusObject){
-            let currentX = this.focusObject.x;
-            let currentY = this.focusObject.y;
 
-            if (this.worldGrid[new_x][new_y] != 1){
-                this.focusObject.x = new_x;
-                this.focusObject.y = new_y;
 
-                if (this.focusObject.solid){
-                    this.worldGrid[currentX][currentY] = 0;
-                    this.worldGrid[this.focusObject.x][this.focusObject.y] = 1;
+    //General method to move a tile around
+    moveObject(focus_tile,new_x,new_y){
+        //Check the new position is in bounds
+        if(new_x < 0 || new_x >= this.worldWidth ||new_y < 0||new_y >= this.worldHeight){
+            console.log("collided with world edge");
+            focus_tile.onCollideEdge();
+            return;
+        }
+
+        if (new_x.length == 0 || new_y.length == 0){
+            console.log("No Input");
+            return;
+        }
+        
+        if (focus_tile){
+            let currentX = focus_tile.x;
+            let currentY = focus_tile.y;
+
+            var validMove = true;
+
+            //if the focus tile is solid, it should not be able to stack on anything.
+            if (focus_tile.solid){
+                if (this.worldGrid[new_x][new_y].size > 0){
+                    validMove = false;
                 }
+            }
+            //check if all the tiles in the landing zone are not solid
+            for (var tile of this.worldGrid[new_x][new_y]){
+                if (tile.solid && tile!=focus_tile){
+                    console.log("blocked by an impassable tile")
+                    validMove = false;
+                    break;
+                }
+            }
+            //do the move.
+            if (validMove){
+                focus_tile.x= new_x;
+                focus_tile.y = new_y;
+                this.worldGrid[currentX][currentY].delete(focus_tile);
+                this.worldGrid[focus_tile.x][focus_tile.y].add(focus_tile);
+
+                if (this.focusObject == focus_tile){
+                    if (document.activeElement.parentElement.className != "propertyDiv"){
+                        this.UI.displayProperties(focus_tile);
+                    }
+                    
+                    if (this.worldGrid[focus_tile.x][focus_tile.y].size>1){
+                        this.UI.handleMultipleTargets(this.worldGrid[focus_tile.x][focus_tile.y]);
+                    }
+                }
+
+                
             }                                                  
         }
     }
 
-    createSnowDrift(x, y) {
-        //this.map.putTileAt(12, x, y, 'base');
-        let snowDrift = this.add.sprite(x, y, 'tiles',12);
-        snowDrift.depth = 1;
-        return snowDrift;
-    }
+    deleteTile(tile){
+        if (tile){
+            let index = this.sprites.indexOf(tile);
+            this.sprites.splice(index,1);
 
-    createTree(x, y) {
-        //TODO groups
-        let tree = this.add.group();
-
-        tree.add(this.add.sprite(x, y, 'tiles',20));
-        tree.add(this.add.sprite(x, y-16, 'tiles',10));
-        tree.add(this.add.sprite(x, y-32, 'tiles',0));
-
-        return tree;
-
-        //this.map.putTileAt(0, x, y, 'objects');
-        //this.map.putTileAt(10, x, y + 1, 'objects');
-        //this.map.putTileAt(20, x, y + 2, 'objects');
-    }
-
-    createHouse(x, y) {
-        this.map.putTileAt(3, x, y, 'objects');
-        this.map.putTileAt(4, x + 1, y, 'objects');
-        this.map.putTileAt(5, x + 2, y, 'objects');
-        this.map.putTileAt(13, x, y + 1, 'objects');
-        this.map.putTileAt(14, x + 1, y + 1, 'objects');
-        this.map.putTileAt(15, x + 2, y + 1, 'objects');
-    }
-    createDeer(x, y) {
-        let deer = this.add.sprite(x, y, 'tiles',1);
-        deer.depth = 1;        
-        //let deer = this.map.putTileAt(1, x, y, 'objects');
-        return deer;        
-    }
-
-}
-
-class tileSelection extends Phaser.Scene{
-//Menu to select which block to drag out. 
-//@TODO indication as to which block is selected
-
-    buttons = [];
-    selected; //which button has been selected
-    baseScene;
-
-    debugText; //Text, only for debugging.
-
-    constructor ()
-    {
-        super("Block_Menu");
-    }
-
-    create(){
-        this.baseScene = this.scene.get("Game_Scene");
-
-        this.debugText=this.add.text(160, 10, 'No Focus Object',{ fontSize: '10px'}); //@debug 
-
-        //Buttons should be autogenerated from existing prototypes. 
-        var treeButton = this.add.text(10, 10, 'Tree')
-        .setInteractive()
-        .on('pointerdown', () => { 
-            console.log("Tree Sprite");
-            this.baseScene.selected_tile = 'tree'; 
-            this.selected = treeButton;      
-        });
-        this.buttons.push(treeButton);
-
-        var deerButton = this.add.text(60, 10, 'Deer')
-        .setInteractive()
-        .on('pointerdown', () => { 
-            console.log("Deer Sprite");
-            this.baseScene.selected_tile = 'deer';
-            this.selected = deerButton; 
-        });
-        this.buttons.push(deerButton);
-        
-        var snowButton = this.add.text(110, 10, 'Snow')
-        .setInteractive()
-        .on('pointerdown', () => { 
-            console.log("Snow Sprite");
-            this.baseScene.selected_tile = 'snow';            
-            this.selected = snowButton; 
-        });
-        this.buttons.push(snowButton);
-    }
-
-    update(){
-        //@debug
-        if(this.baseScene.focusObject){
-            this.debugText.setText("x: " + (this.baseScene.focusObject.x) +" y: " + (this.baseScene.focusObject.y));
-        }else{
-            this.debugText.setText("No Focus Object");
-        }        
-
-        //colour in the selected button
-        for (var i=0;i<this.buttons.length;i++){
-            if (this.buttons[i] == this.selected){
-                this.buttons[i].setStyle({ fill: '#49B62E'});
-            }else{
-                this.buttons[i].setStyle({ fill: '#FFFFFF'});
-            } 
+            //remove the tile from namespace if it has a name
+            if (tile.name){
+                delete this.spriteNamespace[this.focusObject.name];
+            }
+            //Delete the object
+            tile.destroy();
+            if (this.focusObject == tile){
+                this.focusObject = false;
+                this.UI.clearPropertyFields();
+            }            
         }
     }
+
+    makeTile(x,y,prototype){
+        if (x < 0 || x >=this.worldWidth){
+            return false;
+        }
+
+        if (y <0 || y >= this.worldHeight){
+            return false;
+        }
+
+        if (!prototype in this.prototypes && prototype != "BasicTile"){
+            return false;
+        }
+
+        if  (this.sprites.length >= this.maxSprites){
+            console.log("Hit the sprite limit");
+            return false;
+        }
+
+        if (prototype == "BasicTile"){           
+            var tileSprite =new BasicTile(this,x,y,"tree");
+
+        }else if (prototype in this.prototypes){
+            var tileSprite = new BasicTile(this,x,y,"tree");
+
+            tileSprite.applyProtoType(this.prototypes[prototype]);
+        }
+
+        this.sprites.push(tileSprite);
+        return tileSprite;
+    }
+    
+    saveGame(){
+        var saveGameObject = {};
+
+        saveGameObject.prototypes = this.prototypes;
+
+        saveGameObject.sprites = this.sprites.map(function(sprite){
+            return sprite.serialize();
+        });
+
+        localStorage.setItem("2DSandbox",JSON.stringify(saveGameObject));
+    }
+
+    loadGame(){
+        var state = localStorage.getItem("2DSandbox");
+
+        if (state === null){
+            return;
+        }        
+        this.resetGame();
+        //flush the current map
+
+        console.log("Loading state");
+        var saveState = JSON.parse(state);  
+        
+                
+        for (var i = 0; i<saveState.sprites.length;i++){
+            var spriteData =  JSON.parse(saveState.sprites[i]);
+                        
+            //Need to repopulate the worldGrid as well as the sprites array.
+            //Keep loadgame this way to deal with prototype being deleted when existing sprites are out.
+            this.sprites[i] = new BasicTile(this, spriteData.x,spriteData.y,spriteData.spriteName);
+            this.sprites[i].type = spriteData.type;
+            this.UI.renameObject(this.sprites[i], spriteData.name);    
+
+            for (var field in spriteData.exposed_fields){
+                this.sprites[i].exposed_fields[field] = spriteData.exposed_fields[field];
+            }       
+        }
+        for (var prototype in saveState.prototypes){
+            this.prototypes[prototype] = saveState.prototypes[prototype];
+            //@TODO prototype doesn't hold.
+            this.UI.addPrototypeToList(prototype);
+        }
+    }
+
+    resetGame(){
+        for (var i =0;i<this.sprites.length;i++){
+            this.sprites[i].destroy();
+        }
+        this.prototypes ={};
+        this.sprites = [];     
+        this.spriteNamespace = {};   
+        this.worldGrid = this.initializeWorldGrid();
+    }
+
+
+    //Testing functions.
+    dummySpawn(){
+        this.resetGame();
+
+        for (var i = 0; i <5; i++){
+            this.queuedActions.push(function(){
+                this.wait(100);
+            }.bind(this));
+
+            this.queuedActions.push(function(){
+                var x = 0;
+                var y = 5;
+
+                var tile = this.makeTile(x,y,"BasicTile");
+                if (tile){
+
+                    //Can now set on trying to exit scene events.
+                    tile.setWhenExitScene(function(){
+                        console.log("Collide");
+                        this.deleteTile(tile);
+                    }.bind(this));
+                    this.dummyMove(tile);
+                }                
+            }.bind(this));
+        }
+    }
+    
+    dummyMove(activeTile){
+        for (var j = 0; j<20;j++){
+            activeTile.queuedActions.push(function(){
+                var x = (activeTile.x + 1);
+                var y = activeTile.y;
+                //this.makeTile(activeTile.x,activeTile.y,"BasicTile");
+                this.moveObject(activeTile,x,y);                
+            }.bind(this));
+
+            activeTile.queuedActions.push(function(){
+                activeTile.wait(10);
+            }.bind(this));
+        }
+    }
+   
 }
 
 var config = {
@@ -322,7 +433,7 @@ var config = {
     parent: 'sandbox',
     pixelArt: true,
     zoom: 2,
-    scene: [mainScene, tileSelection]
+    scene: [mainScene]
 }
 
 let game = new Phaser.Game(config);
