@@ -47,7 +47,6 @@ class mainScene extends Phaser.Scene{
         //Marker for what the mouse is currently over.
         this.marker = this.add.rectangle(0, 32, 16, 16).setStrokeStyle(1,0xffffff);  
         this.marker.depth = 100; //magic numbered to always be on top.
-
         
         //Indicator to which block is currently selected. Need to rework when we have to deal with more than one block.
         this.selectionIndicator = this.add.rectangle(0, 32, 16, 16).setStrokeStyle(1,0x008000); 
@@ -63,7 +62,7 @@ class mainScene extends Phaser.Scene{
         var date = new Date();
         this.waitTimer = date.getTime();
 
-        //this.dummySpawn();
+        this.dummySpawn();
 
         //Save on exiting the window. 
         window.addEventListener("beforeunload", function(event){
@@ -408,19 +407,20 @@ class mainScene extends Phaser.Scene{
             }.bind(this));
         }
     }
+
     
     dummyMove(activeTile){
         for (var j = 0; j<20;j++){
             activeTile.queuedActions.push(function(){
-                var x = (activeTile.x + 1);
-                var y = activeTile.y;
+                var x = activeTile.x + 1;
+                var y = activeTile.y + 1 ;
                 //this.makeTile(activeTile.x,activeTile.y,"BasicTile");
-                this.moveObject(activeTile,x,y);                
-            }.bind(this));
+                activeTile.actions["moveObject"](x,y);                
+            });
 
             activeTile.queuedActions.push(function(){
-                activeTile.wait(10);
-            }.bind(this));
+                activeTile.actions["wait"](1000);
+            });
         }
     }
    

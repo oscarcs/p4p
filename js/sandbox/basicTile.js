@@ -7,6 +7,7 @@ class BasicTile{
 
         this.actions = {}; //array of functions mapped to the function name.
         //Need to reserve somekeywords for primitives
+        this.populatePrimitives();
         
         this.x = x;
         this.y = y;
@@ -38,6 +39,16 @@ class BasicTile{
         for (var key in prototype.fields){
             this.exposed_fields[key] = prototype.fields[key];
         } 
+    }
+
+    populatePrimitives(){
+        this.actions["wait"] = function(duration){
+            this.wait(duration);
+        }.bind(this);
+
+        this.actions["moveObject"]=function(x,y){
+            this.world.moveObject(this,x,y);
+        }.bind(this);
     }
 
     update(){               
