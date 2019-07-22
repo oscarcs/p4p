@@ -1,25 +1,25 @@
 class Prototype{
-    constructor(type,tile){
+    constructor(type,tile) {
         this.type = type;
 
-        if (tile){
+        if (tile) {
             this.spriteName = tile.spriteName;
             this.solid = tile.solid;
             this.depth = tile.depth;
             this.fields = {};
             this.actions = {};
 
-            for (var keys in tile.exposed_fields){
+            for (var keys in tile.exposed_fields) {
                 this.fields[keys] = tile.exposed_fields[keys];
             }
 
-            for (var action in tile.action){
+            for (var action in tile.action) {
                 this.actions[action] = tile.actions[action];
             }
         }
     }
-    serialize(){
+
+    serialize() {
         return JSON.stringify(this);
     }
-
 }

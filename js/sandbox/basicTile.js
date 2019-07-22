@@ -1,12 +1,18 @@
 class BasicTile{   
     //TODO, need to include an immutable "type" property.
-    constructor(world,x,y,spriteName,name=undefined){
-        this.world=world;
+    constructor(world, x, y, spriteName, name = undefined) {
+        this.world = world;
         this.type = "BasicTile";
-        this.exposed_fields = {}; //array of exposed fields mapped to their values. 
 
-        this.actions = {}; //array of functions mapped to the function name.
-        //Need to reserve somekeywords for primitives
+        //@@RENAME
+        // Array of exposed fields mapped to their values.
+        this.exposed_fields = {};  
+
+        // Array of functions mapped to the function name.
+        this.actions = {}; 
+        
+        //@@TODO
+        // Need to reserve some keywords for primitives
         this.populatePrimitives();
         
         this.x = x;
@@ -15,7 +21,12 @@ class BasicTile{
         this.spriteName = spriteName;
         var index = world.spriteDict[spriteName];
         
-        this.sprite = this.world.add.sprite(world.utils.gridToTrue(x), world.utils.gridToTrue(y),'tiles',index); //This shouldn't be exposed.
+        this.sprite = this.world.add.sprite(
+            world.utils.gridToTrue(x), 
+            world.utils.gridToTrue(y),
+            'tiles',
+            index
+        );
 
         this.sprite.depth = 1;  
         this.layer = 1; 
@@ -24,48 +35,57 @@ class BasicTile{
         this.name = name;
 
         this.code = '';
-        this.queuedActions = []; //push tasks in, shift tasks out. Pushed actions need to use bind.
+        
+        // Push tasks in, shift tasks out. Pushed actions need to use bind.
+        this.queuedActions = []; 
         
         var date = new Date();      
         this.waitTimer = date.getTime();
     }
     
-    //Takes a base tile and then applies the prototype, i.e. changing the internal elements as neccessary. 
-    applyProtoType(prototype){        
+    // Takes a base tile and then applies the prototype, 
+    // i.e. changing the internal elements as neccessary. 
+    applyProtoType(prototype) {        
         this.solid = prototype.solid;
         this.type = prototype.type;
         this.changeSprite(prototype.spriteName);
         this.depth = prototype.depth;
         
-        for (var key in prototype.fields){
+        for (var key in prototype.fields) {
             this.exposed_fields[key] = prototype.fields[key];
         } 
     }
 
-    populatePrimitives(){
-        this.actions["wait"] = function(duration){
+    populatePrimitives() {
+        this.actions["wait"] = function(duration) {
             this.wait(duration);
         }.bind(this);
 
-        this.actions["moveObject"]=function(x,y){
-            this.world.moveObject(this,x,y);
+        this.actions["moveObject"] = function(x, y) {
+            this.world.moveObject(this, x, y);
         }.bind(this);
     }
 
-    update(){               
-        //For now, the update loop will take a function from the queue and execute it at every tick
+    update() {     
+        
+        //@@TODO: use a more efficient and robust mechanism than Date().
+
+        // For now, the update loop will take a function from the queue
+        // and execute it at every tick
         var date = new Date();
 
-        //For use with the wait primitive function.
-        if (this.queuedActions.length>0 && date.getTime()>this.waitTimer){
+        // For use with the wait primitive function.
+        if (this.queuedActions.length > 0 && date.getTime() > this.waitTimer) {
             var action = this.queuedActions.shift();
             action();
         }        
 
         this.limitPosition(); 
 
-        if (this.world.utils.gridToTrue(this.x)!==this.sprite.x || this.world.utils.gridToTrue(this.y)!==this.sprite.y){
-            //lazy update position
+        if (this.world.utils.gridToTrue(this.x) !== this.sprite.x ||
+            this.world.utils.gridToTrue(this.y) !== this.sprite.y
+        ) {
+            // Lazily update position
             this.sprite.x = this.world.utils.gridToTrue(this.x);
             this.sprite.y = this.world.utils.gridToTrue(this.y);           
         } 
@@ -73,94 +93,99 @@ class BasicTile{
     }
 
 
-    limitPosition(){
-        this.x = Math.max(this.x,0);
-        this.x = Math.min(this.x ,this.world.worldWidth-1);
+    limitPosition() {
+        this.x = Math.max(this.x, 0);
+        this.x = Math.min(this.x, this.world.worldWidth - 1);
 
-        this.y = Math.max(this.y,0);
-        this.y = Math.min(this.y,this.world.worldHeight-1);
+        this.y = Math.max(this.y, 0);
+        this.y = Math.min(this.y, this.world.worldHeight - 1);
     }
 
-    destroy(){        
+    destroy() {        
         this.world.worldGrid[this.x][this.y].delete(this);        
         this.sprite.destroy(); 
     }
 
 
-    addStringField(field){
+    addStringField(field) {
         this.exposed_fields[field] = " ";
     }
 
-    addNumberField(field){
+    addNumberField(field) {
         this.exposed_fields[field] = 0;
     }
 
-    addBooleanField(field){
+    addBooleanField(field) {
         this.exposed_fields[field] = false;
     }
 
-    changeSprite(newSprite){
-        if (this.spriteName == newSprite){
+    changeSprite(newSprite) {
+        if (this.spriteName == newSprite) {
             //lazy update
             return;
         }
-        if (this.world.spriteDict[newSprite]!=undefined){
+
+        if (this.world.spriteDict[newSprite] != undefined) {
             this.spriteName = newSprite;
             var index = this.world.spriteDict[newSprite];
 
             this.sprite.destroy();            
-            this.sprite = this.world.add.sprite(this.world.utils.gridToTrue(this.x), this.world.utils.gridToTrue(this.y),'tiles',index);
+            this.sprite = this.world.add.sprite(
+                this.world.utils.gridToTrue(this.x), 
+                this.world.utils.gridToTrue(this.y),
+                'tiles',
+                index
+            );
         }
     }
 
-    //Limit depth to 10 layers for the sake of simplicity.
-    changeDepth(layer){
-        if (layer<1){
+    //@@DESIGN
+    // Limit depth to 10 layers for the sake of simplicity.
+    changeDepth(layer) {
+        if (layer < 1) {
             this.depth = 1;
-        }else if (layer>10){
+        }
+        else if (layer > 10) {
             this.layer = 10;
-        }else{
+        }
+        else {
             this.layer = layer;
         }
     }
     
-    //Primitive funciton to wait before the next action.
-    wait(duration){
+    // Primitive funciton to wait before the next action.
+    wait(duration) {
         var date = new Date();
         this.waitTimer = date.getTime()+duration;
     }
 
-    //Setting some hook actions.
-    setWhenExitScene(exitAction){
-        if (typeof exitAction === "function"){
+    // Setting some hook actions.
+    setWhenExitScene(exitAction) {
+        if (typeof exitAction === "function") {
             this.actions["whenExitScene"] = exitAction
         }
-
     }
 
-    onCollideEdge(){
-        if ("whenExitScene" in this.actions && typeof this.actions["whenExitScene"] == "function"){
+    onCollideEdge() {
+        if ("whenExitScene" in this.actions && 
+            typeof this.actions["whenExitScene"] == "function"
+        ) {
             this.actions["whenExitScene"]();
         }
-
     }
 
-    //For saving state.
-    serialize(){
+    // For saving state.
+    serialize() {
         var saveSprite = {};
         saveSprite.type = this.type;
         saveSprite.name = this.name;
-        saveSprite.spriteName=this.spriteName;        
-
+        saveSprite.spriteName = this.spriteName;        
         saveSprite.x = this.x;
         saveSprite.y = this.y;
         saveSprite.exposed_fields = this.exposed_fields;
-        
         saveSprite.solid = this.solid;
-
         saveSprite.code = this.code;
 
         return JSON.stringify(saveSprite);
     }
-   
 }
