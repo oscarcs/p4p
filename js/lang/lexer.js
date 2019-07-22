@@ -77,6 +77,11 @@ class Lexer {
             return new Token('rparen', ')');
         }
 
+        if (c === ',') {
+            this.advance();
+            return new Token('comma', ',');
+        }
+
         if (c === '=') {
             if (this.next() === '=') {
                 return this.operator();

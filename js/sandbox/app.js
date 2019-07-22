@@ -59,10 +59,14 @@ class mainScene extends Phaser.Scene{
         //Some bugs, breaks down on really large scenes.
 
         this.queuedActions = [];
+
+        // Create a reference to the global queue
+        globalQueue = this.queuedActions;
+
         var date = new Date();
         this.waitTimer = date.getTime();
 
-        this.dummySpawn();
+        // this.dummySpawn();
 
         //Save on exiting the window. 
         window.addEventListener("beforeunload", function(event){
@@ -89,7 +93,7 @@ class mainScene extends Phaser.Scene{
 
             if (typeof this.sprites[i] !== "undefined"){
                 if (this.worldGrid[this.sprites[i].x][this.sprites[i].y].size>1){
-                    console.log("overlap");
+                    // console.log("overlap");
                     //@TODO hook in the broadcasts of collision.
                 }
                 //Bring the focused Tile to the top.
@@ -134,22 +138,27 @@ class mainScene extends Phaser.Scene{
             }          
 
             //On Click
-            if (this.input.activePointer.primaryDown){                
-                if (this.input.activePointer.justDown){ //If the click was just done.  
-                    if (tool == "select"){
-                        if (this.worldGrid[x][y].size == 0){ //If the hovered area has no object
+            if (this.input.activePointer.primaryDown) {                
+                if (this.input.activePointer.justDown) { //If the click was just done.  
+                    if (tool == "select") {
+                        if (this.worldGrid[x][y].size == 0) { //If the hovered area has no object
                             this.focusObject = false;
                             this.UI.clearPropertyFields();
-                        }else if (this.worldGrid[x][y].size == 1){ //If hovered area has more than 1 object, i.e. is a set
+                        }
+                        else if (this.worldGrid[x][y].size == 1) { //If hovered area has more than 1 object, i.e. is a set
                             this.UI.multipleSelect = new Set(); //Empty the multiple select if not needed.
                             this.focusObject = this.worldGrid[x][y].values().next().value; 
 
-                        }else if (this.worldGrid[x][y] > 1){                            
+                        }
+                        else if (this.worldGrid[x][y] > 1) {                            
                             this.UI.handleMultipleTargets(this.worldGrid[x][y]); //Dirty way of notifying the UI that we have more than 1 potential select.                         
                             this.focusObject = this.worldGrid[x][y].values().next().value; 
-                        } 
+                        }
 
-                    }else if (tool == "create"){
+                        currentTile = this.focusObject;
+                        document.getElementById('input').value = this.focusObject.code; 
+                    }
+                    else if (tool == "create") {
                         //tile placement on click 
                         if (this.UI.selectionPane.value){
                             //Should we be able to create on an solid tile?
@@ -357,6 +366,7 @@ class mainScene extends Phaser.Scene{
             //Keep loadgame this way to deal with prototype being deleted when existing sprites are out.
             this.sprites[i] = new BasicTile(this, spriteData.x,spriteData.y,spriteData.spriteName);
             this.sprites[i].type = spriteData.type;
+            this.sprites[i].code = spriteData.code;
             this.UI.renameObject(this.sprites[i], spriteData.name);    
 
             for (var field in spriteData.exposed_fields){

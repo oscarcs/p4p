@@ -23,6 +23,7 @@ class BasicTile{
         this.solid = false;
         this.name = name;
 
+        this.code = '';
         this.queuedActions = []; //push tasks in, shift tasks out. Pushed actions need to use bind.
         
         var date = new Date();      
@@ -156,6 +157,9 @@ class BasicTile{
         saveSprite.exposed_fields = this.exposed_fields;
         
         saveSprite.solid = this.solid;
+
+        saveSprite.code = this.code;
+
         return JSON.stringify(saveSprite);
     }
    

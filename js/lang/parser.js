@@ -54,6 +54,7 @@ class Parser {
                     //@@TODO: This is probably indicative of an error but whatever. 
                     if (this.token().type !== 'rparen') {
                         //@@ERROR:
+                        throw 'no matching right parenthesis!';
                     } 
 
                     return expression;
@@ -118,6 +119,34 @@ class Parser {
                     return node;
                 }
             },
+
+            'lparen': {
+                f: (token, left) => {
+                    this.expect('lparen');
+                    let node = new Node('call', left.reproduction);
+                    
+                    if (this.token().type !== 'rparen') {
+                        while (true) {
+                            let arg = this.expression(0);
+                            this.advance();
+                            console.log(this.token());
+                            node.addChild(arg);    
+
+                            if (!this.accept('comma')) {
+                                break;
+                            }
+                        }
+
+                        
+                        //@@TODO: This is probably indicative of an error but whatever. 
+                        if (this.token().type !== 'rparen') {
+                            //@@ERROR:
+                            throw 'Expected matching rparen!';
+                        } 
+                    }
+                    return node;
+                }
+            }
         };
     }
 
@@ -317,7 +346,6 @@ class Parser {
 
             this.expect('end');
 
-            console.log(node);
             return node;
         }
         else if (this.accept('while')) {
@@ -355,18 +383,29 @@ class Parser {
 
             return node;
         }
-        else if (this.accept('ident')) {
-            this.expect('=');
+        else if (this.token().type === 'ident') {
+            if (this.lookahead().type === 'lparen') {
+                let call = this.expression(0);
+                console.log(this.token());
+                this.accept('rparen');
+                this.accept('\n');
+                return call;
+            }
+            else {
+                this.advance();
+                this.expect('=');
+    
+                let right = this.expression(0);
+    
+                this.advance();
+                this.accept('\n');
+    
+                let node = new Node('assignment', '=');
+                node.addChild(new Node('ident', left.reproduction));
+                node.addChild(right);
+                return node;
+            }
 
-            let right = this.expression(0);
-
-            this.advance();
-            this.accept('\n');
-
-            let node = new Node('assignment', '=');
-            node.addChild(new Node('ident', left.reproduction));
-            node.addChild(right);
-            return node;
         }
         else {
             return null;
@@ -379,7 +418,7 @@ class Parser {
             let prefix = this.prefix(this.token());
             let left = prefix(this.token(), null);
 
-            console.log(precedence, this.lookahead(), this.precedence(this.lookahead()));
+            // console.log(precedence, this.lookahead(), this.precedence(this.lookahead()));
 
             while (precedence < this.precedence(this.lookahead())) {
                 this.advance();

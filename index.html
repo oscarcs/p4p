@@ -5,15 +5,20 @@
         <script src="js/lang/reserved.js"></script>
         <script src="js/lang/lexer.js"></script>
         <script src="js/lang/parser.js"></script>
+        <script src="js/lang/interpreter.js"></script>
         <script>
-            // let test = 
-            // `x = 3
-            // print x`;
             
-            // let lexer = new Lexer(test);
-            // console.log(lexer.lex()); 
-            
+            let currentTile = null;
+            let globalQueue = null;
+
             window.onload = function () {
+
+                document.getElementById('input').addEventListener('input', () => {
+                    if (currentTile) {
+                        currentTile.code = document.getElementById('input').value;
+                    }
+                });
+
                 document.getElementById('tokenize').addEventListener('click', () => {
                     let code = document.getElementById('input').value;
     
@@ -35,6 +40,22 @@
                     let text = Parser.printSyntaxTree(output);
                     document.getElementById('output').value = text;
                 });
+
+                document.getElementById('execute').addEventListener('click', () => {
+                    let code = document.getElementById('input').value;
+
+                    let lexer = new Lexer(code);
+                    let tokens = lexer.lex();
+
+                    let parser = new Parser(tokens);
+                    let ast = parser.parse();
+
+                    let interpreter = new Interpreter(ast, globalQueue, currentTile);
+                    let output = interpreter.interpret();
+                    document.getElementById('output').value = output;
+
+
+                });
             }
         </script>
         
@@ -49,31 +70,32 @@
     <body>
         <div class="game">
             <div id="sandbox"></div>
-            <div class = "selectionPanel">
+            <div class="selectionPanel">
                 <p>Tool</p>
                 <div id = "toolSelect">
                     <input type="radio" name="tool" value="create">Create Tile<br>
                     <input type="radio" name="tool" value="select" checked> Select Tile<br>
                 </div>        
                 <p>Tile Types</p>
-                <select id = "selectionMenu" size = "10"></select>
-                <button id  = "editButton">Edit Prototype</button>
-                <button id = "deleteButton">Delete Prototype</button>
+                <select id="selectionMenu" size="10"></select>
+                <button id="editButton">Edit Prototype</button>
+                <button id="deleteButton">Delete Prototype</button>
             </div>
             <div class="panel">
                 <textarea id="input"></textarea>
                 <div class="buttons">
                     <button id="tokenize">Tokenize</button>
                     <button id="parse">Parse</button>
+                    <button id="execute">Execute</button>
                 </div>
                 <textarea id="output" disabled></textarea>
             </div>            
         </div>
 
-        <div class = "tileEditPane">
-            <div id = "propertyButtons"></div>
+        <div class="tileEditPane">
+            <div id="propertyButtons"></div>
             <br>
-            <div id="properties" class = "propertyList"></div>
+            <div id="properties" class="propertyList"></div>
         </div>
         <br>
 
