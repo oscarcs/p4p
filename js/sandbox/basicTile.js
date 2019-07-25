@@ -35,7 +35,6 @@ class BasicTile{
 
         this.sprite.depth = 1;  
 
-
         this.code = '';
         
         // Push tasks in, shift tasks out. Pushed actions need to use bind.
@@ -65,6 +64,10 @@ class BasicTile{
 
         this.actions["moveObject"] = function(x, y) {
             this.world.moveObject(this, x, y);
+        }.bind(this);
+
+        this.actions["makeTile"] = function(prototype, x, y){
+            this.world.makeTile(x,y,prototype);
         }.bind(this);
     }
 

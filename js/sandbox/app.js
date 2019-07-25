@@ -55,6 +55,12 @@ class mainScene extends Phaser.Scene{
 
         //@TODO refactor for more generality, fix deletion to be an alternate input.
         this.deleteKey = this.input.keyboard.addKey('DELETE'); 
+        this.cursors = this.input.keyboard.addKeys({
+            up: 'up',
+            down: 'down',
+            left: 'left',
+            right: 'right'
+        });
 
         // Game intergrate autoloading of the game
         this.loadGame(); 
@@ -72,7 +78,7 @@ class mainScene extends Phaser.Scene{
         this.tick = 100; 
         this.tickTimer = date.getTime();
 
-        // this.dummySpawn();
+        //this.dummySpawn();
 
         // Save on exiting the window. 
         window.addEventListener("beforeunload", function(event) {
@@ -232,11 +238,44 @@ class mainScene extends Phaser.Scene{
             activeElementType == "number"
         ) {
             this.deleteKey.enabled = false;  
-            this.input.keyboard.removeCapture("DELETE"); 
+
+            for (var key in this.cursors){                
+                this.cursors[key].enabled = false;
+            }
+
+            this.input.keyboard.clearCaptures();         
+             
         }
         else {           
             this.deleteKey.enabled = true;
             this.input.keyboard.addCapture("DELETE");
+
+            for (var key in this.cursors){                
+                this.cursors[key].enabled = true;
+            }
+            
+            this.input.keyboard.addCapture({
+                up: 'up',
+                down: 'down',
+                left: 'left',
+                right: 'right'
+            });              
+        }
+
+        if(this.cursors.up.isDown){
+            
+        }
+
+        if (this.cursors.down.isDown){
+
+        }
+
+        if (this.cursors.left.isDown){
+
+        }
+
+        if (this.cursors.right.isDown){
+
         }
 
         // Delete key polling.
@@ -393,8 +432,7 @@ class mainScene extends Phaser.Scene{
         this.resetGame();
 
         console.log("Loading state");
-        var saveState = JSON.parse(state);  
-        
+        var saveState = JSON.parse(state);          
                 
         for (var i = 0; i<saveState.sprites.length;i++) {
             var spriteData =  JSON.parse(saveState.sprites[i]);
@@ -427,6 +465,8 @@ class mainScene extends Phaser.Scene{
         this.spriteNamespace = {};   
         this.worldGrid = this.initializeWorldGrid();
     }
+
+
 
     // Testing functions.
     dummySpawn() {
