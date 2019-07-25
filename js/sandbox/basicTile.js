@@ -15,12 +15,17 @@ class BasicTile{
         // Need to reserve some keywords for primitives
         this.populatePrimitives();
         
+        //@@TODO
+        //This needs to be in its own Array
         this.x = x;
         this.y = y;
-
         this.spriteName = spriteName;
-        var index = world.spriteDict[spriteName];
-        
+        this.layer = 1; 
+        this.solid = false;
+        this.name = name;
+
+
+        var index = world.spriteDict[spriteName];        
         this.sprite = this.world.add.sprite(
             world.utils.gridToTrue(x), 
             world.utils.gridToTrue(y),
@@ -29,10 +34,7 @@ class BasicTile{
         );
 
         this.sprite.depth = 1;  
-        this.layer = 1; 
 
-        this.solid = false;
-        this.name = name;
 
         this.code = '';
         
@@ -157,6 +159,10 @@ class BasicTile{
     wait(duration) {
         var date = new Date();
         this.waitTimer = date.getTime()+duration;
+    }
+
+    clearQueue(){
+        this.queuedActions = [];
     }
 
     // Setting some hook actions.

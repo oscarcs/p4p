@@ -3,6 +3,7 @@ class Interpreter {
         this.root = root;
         this.globalQueue = globalQueue;
         this.tile = tile;
+        
     }
 
     interpret() {

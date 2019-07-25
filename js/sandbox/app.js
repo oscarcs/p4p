@@ -68,6 +68,10 @@ class mainScene extends Phaser.Scene{
         var date = new Date();
         this.waitTimer = date.getTime();
 
+        //One tick per 100 milliseconds
+        this.tick = 100; 
+        this.tickTimer = date.getTime();
+
         // this.dummySpawn();
 
         // Save on exiting the window. 
@@ -77,12 +81,13 @@ class mainScene extends Phaser.Scene{
     }
 
     update () {                  
-        //@TODO different pointers for different tools.
+        //@@TODO different pointers for different tools.
         this.updateSelf();
         this.updateSprites();
         this.updateMarker();   
         this.updateSelectionMarker(); 
         this.updateKeyboard();  
+        
 
     }
 
@@ -90,6 +95,14 @@ class mainScene extends Phaser.Scene{
     //UPDATE HELPERS
     updateSprites() {
         //UPDATING SPRITES
+        var time = new Date();
+        
+        if ((this.tickTimer+this.tick)>time.getTime()){
+            return;
+        }else{
+            this.tickTimer = time.getTime();
+        }        
+
         for (var i = 0; i < this.sprites.length; i++) { 
             this.sprites[i].update();
 
@@ -400,7 +413,7 @@ class mainScene extends Phaser.Scene{
 
         for (var prototype in saveState.prototypes) {
             this.prototypes[prototype] = saveState.prototypes[prototype];
-            //@@TODO prototype doesn't hold.
+            
             this.UI.addPrototypeToList(prototype);
         }
     }
