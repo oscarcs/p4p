@@ -110,9 +110,8 @@ class mainScene extends Phaser.Scene{
         }        
 
         for (var i = 0; i < this.sprites.length; i++) { 
-            this.sprites[i].update();
-
             if (typeof this.sprites[i] !== "undefined") {
+                this.sprites[i].update();
                 if (this.worldGrid[this.sprites[i].x][this.sprites[i].y].size > 1) {
                     // console.log("overlap");
                     //@TODO hook in the broadcasts of collision.
@@ -379,6 +378,7 @@ class mainScene extends Phaser.Scene{
     }
 
     makeTile(x, y, prototype) {
+
         if (x < 0 || x >= this.worldWidth) {
             return false;
         }
@@ -387,7 +387,8 @@ class mainScene extends Phaser.Scene{
             return false;
         }
 
-        if (!prototype in this.prototypes && prototype != "BasicTile") {
+        if (!(prototype in this.prototypes) && prototype !== "BasicTile") {
+            console.log("no such tile type");
             return false;
         }
 
@@ -398,7 +399,6 @@ class mainScene extends Phaser.Scene{
 
         if (prototype == "BasicTile") {           
             var tileSprite =new BasicTile(this, x, y, "tree");
-
         }
         else if (prototype in this.prototypes) {
             var tileSprite = new BasicTile(this, x, y, "tree");
