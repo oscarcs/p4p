@@ -100,6 +100,8 @@ class mainScene extends Phaser.Scene{
     //UPDATE HELPERS
     updateSprites() {
         //UPDATING SPRITES
+        //NOTE: for sprite events, events should get unshifted to the front of the queue.
+        //Then if the sprite is waiting, manually advance the queue 
 
         //Allow sprites to move on a "tick"
         var time = new Date();        
@@ -319,7 +321,7 @@ class mainScene extends Phaser.Scene{
         return grid;
     }
 
-
+    
 
     // General method to move a tile around
     moveObject(focus_tile, new_x, new_y) {
@@ -484,7 +486,7 @@ class mainScene extends Phaser.Scene{
     }
 
 
-    // Testing functions.
+    // Testing function
     dummySpawn() {
         this.resetGame();
 
@@ -496,44 +498,20 @@ class mainScene extends Phaser.Scene{
                 var tile = this.makeTile(x,y,"BasicTile");    
                 if (tile){
                     tile.actions["onUpKey"] = function(){   
-                        //Manually advance the queue if needed.                                                 
-                        tile.queuedActions.unshift(tile.actions["moveUp"]);      
-
-                        var date = new Date(); 
-                        if (tile.waitTimer > date.getTime()){
-                            tile.advanceQueue();
-                        }     
+                      tile.genericEvent(tile.actions["moveUp"]);   
                                    
                     }    
 
                     tile.actions["onDownKey"] = function(){
-                        tile.queuedActions.unshift(tile.actions["moveDown"]);     
-
-                        var date = new Date(); 
-                        if (tile.waitTimer > date.getTime()){
-                            tile.advanceQueue();
-                        }  
-                         
+                        tile.genericEvent(tile.actions["moveDown"]);                         
                     }  
                     
                     tile.actions["onLeftKey"] = function(){
-                        tile.queuedActions.unshift(tile.actions["moveLeft"]);  
-
-                        var date = new Date(); 
-                        if (tile.waitTimer > date.getTime()){
-                            tile.advanceQueue();
-                        }  
-                          
+                        tile.genericEvent(tile.actions["moveLeft"]);   
                     }    
 
                     tile.actions["onRightKey"] = function(){
-                        tile.queuedActions.unshift(tile.actions["moveRight"]); 
-
-                        var date = new Date();                         
-                        if (tile.waitTimer > date.getTime()){
-                            tile.advanceQueue();
-                        }  
-                          
+                        tile.genericEvent(tile.actions["moveRight"]); 
                     }    
                 }      
        

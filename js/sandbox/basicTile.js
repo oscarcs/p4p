@@ -146,6 +146,19 @@ class BasicTile{
 
         this.world.worldGrid[this.x][this.y].add(this);
     }
+
+    //Used for doing events, unshifts a task into the queue and then runs it instantly.
+    genericEvent(callback){
+        if (typeof callback !== "function"){
+            return;
+        }
+        this.queuedActions.unshift(callback); 
+
+        var date = new Date();                         
+        if (this.waitTimer > date.getTime()){
+            this.advanceQueue();
+        }  
+    }
     
     advanceQueue(){
         var action = this.queuedActions.shift();
@@ -226,6 +239,7 @@ class BasicTile{
         this.queuedActions = [];
     }
 
+    
     // Setting some hook actions.
     setWhenExitScene(exitAction) {
         if (typeof exitAction === "function") {
