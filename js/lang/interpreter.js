@@ -106,6 +106,7 @@ class Interpreter {
                     args.push(v);
                 }
 
+                //Check if it is a function
                 if (typeof this.tile !== "undefined" &&
                     name in this.tile.actions){
 

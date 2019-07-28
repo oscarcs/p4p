@@ -64,6 +64,7 @@ class BasicTile{
             this.wait(duration);
         }.bind(this);
 
+        //@@RENAME to moveTile for consistency 
         this.actions["moveObject"] = function(x, y) {
             this.world.moveObject(this, x, y);
         }.bind(this);
@@ -72,7 +73,7 @@ class BasicTile{
             this.world.makeTile(x,y,prototype);
         }.bind(this);
 
-        this.actions["moveUp"] = function(distance){
+        this.actions["moveDown"] = function(distance){
             var newY;
             if(typeof distance !== "undefined"){
                 newY = this.y + distance;
@@ -82,7 +83,7 @@ class BasicTile{
             this.world.moveObject(this, this.x, newY);
         }.bind(this);
 
-        this.actions["moveDown"] = function(distance){
+        this.actions["moveUp"] = function(distance){
             var newY;
             if(typeof distance !== "undefined"){
                 newY = this.y - distance;
@@ -130,8 +131,7 @@ class BasicTile{
             date.getTime() > this.waitTimer &&
             this.world.isTick
         ) {
-            var action = this.queuedActions.shift();
-            action();
+            this.advanceQueue();        
         }        
 
         this.limitPosition(); 
@@ -143,7 +143,15 @@ class BasicTile{
             this.sprite.x = this.world.utils.gridToTrue(this.x);
             this.sprite.y = this.world.utils.gridToTrue(this.y);           
         } 
+
         this.world.worldGrid[this.x][this.y].add(this);
+    }
+    
+    advanceQueue(){
+        var action = this.queuedActions.shift();
+            if (typeof action === "function"){
+                action();
+            }
     }
 
 

@@ -63,7 +63,7 @@ class mainScene extends Phaser.Scene{
         });
 
         // Game intergrate autoloading of the game
-        this.loadGame(); 
+        //this.loadGame(); 
         // Some bugs, breaks down on really large scenes.
 
         this.queuedActions = [];
@@ -78,7 +78,7 @@ class mainScene extends Phaser.Scene{
         this.tick = 100; 
         this.tickTimer = date.getTime();
 
-        //this.dummySpawn();
+        this.dummySpawn();
 
         // Save on exiting the window. 
         window.addEventListener("beforeunload", function(event) {
@@ -126,6 +126,34 @@ class mainScene extends Phaser.Scene{
                 else {
                     this.sprites[i].sprite.depth = this.sprites[i].layer;
                 } 
+
+
+                //Poll for keyboard input
+                if (this.cursors.up.isDown &&
+                    this.isTick && 
+                    "onUpKey" in this.sprites[i].actions
+                ) {                    
+                    this.sprites[i].actions["onUpKey"](); 
+                    
+                }else if (this.cursors.down.isDown &&
+                    this.isTick && 
+                    "onDownKey" in this.sprites[i].actions
+                )  {                                        
+                    this.sprites[i].actions["onDownKey"]();
+
+                }else if (this.cursors.left.isDown &&
+                    this.isTick && 
+                    "onLeftKey" in this.sprites[i].actions
+                )  {                    
+                    this.sprites[i].actions["onLeftKey"](); 
+
+                }else if (this.cursors.right.isDown &&
+                    this.isTick && 
+                    "onRightKey" in this.sprites[i].actions
+                )  {                    
+                    this.sprites[i].actions["onRightKey"]();           
+                }
+        
 
                 //Update as last step because tile can become deleted in the update step.
                 this.sprites[i].update();
@@ -266,24 +294,8 @@ class mainScene extends Phaser.Scene{
             });              
         }
 
-        if(this.cursors.up.isDown){
-            
-        }
-
-        if (this.cursors.down.isDown){
-
-        }
-
-        if (this.cursors.left.isDown){
-
-        }
-
-        if (this.cursors.right.isDown){
-
-        }
-
         // Delete key polling.
-        if (this.deleteKey.isDown) {
+        if (this.deleteKey.isDown && this.isTick) {
             this.deleteTile(this.focusObject);
         } 
 
@@ -472,48 +484,62 @@ class mainScene extends Phaser.Scene{
     }
 
 
-
     // Testing functions.
     dummySpawn() {
         this.resetGame();
 
-        for (var i = 0; i < 5; i++) {
-            this.queuedActions.push(function() {
-                this.wait(100);
-            }.bind(this));
-
+        for (var i = 0; i < 1; i++) {
             this.queuedActions.push(function() {
                 var x = 0;
                 var y = 5;
+                
+                var tile = this.makeTile(x,y,"BasicTile");    
+                if (tile){
+                    tile.actions["onUpKey"] = function(){   
+                        //Manually advance the queue if needed.                                                 
+                        tile.queuedActions.unshift(tile.actions["moveUp"]);      
 
-                var tile = this.makeTile(x,y,"BasicTile");
-                if (tile) {
+                        var date = new Date(); 
+                        if (tile.waitTimer > date.getTime()){
+                            tile.advanceQueue();
+                        }     
+                                   
+                    }    
 
-                    // Can now set on trying to exit scene events.
-                    tile.setWhenExitScene(function() {
-                        console.log("Collide");
-                        this.deleteTile(tile);
-                    }.bind(this));
-                    this.dummyMove(tile);
-                }                
+                    tile.actions["onDownKey"] = function(){
+                        tile.queuedActions.unshift(tile.actions["moveDown"]);     
+
+                        var date = new Date(); 
+                        if (tile.waitTimer > date.getTime()){
+                            tile.advanceQueue();
+                        }  
+                         
+                    }  
+                    
+                    tile.actions["onLeftKey"] = function(){
+                        tile.queuedActions.unshift(tile.actions["moveLeft"]);  
+
+                        var date = new Date(); 
+                        if (tile.waitTimer > date.getTime()){
+                            tile.advanceQueue();
+                        }  
+                          
+                    }    
+
+                    tile.actions["onRightKey"] = function(){
+                        tile.queuedActions.unshift(tile.actions["moveRight"]); 
+
+                        var date = new Date();                         
+                        if (tile.waitTimer > date.getTime()){
+                            tile.advanceQueue();
+                        }  
+                          
+                    }    
+                }      
+       
             }.bind(this));
-        }
-    }
+        }    
 
-    
-    dummyMove(activeTile) {
-        for (var j = 0; j < 20; j++) {
-            activeTile.queuedActions.push(function() {
-                var x = activeTile.x + 1;
-                var y = activeTile.y + 1 ;
-                //this.makeTile(activeTile.x,activeTile.y,"BasicTile");
-                activeTile.actions["moveObject"](x, y);                
-            });
-
-            activeTile.queuedActions.push(function() {
-                activeTile.actions["wait"](1000);
-            });
-        }
     }
 }
 
