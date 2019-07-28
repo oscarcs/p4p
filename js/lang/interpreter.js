@@ -50,12 +50,22 @@ class Interpreter {
             case 'assignment':
                 name = node.children[0].reproduction;
 
+                //@@TODO type checking for core fields.
                 if (typeof this.tile[name] !== 'undefined') {
-                    this.tile[name] = this.execute(node.children[1]);
+                    this.tile.queuedActions.push(()=>{
+                        this.tile[name] = this.execute(node.children[1]);
+                    });
+
+                    //this.tile[name] = this.execute(node.children[1]);
                     return this.tile[name]; 
                 }
                 else {
-                    this.tile.exposed_fields[name] = this.execute(node.children[1]);
+                    
+                    this.tile.queuedActions.push(()=>{
+                        this.tile.exposed_fields[name] = this.execute(node.children[1]);
+                    });
+
+                    //this.tile.exposed_fields[name] = this.execute(node.children[1]);
                     return this.tile.exposed_fields[name]; 
                 }
 
