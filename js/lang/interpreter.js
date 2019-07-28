@@ -96,9 +96,17 @@ class Interpreter {
                     args.push(v);
                 }
 
-                this.tile.queuedActions.push(() => {
-                    this.tile.actions[name].apply(null, args);
-                });
+                if (typeof this.tile !== "undefined" &&
+                    name in this.tile.actions){
+
+                    this.tile.queuedActions.push(() => {
+                        this.tile.actions[name].apply(null, args);
+                    });
+                }else{
+                    //@@ERROR 
+                    console.log(name + " is not a action of this tile")
+                    return;
+                }              
 
                 break;
         }

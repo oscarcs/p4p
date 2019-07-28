@@ -57,6 +57,8 @@ class BasicTile{
         } 
     }
 
+
+    //Populate the primitive functions of the tile
     populatePrimitives() {
         this.actions["wait"] = function(duration) {
             this.wait(duration);
@@ -68,6 +70,50 @@ class BasicTile{
 
         this.actions["makeTile"] = function(prototype, x, y){
             this.world.makeTile(x,y,prototype);
+        }.bind(this);
+
+        this.actions["moveUp"] = function(distance){
+            var newY;
+            if(typeof distance !== "undefined"){
+                newY = this.y + distance;
+            }else{
+                newY = this.y + 1;
+            }
+            this.world.moveObject(this, this.x, newY);
+        }.bind(this);
+
+        this.actions["moveDown"] = function(distance){
+            var newY;
+            if(typeof distance !== "undefined"){
+                newY = this.y - distance;
+            }else{
+                newY = this.y - 1;
+            }
+            this.world.moveObject(this, this.x, newY);
+        }.bind(this);
+
+        this.actions["moveRight"] = function(distance){
+            var newX;
+            if(typeof distance !== "undefined"){
+                newX = this.x + distance;
+            }else{
+                newX = this.x + 1;
+            }
+            this.world.moveObject(this, newX, this.y);
+        }.bind(this);
+
+        this.actions["moveLeft"] = function(distance){
+            var newX;
+            if(typeof distance !== "undefined"){
+                newX = this.x - distance;
+            }else{
+                newX = this.x - 1;
+            }
+            this.world.moveObject(this, newX, this.y);
+        }.bind(this);
+
+        this.actions["destroy"] = function(){
+            this.world.deleteTile(this);
         }.bind(this);
     }
 
@@ -162,9 +208,10 @@ class BasicTile{
     }
     
     // Primitive funciton to wait before the next action.
+    //Duration in seconds
     wait(duration) {
         var date = new Date();
-        this.waitTimer = date.getTime()+duration;
+        this.waitTimer = date.getTime()+(1000*duration);
     }
 
     clearQueue(){

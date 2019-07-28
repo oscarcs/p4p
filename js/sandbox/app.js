@@ -112,12 +112,12 @@ class mainScene extends Phaser.Scene{
 
         for (var i = 0; i < this.sprites.length; i++) { 
             if (typeof this.sprites[i] !== "undefined") {
-                this.sprites[i].update();
+                
                 if (this.worldGrid[this.sprites[i].x][this.sprites[i].y].size > 1) {
                     // console.log("overlap");
                     //@TODO hook in the broadcasts of collision.
-                }
-                
+                }               
+                            
                 // Bring the focused Tile to the top.
                 if (this.focusObject == this.sprites[i])
                 {
@@ -126,6 +126,9 @@ class mainScene extends Phaser.Scene{
                 else {
                     this.sprites[i].sprite.depth = this.sprites[i].layer;
                 } 
+
+                //Update as last step because tile can become deleted in the update step.
+                this.sprites[i].update();
             }                      
         }
     }
