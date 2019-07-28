@@ -80,7 +80,10 @@ class BasicTile{
         var date = new Date();
 
         // For use with the wait primitive function.
-        if (this.queuedActions.length > 0 && date.getTime() > this.waitTimer) {
+        if (this.queuedActions.length > 0 &&
+            date.getTime() > this.waitTimer &&
+            this.world.isTick
+        ) {
             var action = this.queuedActions.shift();
             action();
         }        

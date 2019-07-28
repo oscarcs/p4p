@@ -92,8 +92,7 @@ class mainScene extends Phaser.Scene{
         this.updateSprites();
         this.updateMarker();   
         this.updateSelectionMarker(); 
-        this.updateKeyboard();  
-        
+        this.updateKeyboard();         
 
     }
 
@@ -101,13 +100,15 @@ class mainScene extends Phaser.Scene{
     //UPDATE HELPERS
     updateSprites() {
         //UPDATING SPRITES
-        var time = new Date();
-        
-        if ((this.tickTimer+this.tick)>time.getTime()){
-            return;
-        }else{
+
+        //Allow sprites to move on a "tick"
+        var time = new Date();        
+        if ((this.tickTimer+this.tick)<time.getTime()){
+            this.isTick = true;
             this.tickTimer = time.getTime();
-        }        
+        }else{
+            this.isTick = false;
+        }
 
         for (var i = 0; i < this.sprites.length; i++) { 
             if (typeof this.sprites[i] !== "undefined") {
@@ -129,7 +130,7 @@ class mainScene extends Phaser.Scene{
         }
     }
 
-    // Used for programmed events.
+    // Used for programmed events for the world.
     updateSelf() {
         var date = new Date();
         // For use with the wait primitive function.
@@ -206,6 +207,7 @@ class mainScene extends Phaser.Scene{
                     this.utils.trueToGrid(this.marker.x),
                     this.utils.trueToGrid(this.marker.y)
                 );
+                
                 this.UI.displayProperties(this.focusObject); //ouput the focused objects relevant fields
             }
         }
