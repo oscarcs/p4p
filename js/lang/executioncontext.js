@@ -7,6 +7,13 @@ class ExecutionContext {
         this.running = false;
     }
 
+    copy() {
+        let context = new ExecutionContext();
+        //@@TODO: Return a copy the fields etc
+
+        return context;
+    }
+
     lex() {
         let lexer = new Lexer(this.code);
         return lexer.lex();
