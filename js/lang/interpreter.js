@@ -54,8 +54,8 @@ class Interpreter {
                     return this.tile[name]; 
                 }
                 else {
-                    this.tile.exposed_fields[name] = this.execute(node.children[1]);
-                    return this.tile.exposed_fields[name]; 
+                    this.tile.setProperty(name, this.execute(node.children[1]));
+                    return this.tile.getProperty(name); 
                 }
 
             case 'op':
@@ -72,18 +72,7 @@ class Interpreter {
 
             case 'identifier':
                 name = node.reproduction;
-                let value;
-
-                if (typeof this.tile[name] !== 'undefined') {
-                    return this.tile[name];
-                }
-                else if (typeof this.tile.exposed_fields[name] !== 'undefined') {
-                    return this.tile.exposed_fields[name];
-                }
-                else {
-                    //@@ERROR
-                    return '';
-                }
+                return this.tile.getProperty(name);
 
             case 'call':
                 name = node.reproduction;
@@ -91,7 +80,6 @@ class Interpreter {
                 let args = [];
                 for (let arg of node.children) {
                     let v = this.execute(arg);
-                    console.log(v);
                     args.push(v);
                 }
 

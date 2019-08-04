@@ -1,6 +1,13 @@
+* {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 13px;
+}
+
 #sandbox {
     border: 2px lightgray solid;
     border-radius: 0.25rem;
+    margin-left: 1.5rem;
+    margin-right: 1.5rem;
 }
 
 textarea {
@@ -10,17 +17,54 @@ textarea {
     padding: 0.5rem;
 }
 
+textarea.code-entry {
+    height: 100%;
+}
+
+select {
+    border: 2px solid lightgray;
+    border-radius: 0.25rem;
+    padding: 0.25rem;
+}
+
+input {
+    border: 2px solid lightgray;
+    border-radius: 0.25rem;
+    padding: 0.25rem;
+}
+
 button {
+    background-color: #F0F0F0;
     border: 2px solid lightgray;
     border-radius: 0.25rem;
     padding: 0.33rem;
 }
 
-button:hover {
+button:disabled {
+    background-color: lightgray;
+}
+
+button:hover:not(:disabled) {
     background-color: white;
 }
 
+
+.icon {
+    width: 1.5rem;
+    height: 1.5rem;
+    vertical-align: middle;
+}
+
+.icon.icon-large {
+    width: 2rem;
+    height: 2rem;
+}
+
 .game {
+
+}
+
+.game .columns {
     display: flex;
     flex-direction: row;
 }
@@ -28,13 +72,10 @@ button:hover {
 .game .panel {
     display: flex;
     flex-direction: column;
-    margin-left: 2rem;
-    max-height: 480px;
-    width: 300px;
+    width: 15rem;
 }
 
 .game textarea {
-    height: 100%;
     display: block;
     resize: none;
 }
@@ -54,59 +95,37 @@ button:hover {
     margin-right: 1rem;
 }
 
-.game .panel>*:not(:last-child) {
+.game .panel > *:not(:last-child) {
     margin-bottom: 1rem;
 }
 
-
-.tileEditPane{
-    display: inline-block; 
-}
-
-.tileEditPane .propertyList{
-    display: inline-block;
+.property-list {
+    overflow-x: hidden;
     overflow-y: auto;
-    width: 100%;
-    height: 35%;  
-}
-
-.tileEditPane .propertyList button{
-    font-size:10;
     height: 100%;
-    margin-left: auto;
 }
 
-.propertyDiv{
-    display: flex;
-    margin-top: 5px;
-    text-align: center;
-    position: relative;
+.property {
+    /* background-color: #F0F0F0; */
+    border: 2px lightgray solid;
+    border-radius: 0.25rem;
+    padding: 0.3rem;
+    margin-bottom: 0.5rem;
 }
 
-.propertyDiv .propertyInput{ 
-    position: absolute;
-    left: 150px;
-    width: 200px;    
+.property .property-title {
+    margin-bottom: 0.3rem;
 }
 
-.propertyDiv .propertyLabel{
-    text-align: left;
-    
+.debug {
+    margin-top: 1rem;
 }
 
-.buttonMenu{
-    display: inline-block;
-    overflow-x: auto;
-}
-.wideButton{
-    margin-top: 0.2em;
-    width: 100%;
+.debug textarea {
+    width: 20rem;
+    height: 20rem;
 }
 
-.selectionPanel{
-    display: flex;
-    flex-direction: column;
-    width: 200px;
+.debug .buttons {
+    width: 20rem;
 }
-
-

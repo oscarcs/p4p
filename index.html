@@ -2,102 +2,142 @@
     <head>
         <title>2D Sandbox</title>
         <link rel="stylesheet" type="text/css" href="css/style.css">
+        
+        <script src="bin/vue.js"></script>
+        <script src="bin/phaser.js"></script> 
+
+        <script src="js/app.js"></script>
+
         <script src="js/lang/reserved.js"></script>
+        <script src="js/lang/executioncontext.js"></script>
         <script src="js/lang/lexer.js"></script>
         <script src="js/lang/parser.js"></script>
         <script src="js/lang/interpreter.js"></script>
-        <script>
-            
-            let currentTile = null;
-            let globalQueue = null;
 
-            window.onload = function () {
-
-                document.getElementById('input').addEventListener('input', () => {
-                    if (currentTile) {
-                        currentTile.code = document.getElementById('input').value;
-                    }
-                });
-
-                document.getElementById('tokenize').addEventListener('click', () => {
-                    let code = document.getElementById('input').value;
-    
-                    let lexer = new Lexer(code);
-    
-                    let output = lexer.lex();
-                    let text = Lexer.printTokens(output);
-                    document.getElementById('output').value = text;
-                });
-
-                document.getElementById('parse').addEventListener('click', () => {
-                    let code = document.getElementById('input').value;
-
-                    let lexer = new Lexer(code);
-                    let tokens = lexer.lex();
-
-                    let parser = new Parser(tokens);
-                    let output = parser.parse();
-                    let text = Parser.printSyntaxTree(output);
-                    document.getElementById('output').value = text;
-                });
-
-                document.getElementById('execute').addEventListener('click', () => {
-                    let code = document.getElementById('input').value;
-
-                    let lexer = new Lexer(code);
-                    let tokens = lexer.lex();
-
-                    let parser = new Parser(tokens);
-                    let ast = parser.parse();
-
-                    let interpreter = new Interpreter(ast, globalQueue, currentTile);
-                    let output = interpreter.interpret();
-                    document.getElementById('output').value = output;
-
-
-                });
-            }
-        </script>
-        
-        <script src="//cdn.jsdelivr.net/npm/phaser@3.17.0/dist/phaser.js"></script> 
-        <script src = "js/sandbox/utils.js"></script>
-        <script src = "js/sandbox/basicTile.js"></script>
-        <script src = "js/sandbox/protoType.js"></script>
-        <script src ="js/sandbox/userInterface.js"></script>
-        <script src ="js/sandbox/app.js"></script>
+        <script src="js/sandbox/utils.js"></script>
+        <script src="js/sandbox/tile.js"></script>
+        <script src="js/sandbox/prototype.js"></script>
+        <script src="js/sandbox/world.js"></script>
+        <script src="js/sandbox/game.js"></script>
     </head>
 
     <body>
-        <div class="game">
-            <div id="sandbox"></div>
-            <div class="selectionPanel">
-                <p>Tool</p>
-                <div id = "toolSelect">
-                    <input type="radio" name="tool" value="create">Create Tile<br>
-                    <input type="radio" name="tool" value="select" checked> Select Tile<br>
-                </div>        
-                <p>Tile Types</p>
-                <select id="selectionMenu" size="10"></select>
-                <button id="editButton">Edit Prototype</button>
-                <button id="deleteButton">Delete Prototype</button>
-            </div>
-            <div class="panel">
-                <textarea id="input"></textarea>
-                <div class="buttons">
-                    <button id="tokenize">Tokenize</button>
-                    <button id="parse">Parse</button>
-                    <button id="execute">Execute</button>
+        <div class="game" id="app">
+            <div class="columns">
+                <div class="panel">
+                    <div>
+                        <button
+                            :disabled="currentTool === 'select'"
+                            v-on:click="currentTool = 'select'"
+                        >
+                            <svg class="icon icon-large">
+                                <use xlink:href="css/symbols.svg#fa-mouse-pointer"></use>
+                            </svg>
+                        </button>
+
+                        <button
+                            :disabled="currentTool === 'create'"
+                            v-on:click="currentTool = 'create'"
+                        >
+                            <svg class="icon icon-large">
+                                <use xlink:href="css/symbols.svg#fa-pencil-alt"></use>
+                            </svg>
+                        </button>
+                    </div>        
+                    Tile Types
+                    <select 
+                        size="10"
+                        v-model="currentPrototype"
+                    >
+                        <option v-for="(type, name) of prototypes">{{name}}</option>
+                    </select>
+                    <button>Edit Prototype</button>
+                    <button
+                        :disabled="this.currentPrototype === 'BasicTile'"
+                    >Delete Prototype</button>
                 </div>
-                <textarea id="output" disabled></textarea>
-            </div>            
-        </div>
 
-        <div class="tileEditPane">
-            <div id="propertyButtons"></div>
-            <br>
-            <div id="properties" class="propertyList"></div>
-        </div>
-        <br>
+                <!-- The actual Phaser element -->
+                <div 
+                    v-on:mouseover="mouseInGame = true" 
+                    v-on:mouseleave="mouseInGame = false" 
+                    id="sandbox"
+                ></div>
+                
+                <div class="panel" v-if="!showProperties && currentContext !== null">
 
+                    <button v-on:click="showProperties = true">Show Properties</button>
+
+                    <textarea class="code-entry" v-model="currentContext.code"></textarea>
+                    <button v-on:click="execute()">Go</button>
+                </div>            
+
+                <div class="panel" v-if="showProperties && currentTile !== null">
+
+                    <button v-on:click="showProperties = false">Show Code</button>
+
+                    <div class="property-buttons">
+                        <input v-model="newPropertyName">
+                        <button v-on:click="addProperty()">
+                            <svg class="icon">
+                                <use xlink:href="css/symbols.svg#fa-plus-square"></use>
+                            </svg>
+                            Add Property
+                        </button>
+                    </div>
+                    <div class="property-list" v-if="currentTile !== null">
+                        <div
+                            class="property" 
+                            v-for="(prop, name) in currentContext.props"
+                        >
+                            <div class="property-title">
+                                <b>{{name}}</b>:
+                                <select v-model="prop.type">
+                                    <option :value="'boolean'">Boolean</option>
+                                    <option :value="'numeric'">Number</option>
+                                    <option :value="'string'">String</option>
+                                </select>
+                            </div>
+                            <template v-if="prop.type === 'boolean'">
+                                <input 
+                                    v-model="prop.value"
+                                    type="checkbox"
+                                >
+                            </template>
+                            <template v-else-if="prop.type === 'numeric'">
+                                <input
+                                    v-model="prop.value"
+                                    type="number"
+                                    step="0.01"
+                                >
+                            </template>
+                            <template v-else-if="prop.type === 'string'">
+                                <input
+                                    v-model="prop.value"
+                                >
+                            </template>
+                        </div>
+                    </div>
+                    <button v-on:click="savePrototype()">
+                        <svg class="icon">
+                            <use xlink:href="css/symbols.svg#fa-save"></use>
+                        </svg>
+                        Save Prototype
+                    </button>
+                </div>
+
+            </div>
+
+            <div class="debug">
+                <template v-if="!showProperties && currentContext !== null">
+                    <div class="buttons">
+                        <button v-on:click="lex()">Lex</button>
+                        <button v-on:click="parse()">Parse</button>
+                        <button v-on:click="execute()">Execute</button>
+                    </div>
+                    <textarea v-model="devOutput" disabled></textarea>
+                </template>
+            </div>
+        </div>
     </body>
 </html>
