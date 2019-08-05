@@ -61,8 +61,8 @@ class Tile {
         if (validMove) {
             this.x = newX;
             this.y = newY;
-            this.world.grid[currentX][currentY].delete(tile);
-            this.world.grid[tile.x][tile.y].add(tile);
+            this.world.grid[currentX][currentY].delete(this);
+            this.world.grid[this.x][this.y].add(this);
         }
     }  
 

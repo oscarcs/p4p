@@ -27,6 +27,13 @@ class Game extends Phaser.Scene {
         //@TODO refactor for more generality, fix deletion to be an alternate input.
         this.deleteKey = this.input.keyboard.addKey('DELETE');  
 
+        this.cursors = this.input.keyboard.addKeys({
+            up: 'up',
+            down: 'down',
+            left: 'left',
+            right: 'right'
+        });
+
         var date = new Date();
         this.waitTimer = date.getTime();
     }
@@ -67,23 +74,27 @@ class Game extends Phaser.Scene {
                     let numObjectsBeneathCursor = this.world.getGrid(x, y).length;
                 
                     if (numObjectsBeneathCursor === 0) { 
-                        this.focusObject = null;
+                        this.world.focusObject = null;
                     }
                     else if (numObjectsBeneathCursor === 1) {    
-                        this.focusObject = this.world.getGrid(x, y)[0];
+                        this.world.focusObject = this.world.getGrid(x, y)[0];
                     }
                     else if (numObjectsBeneathCursor > 1) {
                         //@@UI: multiple-select mode
                     } 
 
-                    ui.currentTile = this.focusObject;
+                    ui.currentTile = this.world.focusObject;
                 }
                 else if (tool === 'create') {
                     var tile = this.world.addTile(x, y, ui.currentPrototype);
 
                     if (tile) {
-                        this.focusObject = tile;     
+                        this.world.focusObject = tile;     
                     }
+                }
+            }else{
+                if (this.world.focusObject && this.input.activePointer.primaryDown){
+                    this.world.focusObject.move(x,y);
                 }
             }
         }
@@ -95,11 +106,12 @@ class Game extends Phaser.Scene {
     updateSelectionMarker() {
         // SELECTION MARKER
         // If there is a object being focused, the selection indicator goes to true.
-        if (this.focusObject) {
+        
+        if (this.world.focusObject) {
             this.selectionIndicator.visible = true;
             this.selectionIndicator.setPosition(
-                Utils.gridToTrue(this.focusObject.x),
-                Utils.gridToTrue(this.focusObject.y)
+                Utils.gridToTrue(this.world.focusObject.x),
+                Utils.gridToTrue(this.world.focusObject.y)
             );
         }
         else {
@@ -110,21 +122,58 @@ class Game extends Phaser.Scene {
     updateKeyboard() {
         // Deletion shouldn't work when on text areas and input. 
         var activeElementType = document.activeElement.type;
+
         if (activeElementType == "text" || 
             activeElementType == "textarea" || 
             activeElementType == "number"
         ) {
             this.deleteKey.enabled = false;  
-            this.input.keyboard.removeCapture("DELETE"); 
+            
+            for (var key in this.cursors){                
+                this.cursors[key].enabled = false;
+            }
+
+            this.input.keyboard.clearCaptures();         
         }
         else {           
             this.deleteKey.enabled = true;
             this.input.keyboard.addCapture("DELETE");
+
+            for (var key in this.cursors){                
+                this.cursors[key].enabled = true;
+            }
+            
+            this.input.keyboard.addCapture({
+                up: 'up',
+                down: 'down',
+                left: 'left',
+                right: 'right'
+            });
+        }
+
+        //Poll for keyboard input, later on pipe an event to all sprites. 
+        if (this.cursors.up.isDown &&
+            this.isTick
+        ) {                    
+
+        }else if (this.cursors.down.isDown &&
+            this.isTick
+        )  {                                        
+
+        }else if (this.cursors.left.isDown &&
+            this.isTick 
+        )  {                    
+
+
+        }else if (this.cursors.right.isDown &&
+            this.isTick
+        )  {                    
+                    
         }
 
         // Delete key polling.
         if (this.deleteKey.isDown) {
-            this.deleteTile(this.focusObject);
+            this.world.deleteTile(this.world.focusObject);
         }
     }
 
