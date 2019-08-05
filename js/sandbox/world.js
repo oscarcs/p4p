@@ -49,18 +49,19 @@ class World {
             
             sprite.update();
 
-                // if (this.worldGrid[sprite.x][sprite.y].size > 1) {
-                    // console.log("overlap");
-                    // @TODO hook in the broadcasts of collision.
-                // }
-                
-                // Bring the focused Tile to the top.
-                if (this.scene.focusObject == sprite) {
-                    sprite.sprite.depth = this.layers + 1;
-                }
-                else {
-                    sprite.sprite.depth = sprite.layer;
-                }
+            // if (this.worldGrid[sprite.x][sprite.y].size > 1) {
+                // console.log("overlap");
+                // @TODO hook in the broadcasts of collision.
+            // }
+            
+            // Bring the focused Tile to the top.
+
+            if (this.scene.focusObject == sprite) {
+                sprite.sprite.depth = this.layers + 1;
+            }
+            else {
+                sprite.sprite.depth = sprite.layer;
+            }
         }
     }
 
@@ -83,7 +84,7 @@ class World {
             // Delete the object
             tile.destroy();
             if (this.focusObject == tile) {
-                this.focusObject = false;
+                this.focusObject = null;
             }            
         }
     }  

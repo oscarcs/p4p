@@ -64,68 +64,72 @@
                     id="sandbox"
                 ></div>
                 
-                <div class="panel" v-if="!showProperties && currentContext !== null">
+                <div class="panel" v-if="currentContext !== null">
 
-                    <button v-on:click="showProperties = true">Show Properties</button>
+                    <select v-model="currentEventName">
+                        <option v-for="event in currentContext.getEventList">{{event}}</option>
+                    </select>
 
-                    <textarea class="code-entry" v-model="currentContext.code"></textarea>
-                    <button v-on:click="execute()">Go</button>
-                </div>            
+                    <template v-if="!showProperties">
+                        <button v-on:click="showProperties = true">Show Properties</button>
+    
+                        <textarea class="code-entry" v-model="currentContext.code"></textarea>
+                        <button v-on:click="execute()">Go</button>
+                    </template>
 
-                <div class="panel" v-if="showProperties && currentTile !== null">
+                    <template v-if="showProperties">
+                            <button v-on:click="showProperties = false">Show Code</button>
 
-                    <button v-on:click="showProperties = false">Show Code</button>
-
-                    <div class="property-buttons">
-                        <input v-model="newPropertyName">
-                        <button v-on:click="addProperty()">
-                            <svg class="icon">
-                                <use xlink:href="css/symbols.svg#fa-plus-square"></use>
-                            </svg>
-                            Add Property
-                        </button>
-                    </div>
-                    <div class="property-list" v-if="currentTile !== null">
-                        <div
-                            class="property" 
-                            v-for="(prop, name) in currentContext.props"
-                        >
-                            <div class="property-title">
-                                <b>{{name}}</b>:
-                                <select v-model="prop.type">
-                                    <option :value="'boolean'">Boolean</option>
-                                    <option :value="'numeric'">Number</option>
-                                    <option :value="'string'">String</option>
-                                </select>
+                            <div class="property-buttons">
+                                <input v-model="newPropertyName">
+                                <button v-on:click="addProperty()">
+                                    <svg class="icon">
+                                        <use xlink:href="css/symbols.svg#fa-plus-square"></use>
+                                    </svg>
+                                    Add Property
+                                </button>
                             </div>
-                            <template v-if="prop.type === 'boolean'">
-                                <input 
-                                    v-model="prop.value"
-                                    type="checkbox"
+                            <div class="property-list" v-if="currentTile !== null">
+                                <div
+                                    class="property" 
+                                    v-for="(prop, name) in currentContext.props"
                                 >
-                            </template>
-                            <template v-else-if="prop.type === 'numeric'">
-                                <input
-                                    v-model="prop.value"
-                                    type="number"
-                                    step="0.01"
-                                >
-                            </template>
-                            <template v-else-if="prop.type === 'string'">
-                                <input
-                                    v-model="prop.value"
-                                >
-                            </template>
-                        </div>
-                    </div>
-                    <button v-on:click="savePrototype()">
-                        <svg class="icon">
-                            <use xlink:href="css/symbols.svg#fa-save"></use>
-                        </svg>
-                        Save Prototype
-                    </button>
+                                    <div class="property-title">
+                                        <b>{{name}}</b>:
+                                        <select v-model="prop.type">
+                                            <option :value="'boolean'">Boolean</option>
+                                            <option :value="'numeric'">Number</option>
+                                            <option :value="'string'">String</option>
+                                        </select>
+                                    </div>
+                                    <template v-if="prop.type === 'boolean'">
+                                        <input 
+                                            v-model="prop.value"
+                                            type="checkbox"
+                                        >
+                                    </template>
+                                    <template v-else-if="prop.type === 'numeric'">
+                                        <input
+                                            v-model="prop.value"
+                                            type="number"
+                                            step="0.01"
+                                        >
+                                    </template>
+                                    <template v-else-if="prop.type === 'string'">
+                                        <input
+                                            v-model="prop.value"
+                                        >
+                                    </template>
+                                </div>
+                            </div>
+                            <button v-on:click="savePrototype()">
+                                <svg class="icon">
+                                    <use xlink:href="css/symbols.svg#fa-save"></use>
+                                </svg>
+                                Save Prototype
+                            </button>
+                    </template>
                 </div>
-
             </div>
 
             <div class="debug">

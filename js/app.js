@@ -13,6 +13,7 @@ window.onload = function() {
             currentPrototype: 'BasicTile',
             currentTool: 'select',
             currentContext: null,
+            currentEventName: null,
             showProperties: false,
             newPropertyName: '',
         },
@@ -40,9 +41,11 @@ window.onload = function() {
             changeCurrentContext: function() {
                 if (this.currentTile !== null) {
                     this.currentContext = this.currentTile.getContext();
+                    this.currentEventName = this.currentContext.getDefaultEvent();
                 }
                 else {
                     this.currentContext = null;
+                    this.currentEventName = null;
                 }
             },
 
