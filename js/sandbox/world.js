@@ -41,6 +41,9 @@ class World {
     }
 
     getGrid(x, y) {
+        if (typeof this.grid === "undefined"){
+            return [];
+        }
         return Array.from(this.grid[x][y]);
     }
 
