@@ -41,7 +41,9 @@ class World {
     }
 
     getGrid(x, y) {
-        if (typeof this.grid === "undefined"){
+        if (typeof this.grid === "undefined" ||
+            typeof this.grid[x] === "undefined"
+        ){
             return [];
         }
         return Array.from(this.grid[x][y]);
@@ -52,7 +54,7 @@ class World {
             
             sprite.update();
 
-            // if (this.worldGrid[sprite.x][sprite.y].size > 1) {
+            // if (this.grid[sprite.x][sprite.y].size > 1) {
                 // console.log("overlap");
                 // @TODO hook in the broadcasts of collision.
             // }
