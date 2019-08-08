@@ -53,7 +53,8 @@
                     </select>
                     <button>Edit Prototype</button>
                     <button
-                        :disabled="this.currentPrototype === 'BasicTile'"
+                        :disabled="this.currentPrototype === 'BasicTile'" 
+                        v-on:click="deletePrototype()"                       
                     >Delete Prototype</button>
                 </div>
 

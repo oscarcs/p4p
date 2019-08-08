@@ -24,8 +24,13 @@ class Game extends Phaser.Scene {
         this.selectionIndicator.visible = false;
         this.selectionIndicator.depth = 99; //selection indicator always on top.
 
-        //@TODO refactor for more generality, fix deletion to be an alternate input.
+        
         this.deleteKey = this.input.keyboard.addKey('DELETE');  
+        this.spaceKey = this.input.keyboard.addKey('SPACE'); 
+
+        //One tick per 100 milliseconds
+       
+        this.tick = 100;    
 
         this.cursors = this.input.keyboard.addKeys({
             up: 'up',
@@ -34,16 +39,27 @@ class Game extends Phaser.Scene {
             right: 'right'
         });
 
+        this.keysDown = {
+            up: false,
+            down: false,
+            left: false,
+            right: false,
+            space: false
+        }
+
         var date = new Date();
         this.waitTimer = date.getTime();
     }
 
     update() {
-        this.world.update();
+        
+        
+        this.world.update();        
         this.updateMarker();   
         this.updateSelectionMarker(); 
         this.updateKeyboard();
     }
+
 
     // Handle the mouse marker.
     updateMarker() {
@@ -80,6 +96,7 @@ class Game extends Phaser.Scene {
                         this.world.focusObject = this.world.getGrid(x, y)[0];
                     }
                     else if (numObjectsBeneathCursor > 1) {
+                        this.world.focusObject = this.world.getGrid(x, y)[0];
                         //@@UI: multiple-select mode
                     } 
 
@@ -128,6 +145,7 @@ class Game extends Phaser.Scene {
             activeElementType == "number"
         ) {
             this.deleteKey.enabled = false;  
+            this.spaceKey.enabled = false;
             
             for (var key in this.cursors){                
                 this.cursors[key].enabled = false;
@@ -138,6 +156,9 @@ class Game extends Phaser.Scene {
         else {           
             this.deleteKey.enabled = true;
             this.input.keyboard.addCapture("DELETE");
+
+            this.spaceKey.enabled = true;
+            this.input.keyboard.addCapture("SPACE");
 
             for (var key in this.cursors){                
                 this.cursors[key].enabled = true;
@@ -151,31 +172,53 @@ class Game extends Phaser.Scene {
             });
         }
 
+        
+        
         //Poll for keyboard input, later on pipe an event to all sprites. 
         //@@TODO, spawn an event on the world for all the objects that have an event for keyboard
-        if (this.cursors.up.isDown &&
-            this.isTick
-        ) {                    
-
-        }else if (this.cursors.down.isDown &&
-            this.isTick
-        )  {                                        
-
-        }else if (this.cursors.left.isDown &&
-            this.isTick 
-        )  {                    
+         //Uncheck key when released.
+         for (key in this.cursors) {
+            if (this.cursors[key].isDown) {
+                if(this.keysDown[key] == false) {
+                    console.log(key + "justDown");
+                }
+                this.keysDown[key] = true;
+            }
+        }   
 
 
-        }else if (this.cursors.right.isDown &&
-            this.isTick
-        )  {                    
-                    
-        }
+        //Uncheck key when released.
+        for (key in this.cursors) {
+            if (this.cursors[key].isUp) {
+                if(this.keysDown[key] == true) {
+                    console.log(key + "justUp");
+                }
+                this.keysDown[key] = false;
+            }
+        }       
+
+
+        if (this.spaceKey.isDown) {
+            //Just Down Event
+            if (this.keysDown["space"] === false) {
+                console.log("Space Just Down");
+            }
+
+            this.keysDown["space"] = true;
+        }else{
+            //Just Up event
+            if (this.keysDown["space"] === true) {
+                console.log("Space Just Up");
+            }
+
+            this.keysDown["space"] = false;
+        } 
 
         // Delete key polling.
         if (this.deleteKey.isDown) {
             this.world.deleteTile(this.world.focusObject);
         }
+
     }
 
     wait(duration) {

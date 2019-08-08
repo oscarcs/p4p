@@ -26,9 +26,13 @@ class Tile {
         this.layer = 1;
         this.sprite.depth = 1;
 
-        this.context = new ExecutionContext();
-        this.context.addProperty('solid', false, 'boolean');
-        this.context.addProperty('name', 'test', 'string');
+        if (prototype.type !== "BasicTile" && prototype.context){
+            this.context = prototype.context.copy(); 
+        }else{
+            this.context = new ExecutionContext();
+            this.context.addProperty('solid', false, 'boolean');
+            this.context.addProperty('name', 'test', 'string');
+        }
     }
 
     update() {
