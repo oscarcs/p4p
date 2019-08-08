@@ -152,6 +152,7 @@ class Game extends Phaser.Scene {
         }
 
         //Poll for keyboard input, later on pipe an event to all sprites. 
+        //@@TODO, spawn an event on the world for all the objects that have an event for keyboard
         if (this.cursors.up.isDown &&
             this.isTick
         ) {                    

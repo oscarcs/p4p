@@ -114,7 +114,10 @@ class ExecutionContext {
      * @param {string} type 
      */
     addProperty(name, value, type) {
-        //@@TODO: check that the name doesn't already exist in this tile
+        
+        if (name in this.props){
+            return;
+        }
 
         this.props[name] = {
             value: value,
@@ -151,6 +154,16 @@ class ExecutionContext {
             return true;
         }
         return false;
+    }
+
+    /**
+     * Delete the property by name
+     * @param {string} name 
+     */
+    deleteProperty(name) {
+        if(typeof this.props[name] !== "undefined"){
+            delete this.props[name];
+        }
     }
 
     /**

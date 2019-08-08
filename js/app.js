@@ -50,12 +50,21 @@ window.onload = function() {
             },
 
             addProperty: function() {
-                this.currentContext.addProperty(this.newPropertyName, '', 'string');
-                this.newPropertyName = '';
+                if (this.newPropertyName.length > 0){
+                    Vue.set(this.currentContext.props,this.newPropertyName,{
+                        value: '',
+                        type:'string'
+                    });
+
+                    this.currentContext.addProperty(this.newPropertyName, '', 'string');
+                    this.newPropertyName = '';
+
+                }                
             },
 
             deleteProperty: function(name) {
-                //@@TODO
+                Vue.delete(this.currentContext.props,name);
+                this.currentContext.deleteProperty(name);
             },
 
             editPrototype: function() {
@@ -67,7 +76,7 @@ window.onload = function() {
             },
 
             savePrototype: function() {
-
+                
             },
         }
     });
