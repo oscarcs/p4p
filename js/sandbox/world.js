@@ -94,6 +94,10 @@ class World {
         return Object.values(this.prototypes);
     }
 
+    updatePrototypeListFromUI() {
+        
+    }
+
     save() {
         var saveGameObject = {};
         saveGameObject.sprites = this.sprites.map(sprite => sprite.serialize());

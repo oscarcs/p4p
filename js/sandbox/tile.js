@@ -27,6 +27,13 @@ class Tile {
         this.sprite.depth = 1;
 
         this.context = new ExecutionContext();
+
+        if(typeof prototype !== "undefined") {
+            console.log(prototype);            
+            this.context = prototype.context.copy();
+        }
+
+        //this.context = new ExecutionContext();
         this.context.addProperty('solid', false, 'boolean');
         this.context.addProperty('name', 'test', 'string');
         this.context.addEvent('main');

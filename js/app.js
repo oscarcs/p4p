@@ -80,17 +80,17 @@ window.onload = function() {
             },
 
             deletePrototype: function() {
-                Vue.delete(this.prototypes, this.currentPrototype);
+                Vue.delete(world.prototypes, this.currentPrototype);
                 
             },
 
             savePrototype: function() {
                 var newPrototypeName  = prompt("Enter prototype name");
-
+                
                 if (newPrototypeName.length > 0 && 
-                    !(newPrototypeName in this.prototypes) &&
-                    typeof this.currentTile !== "undefined"){
-                    Vue.set(this.prototypes, newPrototypeName, new Prototype(newPrototypeName,this.currentTile));
+                    !(newPrototypeName in world.prototypes) &&
+                    typeof this.currentTile !== "undefined") {
+                    Vue.set(world.prototypes, newPrototypeName, new Prototype(newPrototypeName,this.currentTile));
                     //@@TODO Bind this to the world on save.
                 }               
             },

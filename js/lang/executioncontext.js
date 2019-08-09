@@ -10,7 +10,22 @@ class ExecutionContext {
      */
     copy() {
         let context = new ExecutionContext();
-        //@@TODO: Return a copy the fields etc
+        for (var prop in this.props) {
+            context.props[prop] = this.props[prop];
+        }
+
+
+        for (var action in this.actions) {
+            context.actions[action] = this.actions[action];
+        }
+
+        for (var event in this.events){
+            context.addEvent(event);
+            context.events[event].locals = this.events[event].locals;
+            context.events[event].code = this.events[event].code;
+            
+        }
+
 
         return context;
     }

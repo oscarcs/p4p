@@ -103,7 +103,7 @@ class Game extends Phaser.Scene {
                     ui.currentTile = this.world.focusObject;
                 }
                 else if (tool === 'create') {
-                    var tile = this.world.addTile(x, y, ui.currentPrototype);
+                    var tile = this.world.addTile(x, y, this.world.getPrototype(ui.currentPrototype));
 
                     if (tile) {
                         this.world.focusObject = tile;     
