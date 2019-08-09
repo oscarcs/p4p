@@ -54,7 +54,8 @@
                     </select>
                     <button>Edit Prototype</button>
                     <button
-                        :disabled="this.currentPrototype === 'BasicTile'"
+                        :disabled="this.currentPrototype === 'BasicTile'" 
+                        v-on:click="deletePrototype()"                       
                     >Delete Prototype</button>
                 </div>
 
@@ -104,7 +105,14 @@
                                             <option :value="'boolean'">Boolean</option>
                                             <option :value="'numeric'">Number</option>
                                             <option :value="'string'">String</option>
-                                        </select>
+                                        </select> 
+                                        <template v-if= "name !== 'name' && name !=='solid'">
+                                            <button v-on:click="deleteProperty(name)">
+                                                <svg class="icon">
+                                                    <use xlink:href="css/symbols.svg#fa-trash"></use>
+                                                </svg>
+                                            </button>
+                                        </template>                                        
                                     </div>
                                     <template v-if="prop.type === 'boolean'">
                                         <input 
@@ -123,7 +131,7 @@
                                         <input
                                             v-model="prop.value"
                                         >
-                                    </template>
+                                    </template>                                                                      
                                 </div>
                             </div>
                             <button v-on:click="savePrototype()">

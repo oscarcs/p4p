@@ -129,12 +129,14 @@ class ExecutionContext {
      * @param {string} type 
      */
     addProperty(name, value, type) {
-        if (typeof this.props[name] === 'undefined') {
-            this.props[name] = {
-                value: value,
-                type: type
-            };
+        if (name in this.props) {
+            return;
         }
+
+        this.props[name] = {
+            value: value,
+            type: type
+        };
     }
 
     /**
@@ -166,6 +168,16 @@ class ExecutionContext {
             return true;
         }
         return false;
+    }
+
+    /**
+     * Delete the property by name
+     * @param {string} name 
+     */
+    deleteProperty(name) {
+        if(typeof this.props[name] !== "undefined"){
+            delete this.props[name];
+        }
     }
 
     /**

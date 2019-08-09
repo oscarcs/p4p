@@ -48,7 +48,6 @@ button:hover:not(:disabled) {
     background-color: white;
 }
 
-
 .icon {
     width: 1.5rem;
     height: 1.5rem;
@@ -61,7 +60,7 @@ button:hover:not(:disabled) {
 }
 
 .game {
-
+    
 }
 
 .game .columns {
@@ -103,6 +102,7 @@ button:hover:not(:disabled) {
     overflow-x: hidden;
     overflow-y: auto;
     height: 100%;
+    max-height: 280px;
 }
 
 .property {
