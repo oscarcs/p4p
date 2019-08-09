@@ -52,7 +52,9 @@
                     >
                         <option v-for="(type, name) of prototypes">{{name}}</option>
                     </select>
-                    <button>Edit Prototype</button>
+                    <button
+                        v-on:click ="editPrototype()"
+                    >Edit Prototype</button>
                     <button
                         :disabled="this.currentPrototype === 'BasicTile'" 
                         v-on:click="deletePrototype()"                       
@@ -67,7 +69,6 @@
                 ></div>
                 
                 <div class="panel" v-if="currentContext !== null">
-
                     <select v-model="currentEventName">
                         <option v-for="event in currentContext.getEventList()">{{event}}</option>
                     </select>
@@ -84,7 +85,8 @@
 
                     <template v-if="showProperties">
                             <button v-on:click="showProperties = false">Show Code</button>
-
+                            <b v-if="editPrototypeMode">Editing {{currentPrototype}} prototype</b>
+                            <b v-else>{{currentTile.prototype.type}}</b>
                             <div class="property-buttons">
                                 <input v-model="newPropertyName">
                                 <button v-on:click="addProperty()">
@@ -94,7 +96,7 @@
                                     Add Property
                                 </button>
                             </div>
-                            <div class="property-list" v-if="currentTile !== null">
+                            <div class="property-list" v-if="currentContext !== null">
                                 <div
                                     class="property" 
                                     v-for="(prop, name) in currentContext.props"
@@ -134,7 +136,12 @@
                                     </template>                                                                      
                                 </div>
                             </div>
-                            <button v-on:click="savePrototype()">
+                            
+                            <button v-if="editPrototypeMode" v-on:click ="applyPrototypeChanges()"
+                                >Apply to all
+                            </button>
+
+                            <button v-else v-on:click="savePrototype()">
                                 <svg class="icon">
                                     <use xlink:href="css/symbols.svg#fa-save"></use>
                                 </svg>

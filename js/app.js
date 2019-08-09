@@ -15,11 +15,13 @@ window.onload = function() {
             currentContext: null,
             currentEventName: null,
             showProperties: false,
+            editPrototypeMode: false,
             newPropertyName: '',
         },
         watch: {
             'currentTile': function() {
                 this.changeCurrentContext();
+                this.editPrototypeMode = false;
             }
         },
         computed: {
@@ -50,6 +52,7 @@ window.onload = function() {
                 if (this.currentTile !== null) {
                     this.currentContext = this.currentTile.getContext();
                     this.currentEventName = this.currentContext.getDefaultEventName();
+
                 }
                 else {
                     this.currentContext = null;
@@ -77,6 +80,19 @@ window.onload = function() {
 
             editPrototype: function() {
 
+                this.currentContext = world.getPrototype(this.currentPrototype).getContext();
+                this.editPrototypeMode = true;
+                this.showProperties = true;
+            },
+
+            applyPrototypeChanges: function() {
+
+                for (var tile of world.getTiles()){
+                    
+                    if (tile.getType() === this.currentPrototype){
+                        tile.context = world.getPrototype(this.currentPrototype).getContext().copy();
+                    }
+                }
             },
 
             deletePrototype: function() {

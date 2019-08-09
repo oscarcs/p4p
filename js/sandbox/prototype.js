@@ -11,6 +11,10 @@ class Prototype {
         }
     }
 
+    getContext() {
+        return this.context;
+    }
+
     serialize() {
         return JSON.stringify(this);
     }

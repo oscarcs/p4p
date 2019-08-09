@@ -63,8 +63,8 @@ class Tile {
         var gridPos = this.world.getGrid(newX,newY)
 
         for (var i = 0;i<gridPos.length;i++) {
-
-            if (gridPos[i].getContext().props["solid"]){
+            
+            if (gridPos[i].getContext().props["solid"].value){
                 validMove = false;                
                 break;
             }            
@@ -84,6 +84,10 @@ class Tile {
             return this.context;
         }
         return null;
+    }
+
+    getType() {
+        return this.prototype.type;
     }
 
     limitPosition() {
