@@ -1,8 +1,7 @@
 class Interpreter {
-    constructor(root, globalQueue, tile) {
+    constructor(root, context) {
         this.root = root;
-        this.globalQueue = globalQueue;
-        this.tile = tile;
+        this.context = context;
     }
 
     interpret() {
@@ -70,7 +69,7 @@ class Interpreter {
             case 'boolean':
                 return node.reproduction === 'true';
 
-            case 'identifier':
+            case 'ident':
                 name = node.reproduction;
                 return this.tile.getProperty(name);
 

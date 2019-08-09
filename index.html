@@ -12,6 +12,7 @@
         <script src="js/lang/executioncontext.js"></script>
         <script src="js/lang/lexer.js"></script>
         <script src="js/lang/parser.js"></script>
+        <script src="js/lang/contexthandler.js"></script>
         <script src="js/lang/interpreter.js"></script>
 
         <script src="js/sandbox/utils.js"></script>
@@ -67,14 +68,17 @@
                 <div class="panel" v-if="currentContext !== null">
 
                     <select v-model="currentEventName">
-                        <option v-for="event in currentContext.getEventList">{{event}}</option>
+                        <option v-for="event in currentContext.getEventList()">{{event}}</option>
                     </select>
 
                     <template v-if="!showProperties">
                         <button v-on:click="showProperties = true">Show Properties</button>
     
-                        <textarea class="code-entry" v-model="currentContext.code"></textarea>
-                        <button v-on:click="execute()">Go</button>
+                        <textarea 
+                            class="code-entry" 
+                            v-model="currentContext.events[currentEventName].code"
+                        ></textarea>
+                        <button v-on:click="go()">Go</button>
                     </template>
 
                     <template v-if="showProperties">
@@ -137,7 +141,7 @@
                     <div class="buttons">
                         <button v-on:click="lex()">Lex</button>
                         <button v-on:click="parse()">Parse</button>
-                        <button v-on:click="execute()">Execute</button>
+                        <button v-on:click="thread()">Thread</button>
                     </div>
                     <textarea v-model="devOutput" disabled></textarea>
                 </template>

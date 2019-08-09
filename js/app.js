@@ -26,22 +26,30 @@ window.onload = function() {
 
         },
         methods: {
+            go: function() {
+                throw 'not implemented!';
+            },
+
             lex: function() {
-                this.devOutput = Lexer.printTokens(this.currentContext.lex());
+                this.devOutput = Lexer.printTokens(
+                    this.currentContext.lex(this.currentEventName)
+                );
             },
             
             parse: function() {
-                this.devOutput = Parser.printSyntaxTree(this.currentContext.parse());
+                this.devOutput = Parser.printSyntaxTree(
+                    this.currentContext.parse(this.currentEventName)
+                );
             },
-            
-            execute: function() {
-                this.devOutput = this.currentContext.execute();
+
+            thread: function() {
+                this.devOutput = this.currentContext.thread(this.currentEventName);
             },
 
             changeCurrentContext: function() {
                 if (this.currentTile !== null) {
                     this.currentContext = this.currentTile.getContext();
-                    this.currentEventName = this.currentContext.getDefaultEvent();
+                    this.currentEventName = this.currentContext.getDefaultEventName();
                 }
                 else {
                     this.currentContext = null;

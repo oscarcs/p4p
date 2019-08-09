@@ -39,7 +39,6 @@ class Lexer {
             cur = this.token();
         }
         
-        console.log(tokens);
         return tokens;
     }
 

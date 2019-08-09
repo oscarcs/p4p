@@ -34,6 +34,7 @@ let Reserved = {
         'return': {},
         'loop': {},
         'end': {},
+        'break': {},
     },
 
     getOperator: function(str) {

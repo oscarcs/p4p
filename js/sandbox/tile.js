@@ -29,6 +29,7 @@ class Tile {
         this.context = new ExecutionContext();
         this.context.addProperty('solid', false, 'boolean');
         this.context.addProperty('name', 'test', 'string');
+        this.context.addEvent('main');
     }
 
     update() {

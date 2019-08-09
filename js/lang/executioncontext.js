@@ -40,10 +40,11 @@ class ExecutionContext {
         return Object.keys(this.events);
     }
 
-    getDefaultEvent() {
-        if (this.events.length > 0) {
-            return this.events[0];
-        }
+    /**
+     * Get the 'default' event.
+     */
+    getDefaultEventName() {
+        return 'main';
     }
 
     /**
@@ -51,8 +52,12 @@ class ExecutionContext {
      * @param {string} event 
      */
     lex(event) {
-        let lexer = new Lexer(this.code);
-        return lexer.lex();
+        if (typeof this.events[event] !== 'undefined') {
+            let lexer = new Lexer(this.events[event].code);
+            return lexer.lex();
+        }
+        //@@ERROR
+        return null;
     }
 
     /**
@@ -60,9 +65,19 @@ class ExecutionContext {
      * @param {string} event 
      */
     parse(event) {
-        let tokens = this.lex();
+        let tokens = this.lex(event);
         let parser = new Parser(tokens);
         return parser.parse();
+    }
+
+    /**
+     * Thread the AST to produce a node ordering
+     * @param {Node} root 
+     */
+    thread(event) {
+        let root = this.parse(event);
+        let contextHandler = new ContextHandler(root);
+        return contextHandler.thread();
     }
 
     /**
@@ -114,12 +129,12 @@ class ExecutionContext {
      * @param {string} type 
      */
     addProperty(name, value, type) {
-        //@@TODO: check that the name doesn't already exist in this tile
-
-        this.props[name] = {
-            value: value,
-            type: type
-        };
+        if (typeof this.props[name] === 'undefined') {
+            this.props[name] = {
+                value: value,
+                type: type
+            };
+        }
     }
 
     /**
@@ -161,23 +176,73 @@ class ExecutionContext {
      * @param {string} type 
      */
     addLocal(event, name, value, type) {
-
+        if (typeof this.events[event] !== 'undefined') {
+            if (typeof this.events[event].locals[name] === 'undefined') {
+                this.events[event].locals[name] = {
+                    value: value,
+                    type: type
+                };
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
      * Get the value of a local variable by name
-     * @param {*} event 
-     * @param {*} name 
+     * @param {string} event 
+     * @param {string} name 
      */
     getLocal(event, name) {
-
+        if (typeof this.events[event] !== 'undefined') {
+            if (typeof this.events[event].locals[name] !== 'undefined') {
+                return this.events[event].locals[name].value;
+            }
+        }
+        return null;
     }
 
     /**
-     * Look up the value of
-     * @param {*} name 
+     * Get a list of the names of local variables for an event.
+     * @param {string} event 
      */
-    lookup(name) {
-        //@@TODO
+    getLocalList(event) {
+        if (typeof this.events[event] !== 'undefined') {
+            return Object.keys(this.events[name].locals);
+        }
+        return null;
+    }
+
+    /**
+     * Set the value of a local variable.
+     * @param {string} event 
+     * @param {string} name 
+     * @param {*} value 
+     */
+    setLocal(event, name, value) {
+        if (typeof this.events[event] !== 'undefined') {
+            if (typeof this.events[event].locals[name] !== 'undefined') {
+                this.events[event].locals[name].value = value;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Look up the value of a variable name using local and global variables.
+     * @param {string} event 
+     * @param {string} name 
+     */
+    lookup(event, name) {
+        if (typeof this.events[event] !== 'undefined') {
+            if (typeof this.events[event].locals[name] !== 'undefined') {
+                return this.events[event].locals[name].value;
+            }
+        }
+
+        if (typeof this.props[name] !== 'undefined') {
+            return this.props[name].value;
+        }
     }
 }

@@ -3,7 +3,7 @@ class World {
         this.scene = scene;
 
         window.addEventListener("beforeunload", function(event) {
-            this.saveGame();
+            this.save();
         }.bind(this));  
 
         this.initialize();
@@ -41,10 +41,10 @@ class World {
     }
 
     getGrid(x, y) {
-        if (typeof this.grid === "undefined"){
-            return [];
+        if (typeof this.grid[x] !== 'undefined' && typeof this.grid[x][y] !== 'undefined') {
+            return Array.from(this.grid[x][y]);
         }
-        return Array.from(this.grid[x][y]);
+        return [];
     }
 
     update() {
@@ -52,13 +52,7 @@ class World {
             
             sprite.update();
 
-            // if (this.worldGrid[sprite.x][sprite.y].size > 1) {
-                // console.log("overlap");
-                // @TODO hook in the broadcasts of collision.
-            // }
-            
-            // Bring the focused Tile to the top.
-
+            // Bring the focused tile to the top.
             if (this.scene.focusObject == sprite) {
                 sprite.sprite.depth = this.layers + 1;
             }
@@ -100,43 +94,38 @@ class World {
         return Object.values(this.prototypes);
     }
 
-    saveGame() {
-        // var saveGameObject = {};
+    save() {
+        var saveGameObject = {};
+        saveGameObject.sprites = this.sprites.map(sprite => sprite.serialize());
 
-        // saveGameObject.prototypes = this.prototypes;
-
-        // saveGameObject.sprites = this.sprites.map(function(sprite) {
-        //     return sprite.serialize();
-        // });
-
-        // localStorage.setItem("2DSandbox", JSON.stringify(saveGameObject));
+        localStorage.setItem("2DSandbox", JSON.stringify(saveGameObject));
     }
 
-    loadGame() {
-        // var state = localStorage.getItem("2DSandbox");
+    load() {
+        var state = localStorage.getItem("2DSandbox");
 
-        // if (state === null) {
-        //     return;
-        // }
+        if (state === null) {
+            return;
+        }
 
-        // var saveState = JSON.parse(state);
+        var saveState = JSON.parse(state);
                 
-        // for (var i = 0; i < saveState.sprites.length; i++) {
-        //     var spriteData = JSON.parse(saveState.sprites[i]);
+        for (var i = 0; i < saveState.sprites.length; i++) {
+            var spriteData = JSON.parse(saveState.sprites[i]);
                         
-        //     // Need to repopulate the worldGrid as well as the sprites array.
-        //     // Keep loadgame this way to deal with prototype being deleted when existing sprites are out.
-        //     this.sprites[i] = new Tile(this, spriteData.x,spriteData.y,spriteData.spriteName);
-        //     this.sprites[i].type = spriteData.type;
-        //     this.sprites[i].code = spriteData.code;
+            // Need to repopulate the worldGrid as well as the sprites array.
+            // Keep loadgame this way to deal with prototype being deleted when existing sprites are out.
+            this.sprites[i] = new Tile(this, spriteData.x,spriteData.y,spriteData.spriteName);
+            this.sprites[i].type = spriteData.type;
+            this.sprites[i].code = spriteData.code;
 
-        //     for (var field in spriteData.exposed_fields) {
-        //         this.sprites[i].exposed_fields[field] = spriteData.exposed_fields[field];
-        //     }
-        // }
+            for (var field in spriteData.exposed_fields) {
+                this.sprites[i].exposed_fields[field] = spriteData.exposed_fields[field];
+            }
+        }
 
-        // for (var prototype in saveState.prototypes) {
-        //     this.prototypes[prototype] = saveState.prototypes[prototype];
-        // }
+        for (var prototype in saveState.prototypes) {
+            this.prototypes[prototype] = saveState.prototypes[prototype];
+        }
     }
 }
