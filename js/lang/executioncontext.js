@@ -11,9 +11,15 @@ class ExecutionContext {
     copy() {
         let context = new ExecutionContext();
         for (var prop in this.props) {
-            context.props[prop] = this.props[prop];
-        }
 
+            if (prop !=="name"){
+                context.addProperty(prop, this.getProperty(prop), this.props[prop].type);
+                
+            } else {
+                context.addProperty('name', "", 'string');
+            }
+            
+        }
 
         for (var action in this.actions) {
             context.actions[action] = this.actions[action];
@@ -22,10 +28,8 @@ class ExecutionContext {
         for (var event in this.events){
             context.addEvent(event);
             context.events[event].locals = this.events[event].locals;
-            context.events[event].code = this.events[event].code;
-            
+            context.events[event].code = this.events[event].code; 
         }
-
 
         return context;
     }

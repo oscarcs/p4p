@@ -76,10 +76,10 @@ class Game extends Phaser.Scene {
             let color = 0xffffff;
             if (tool == 'select') {
                 if (this.world.getGrid(x, y).length == 1) {
-                    color = 0x00008b;
+                    color = 0xFFFF00;
                 }
                 else if (this.world.getGrid(x, y).length > 1) {
-                    color = 0x0000ff;
+                    color = 0xFFFFF0;
                 }   
             }
             this.marker.setStrokeStyle(1, color);
@@ -106,7 +106,10 @@ class Game extends Phaser.Scene {
                     var tile = this.world.addTile(x, y, this.world.getPrototype(ui.currentPrototype));
 
                     if (tile) {
-                        this.world.focusObject = tile;     
+                        this.world.focusObject = tile; 
+                        
+                        ui.currentTile = this.world.focusObject;    
+                        
                     }
                 }
             }else{

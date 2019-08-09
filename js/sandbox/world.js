@@ -19,6 +19,10 @@ class World {
         }
         this.prototypes = {'BasicTile': new Prototype('BasicTile')};
 
+        this.prototypes["BasicTile"].context.addProperty('solid', false, 'boolean');
+        this.prototypes["BasicTile"].context.addProperty('name', 'test', 'string'); 
+        this.prototypes["BasicTile"].context.addEvent("main");
+
         //@@UI
         ui.prototypes = this.prototypes;
 

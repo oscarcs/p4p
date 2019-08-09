@@ -26,17 +26,12 @@ class Tile {
         this.layer = 1;
         this.sprite.depth = 1;
 
-        this.context = new ExecutionContext();
+        this.context = new ExecutionContext();        
 
-        if(typeof prototype !== "undefined") {
-            console.log(prototype);            
+        if(typeof prototype !== "undefined") {                       
             this.context = prototype.context.copy();
         }
-
-        //this.context = new ExecutionContext();
-        this.context.addProperty('solid', false, 'boolean');
-        this.context.addProperty('name', 'test', 'string');
-        this.context.addEvent('main');
+                
     }
 
     update() {
@@ -64,6 +59,16 @@ class Tile {
         let currentX = this.x;
         let currentY = this.y;
         let validMove = true;
+
+        var gridPos = this.world.getGrid(newX,newY)
+
+        for (var i = 0;i<gridPos.length;i++) {
+
+            if (gridPos[i].getContext().props["solid"]){
+                validMove = false;                
+                break;
+            }            
+        }
 
         // Do the move:
         if (validMove) {
