@@ -10,6 +10,8 @@ class ExecutionContext {
      */
     copy() {
         let context = new ExecutionContext();
+
+        //Copying props
         for (var prop in this.props) {
 
             if (prop !=="name") {
@@ -17,20 +19,26 @@ class ExecutionContext {
                 
             } else {
                 context.addProperty('name', "", 'string');
-            }
-            
+            }            
         }
 
+        //Copying actions
         for (var action in this.actions) {
-            context.actions[action] = this.actions[action];
+            context.addAction(action, this.getAction(action));
         }
 
+        //Copying events
         for (var event in this.events){
             context.addEvent(event);
-            context.events[event].locals = this.events[event].locals;
-            context.events[event].code = this.events[event].code; 
-        }
+            context.events[event].code = this.events[event].code;
 
+            var localVars = this.events[event]["locals"];
+
+            for (var local in localVars) {               
+               context.addLocal(event,local,localVars[local].value,localVars[local].type);
+            }          
+        }
+        
         return context;
     }
 

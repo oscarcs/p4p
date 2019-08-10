@@ -22,7 +22,7 @@ class World {
         this.prototypes["BasicTile"].context.addProperty('solid', false, 'boolean');
         this.prototypes["BasicTile"].context.addProperty('name', '', 'string'); 
         this.prototypes["BasicTile"].context.addEvent("main");
-
+       
         //@@UI
         ui.prototypes = this.prototypes;
 
@@ -52,10 +52,11 @@ class World {
     }
 
     update() {        
+
         for (let sprite of this.sprites) { 
 
             // Bring the focused tile to the top.
-            if (this.scene.focusObject == sprite) {
+            if (this.focusObject == sprite) {
                 sprite.sprite.depth = this.layers + 1;
             }
             else {
