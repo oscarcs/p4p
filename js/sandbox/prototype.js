@@ -11,6 +11,9 @@ class Prototype {
         }
     }
 
+    /**
+     * Return the context of the prototype. 
+     */
     getContext() {
         return this.context;
     }

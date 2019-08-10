@@ -13,7 +13,7 @@ window.onload = function() {
             currentPrototype: 'BasicTile',
             currentTool: 'select',
             currentContext: null,
-            currentEventName: null,
+            currentEventName: 'main',
             showProperties: false,
             editPrototypeMode: false,
             newPropertyName: '',
@@ -22,6 +22,12 @@ window.onload = function() {
             'currentTile': function() {
                 this.changeCurrentContext();
                 this.editPrototypeMode = false;
+            },
+            'currentPrototype': function() {
+                if (this.editPrototypeMode){
+                    this.editPrototypeMode = false;
+                    this.currentContext = null;
+                }                
             }
         },
         computed: {
@@ -75,20 +81,21 @@ window.onload = function() {
 
             deleteProperty: function(name) {
                 Vue.delete(this.currentContext.props,name);
-                this.currentContext.deleteProperty(name);
+                this.currentContext.deleteProperty(name);                
             },
 
             editPrototype: function() {
-
-                this.currentContext = world.getPrototype(this.currentPrototype).getContext();
-                this.editPrototypeMode = true;
-                this.showProperties = true;
+                if (typeof world.getPrototype(this.currentPrototype) !== "undefined") {
+                    
+                    this.currentContext = world.getPrototype(this.currentPrototype).getContext();
+                    this.editPrototypeMode = true;                    
+                }                
             },
 
             applyPrototypeChanges: function() {
 
                 for (var tile of world.getTiles()){
-                    
+
                     if (tile.getType() === this.currentPrototype){
                         tile.context = world.getPrototype(this.currentPrototype).getContext().copy();
                     }
@@ -96,6 +103,9 @@ window.onload = function() {
             },
 
             deletePrototype: function() {
+                if (this.editPrototypeMode) {                    
+                    this.editPrototypeMode = false;     
+                }
                 Vue.delete(world.prototypes, this.currentPrototype);
                 
             },
@@ -105,9 +115,9 @@ window.onload = function() {
                 
                 if (newPrototypeName.length > 0 && 
                     !(newPrototypeName in world.prototypes) &&
-                    typeof this.currentTile !== "undefined") {
+                    typeof this.currentTile !== "null") {
                     Vue.set(world.prototypes, newPrototypeName, new Prototype(newPrototypeName,this.currentTile));
-                    //@@TODO Bind this to the world on save.
+                    
                 }               
             },
         }

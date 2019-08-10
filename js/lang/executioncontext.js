@@ -12,7 +12,7 @@ class ExecutionContext {
         let context = new ExecutionContext();
         for (var prop in this.props) {
 
-            if (prop !=="name"){
+            if (prop !=="name") {
                 context.addProperty(prop, this.getProperty(prop), this.props[prop].type);
                 
             } else {

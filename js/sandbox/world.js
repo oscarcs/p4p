@@ -51,7 +51,7 @@ class World {
         return [];
     }
 
-    update() {
+    update() {        
         for (let sprite of this.sprites) { 
 
             // Bring the focused tile to the top.
@@ -71,6 +71,10 @@ class World {
             return false;
         }
 
+        if (typeof prototype === "undefined") {
+            return false;
+        }
+
         let tile = new Tile(this, x, y, prototype);
         this.sprites.push(tile);
         this.grid[x][y].add(tile);
@@ -86,6 +90,7 @@ class World {
             tile.destroy();
             if (this.focusObject == tile) {
                 this.focusObject = null;
+                ui.currentTile = null;                
             }            
         }
     }  

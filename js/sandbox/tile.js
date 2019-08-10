@@ -30,8 +30,7 @@ class Tile {
 
         if(typeof prototype !== "undefined") {                       
             this.context = prototype.context.copy();
-        }
-                
+        }                
     }
 
     update() {
@@ -53,6 +52,7 @@ class Tile {
         if (newX < 0 || newX >= this.world.width ||
             newY < 0 || newY >= this.world.height
         ) {
+            //@@TODO trigger a collide with world edge event
             return;
         }
 
