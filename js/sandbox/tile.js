@@ -44,12 +44,8 @@ class Tile {
         }
     }
 
-    keyDownEvent(key) {
-        this.context.keyDownEvent(key);
-    }
-
-    keyUpEvent(key) {
-        this.context.keyUpEvent(key);
+    event(eventName) {
+        this.context.event(eventName);
     }
 
     destroy() {        

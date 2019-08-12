@@ -105,14 +105,15 @@ class Game extends Phaser.Scene {
 
                     if (tile) {
                         this.world.focusObject = tile;
-
-                    }else {
+                    }
+                    else {
                         this.world.focusObject = null;
                     }
 
                     ui.currentTile = this.world.focusObject;    
                 }
-            }else {
+            }
+            else {
                 if (this.world.focusObject && this.input.activePointer.primaryDown) {
                     this.world.focusObject.move(x,y);
                 }
@@ -175,45 +176,34 @@ class Game extends Phaser.Scene {
             });
         }
 
-        
-        
-        //Poll for keyboard input, later on pipe an event to all sprites. 
-        //@@TODO, spawn an event on the world for all the objects that have an event for keyboard
-         //Uncheck key when released.
-         for (key in this.cursors) {
+        for (key in this.cursors) {
             if (this.cursors[key].isDown) {
                 if (this.keysDown[key] == false) {
-                    this.world.keyDownEvent(key);
+                    this.world.event('keydown_' + key);
                 }
                 this.keysDown[key] = true;
             }
-        }   
+        }
 
-
-        //Uncheck key when released.
         for (key in this.cursors) {
             if (this.cursors[key].isUp) {
-                if(this.keysDown[key] == true) {
-                    this.world.keyUpEvent(key);
+                if (this.keysDown[key] == true) {
+                    this.world.event('keyup_' + key);
                 }
                 this.keysDown[key] = false;
             }
-        }       
-
+        }
 
         if (this.spaceKey.isDown) {
-            //Just Down Event
-            if (this.keysDown["space"] === false) {
-                console.log("Space Just Down");
+            if (this.keysDown['space'] === false) {
+                this.world.event('keydown_space');
             }
-
             this.keysDown["space"] = true;
-        }else{
-            //Just Up event
+        }
+        else {
             if (this.keysDown["space"] === true) {
-                console.log("Space Just Up");
+                this.world.event('keyup_space');
             }
-
             this.keysDown["space"] = false;
         } 
 
@@ -221,7 +211,6 @@ class Game extends Phaser.Scene {
         if (this.deleteKey.isDown) {
             this.world.deleteTile(this.world.focusObject);
         }
-
     }
 
     wait(duration) {

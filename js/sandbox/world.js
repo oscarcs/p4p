@@ -67,15 +67,9 @@ class World {
         }
     }
 
-    keyDownEvent(key) {
+    event(eventName) {
         for (let sprite of this.sprites) {
-            sprite.keyDownEvent(key);
-        }
-    }
-
-    keyUpEvent(key) {
-        for (let sprite of this.sprites) {
-            sprite.keyUpEvent(key);
+            sprite.event(eventName);
         }
     }
 

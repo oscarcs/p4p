@@ -38,17 +38,7 @@ class ExecutionContext {
         }
     }
 
-    keyDownEvent(key) {
-        let eventName = 'key_down_' + key;
-        if (this.events[eventName]) {
-            if (this.events[eventName].running) {
-                this.events[eventName].interpreter.step();
-            }
-        }
-    }
-
-    keyUpEvent(key) {
-        let eventName = 'key_up_' + key;
+    event(eventName) {
         if (this.events[eventName]) {
             if (this.events[eventName].running) {
                 this.events[eventName].interpreter.step();

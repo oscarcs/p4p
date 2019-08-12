@@ -17,7 +17,6 @@ class Interpreter {
 
     step() {
         let next = this.execute(this.next);
-        console.log(next, this.stack);
 
         if (next) {
             this.next = next;
