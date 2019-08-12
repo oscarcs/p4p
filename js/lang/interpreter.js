@@ -35,10 +35,12 @@ class Interpreter {
 
                 //@@TODO: local vs prop logic!
 
-                //@@TODO: lookup and set
-                this.context.setProperty(ident.name, value);
+                this.context.lookupAndSet(this.event, ident.name, value);
 
                 return node.successor;
+
+            // case 'if':
+                // let ident = this.popStack();
 
             case 'ident':
                 this.pushStack({name: node.reproduction});
@@ -73,10 +75,19 @@ class Interpreter {
                 switch (node.reproduction) {
                     case '+': this.pushStack(x + y); break;
                     case '-': this.pushStack(x - y); break;
+                    case '*': this.pushStack(x * y); break;
+                    case '/': this.pushStack(x / y); break;
                     //@@TODO: implement ops
                 }
 
                 return node.successor;
+
+            case 'prefix_op':
+                let v = this.popStack();
+
+                switch (node.reproduction) {
+                    case '+':
+                }
             
             default:
                 throw 'Not implemented!';

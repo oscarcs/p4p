@@ -4,6 +4,12 @@ class ExecutionContext {
         this.props = {};
         this.actions = {};
         this.events = {};
+
+        // Values built into the parent.
+        this.builtins = [
+            'x',
+            'y'
+        ];
     }
 
     /**
@@ -164,6 +170,52 @@ class ExecutionContext {
     }
 
     /**
+     * Look up the value of a variable name using local and global variables.
+     * @param {string} event 
+     * @param {string} name 
+     */
+    lookup(event, name) {
+        if (this.builtins.includes(name)) {
+            return this.parent[name];
+        }
+
+        if (typeof this.events[event] !== 'undefined') {
+            if (typeof this.events[event].locals[name] !== 'undefined') {
+                return this.events[event].locals[name].value;
+            }
+        }
+
+        if (typeof this.props[name] !== 'undefined') {
+            return this.props[name].value;
+        }
+    }
+
+    /**
+     * Look up a variable and set it.
+     * @param {*} event 
+     * @param {*} name 
+     * @param {*} value 
+     */
+    lookupAndSet(event, name, value) {
+        if (this.builtins.includes(name)) {
+            this.parent[name] = value;
+            return;
+        }
+
+        if (typeof this.events[event] !== 'undefined') {
+            if (typeof this.events[event].locals[name] !== 'undefined') {
+                this.events[event].locals[name].value = value;
+                return;
+            }
+        }
+
+        if (typeof this.props[name] !== 'undefined') {
+            this.props[name].value = value;
+            return;
+        }
+    }
+
+    /**
      * Add a property to this context
      * @param {string} name 
      * @param {*} value 
@@ -289,35 +341,5 @@ class ExecutionContext {
             }
         }
         return false;
-    }
-
-    /**
-     * Look up the value of a variable name using local and global variables.
-     * @param {string} event 
-     * @param {string} name 
-     */
-    lookup(event, name) {
-        if (name === 'x') {
-            return this.parent.x;
-        }
-
-        if (name === 'y') {
-            return this.parent.y;
-        }
-
-        if (typeof this.events[event] !== 'undefined') {
-            if (typeof this.events[event].locals[name] !== 'undefined') {
-                return this.events[event].locals[name].value;
-            }
-        }
-
-        if (typeof this.props[name] !== 'undefined') {
-            return this.props[name].value;
-        }
-    }
-
-    //@@TODO: We need a 'lookup and set' function
-    lookupAndSet(event, name, value) {
-        throw 'not implemented!';
     }
 }

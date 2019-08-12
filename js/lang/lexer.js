@@ -38,7 +38,7 @@ class Lexer {
             tokens.push(cur);
             cur = this.token();
         }
-        
+
         return tokens;
     }
 
@@ -114,6 +114,7 @@ class Lexer {
         let op = '';
 
         while (
+            !Lexer.isLetter(this.char()) &&
             !Lexer.isNumeric(this.char()) &&
             !Lexer.isWhitespace(this.char()) && 
             !Lexer.isQuote(this.char()) &&

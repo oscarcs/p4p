@@ -148,11 +148,26 @@ class ContextHandler {
         this.lastNode = node;
     }
 
+    threadCallStatement(node) {
+        for (let i of node.children) {
+            this.threadExpression(node.children[i]);
+        }
+
+        this.lastNode.successor = node;
+        this.lastNode = node;
+    }
+
     threadExpression(node) {
         switch(node.type) {
             case 'op':
                 this.threadExpression(node.children[0]);
                 this.threadExpression(node.children[1]);
+                this.lastNode.successor = node;
+                this.lastNode = node;
+                break;
+
+            case 'prefix_op':
+                this.threadExpression(node.children[0]);
                 this.lastNode.successor = node;
                 this.lastNode = node;
                 break;

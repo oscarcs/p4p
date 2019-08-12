@@ -16,26 +16,6 @@ class Parser {
         this.index = 0;
 
         this.prefixFunctions = {
-            'ident': {
-                f: (token) => new Node('ident', token.reproduction),
-                precedence: 0
-            },
-            
-            'numeric': {
-                f: (token) => new Node('numeric', token.reproduction),
-                precedence: 0
-            },
-            
-            'string': {
-                f: (token) => new Node('string', token.reproduction),
-                precedence: 0
-            },
-
-            'boolean': {
-                f: (token) => new Node('boolean', token.reproduction),
-                precedence: 0
-            },
-
             'lparen': {
                 f: (token) => {
                     this.advance();
@@ -53,65 +33,17 @@ class Parser {
                 },
                 precedence: 60
             },
-
-            '+': {
-                f: (token) => {
-                    let precedence = this.precedence(token);
-
-                    this.advance();
-                    let operand = this.expression(precedence);
-                    
-                    let node = new Node("prefix_" + token.type, token.reproduction);
-                    node.addChild(operand);
-                    return node;
-                },
-                precedence: 60
-            },
-
-            '-': {
-                f: (token) => {
-                    let precedence = this.precedence(token);
-
-                    this.advance();
-                    let operand = this.expression(precedence);
-
-                    let node = new Node("prefix_" + token.type, token.reproduction);
-                    node.addChild(operand);
-                    return node;
-                },
-                precedence: 60
-            }
         };
 
+        this.registerBasicPrefix('ident');
+        this.registerBasicPrefix('numeric');
+        this.registerBasicPrefix('string');
+        this.registerBasicPrefix('boolean');
+        this.registerPrefixOp('+', 60);
+        this.registerPrefixOp('-', 60);
+        this.registerPrefixOp('!', 60);
+
         this.infixFunctions = {
-            '+': {
-                f: (token, left) => {
-                    let precedence = this.precedence(token);
-
-                    this.advance();
-                    let right = this.expression(precedence);
-                    
-                    let node = new Node(token.type, token.reproduction);
-                    node.addChild(left);
-                    node.addChild(right);
-                    return node;
-                }
-            },
-
-            '-': {
-                f: (token, left) => {
-                    let precedence = this.precedence(token);
-
-                    this.advance();
-                    let right = this.expression(precedence);
-                    
-                    let node = new Node(token.type, token.reproduction);
-                    node.addChild(left);
-                    node.addChild(right);
-                    return node;
-                }
-            },
-
             'lparen': {
                 f: (token, left) => {
                     this.expect('lparen');
@@ -121,7 +53,7 @@ class Parser {
                         while (true) {
                             let arg = this.expression(0);
                             this.advance();
-                            console.log(this.token());
+
                             node.addChild(arg);    
 
                             if (!this.accept('comma')) {
@@ -138,6 +70,49 @@ class Parser {
                     return node;
                 }
             }
+        };
+
+        this.registerBasicInfix('+', 30);
+        this.registerBasicInfix('-', 30);
+        this.registerBasicInfix('*', 40);
+        this.registerBasicInfix('/', 40);
+        this.registerBasicInfix('<', 55);
+        this.registerBasicInfix('>', 55);
+        this.registerBasicInfix('==', 55);
+        this.registerBasicInfix('!=', 55);
+        this.registerBasicInfix('&&', 55);
+        this.registerBasicInfix('||', 55);
+    }
+
+    registerBasicPrefix(type) {
+        this.prefixFunctions[type] = {
+            f: (token) => new Node(type, token.reproduction),
+            precedence: 0
+        };
+    }
+
+    registerPrefixOp(type, precedence) {
+        this.prefixFunctions[type] = {
+            f: (token) => {
+                let node = new Node('prefix_op', token.reproduction);
+                this.advance();
+                node.addChild(this.expression(this.precedence(token)));
+                return node;
+            },
+            precedence: precedence
+        };
+    }
+
+    registerBasicInfix(type, precedence) {
+        this.infixFunctions[type] = {
+            f: (token, left) => {
+                let node = new Node(token.type, token.reproduction);
+                this.advance();
+                node.addChild(left);
+                node.addChild(this.expression(this.precedence(token)));
+                return node;
+            },
+            precedence: precedence
         };
     }
 
@@ -303,7 +278,7 @@ class Parser {
                 return this.callStatement();
             }
             else {
-                return this.assignmentStatment();
+                return this.assignmentStatement();
             }
         }
 
@@ -402,7 +377,7 @@ class Parser {
         return call;
     }
 
-    assignmentStatment() {
+    assignmentStatement() {
         let name = this.token();
         this.advance();
         this.expect('=');

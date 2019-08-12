@@ -23,7 +23,6 @@ class World {
         this.prototypes["BasicTile"].context.addProperty('name', '', 'string'); 
         this.prototypes["BasicTile"].context.addEvent("main");
        
-        //@@UI
         ui.prototypes = this.prototypes;
 
         this.sprites = [];
@@ -102,11 +101,11 @@ class World {
         }
     }  
 
-    getTiles(){
+    getTiles() {
         return this.sprites;
     }
 
-    getTileByName(){
+    getTileByName() {
         
     }
 
