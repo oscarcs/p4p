@@ -27,13 +27,9 @@ class Tile {
         this.sprite.depth = 1;
 
         this.context = new ExecutionContext(this);
-        this.context.addProperty('solid', false, 'boolean');
-        this.context.addProperty('name', 'test', 'string');
-        this.context.addEvent('main');
-        this.context.addEvent('key_up_right');
-        this.context.addEvent('key_up_down');
-        this.context.addEvent('key_up_left');
-        this.context.addEvent('key_up_up');
+        if (typeof prototype !== 'undefined') {
+            prototype.context.copy(this.context);
+        }
     }
 
     update() {
@@ -44,7 +40,7 @@ class Tile {
         // Update the position of the sprite according to the tile x and y.
         if (Utils.gridToTrue(this.x) !== this.sprite.x || Utils.gridToTrue(this.y) !== this.sprite.y) {
             this.sprite.x = Utils.gridToTrue(this.x);
-            this.sprite.y = Utils.gridToTrue(this.y);           
+            this.sprite.y = Utils.gridToTrue(this.y);
         }
     }
 
@@ -65,12 +61,23 @@ class Tile {
         if (newX < 0 || newX >= this.world.width ||
             newY < 0 || newY >= this.world.height
         ) {
+            //@@TODO trigger a collide with world edge event
             return;
         }
 
         let currentX = this.x;
         let currentY = this.y;
         let validMove = true;
+
+        var gridPos = this.world.getGrid(newX,newY)
+
+        for (var i = 0;i<gridPos.length;i++) {
+            
+            if (gridPos[i].getContext().props["solid"].value){
+                validMove = false;                
+                break;
+            }            
+        }
 
         // Do the move:
         if (validMove) {
@@ -86,6 +93,10 @@ class Tile {
             return this.context;
         }
         return null;
+    }
+
+    getType() {
+        return this.prototype.type;
     }
 
     limitPosition() {

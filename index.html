@@ -52,9 +52,12 @@
                     >
                         <option v-for="(type, name) of prototypes">{{name}}</option>
                     </select>
-                    <button>Edit Prototype</button>
                     <button
-                        :disabled="this.currentPrototype === 'BasicTile'" 
+                        v-on:click ="editPrototype()"
+                    >Edit Prototype</button>
+                    <button
+                        :disabled="this.currentPrototype === 'BasicTile' ||
+                                    editPrototypeMode" 
                         v-on:click="deletePrototype()"                       
                     >Delete Prototype</button>
                 </div>
@@ -67,10 +70,11 @@
                 ></div>
                 
                 <div class="panel" v-if="currentContext !== null">
-
                     <select v-model="currentEventName">
                         <option v-for="event in currentContext.getEventList()">{{event}}</option>
                     </select>
+                    <b v-if="editPrototypeMode">Editing {{currentPrototype}} prototype</b>
+                    <b v-else>{{currentTile.prototype.type}}</b>
 
                     <template v-if="!showProperties">
                         <button v-on:click="showProperties = true">Show Properties</button>
@@ -79,12 +83,11 @@
                             class="code-entry" 
                             v-model="currentContext.events[currentEventName].code"
                         ></textarea>
-                        <button v-on:click="go()">Go</button>
+                        <button v-if ="!editPrototypeMode" v-on:click="go()">Go</button>
                     </template>
 
                     <template v-if="showProperties">
-                            <button v-on:click="showProperties = false">Show Code</button>
-
+                            <button v-on:click="showProperties = false">Show Code</button>                            
                             <div class="property-buttons">
                                 <input v-model="newPropertyName">
                                 <button v-on:click="addProperty()">
@@ -94,7 +97,7 @@
                                     Add Property
                                 </button>
                             </div>
-                            <div class="property-list" v-if="currentTile !== null">
+                            <div class="property-list" v-if="currentContext !== null">
                                 <div
                                     class="property" 
                                     v-for="(prop, name) in currentContext.props"
@@ -133,14 +136,18 @@
                                         >
                                     </template>                                                                      
                                 </div>
-                            </div>
-                            <button v-on:click="savePrototype()">
-                                <svg class="icon">
-                                    <use xlink:href="css/symbols.svg#fa-save"></use>
-                                </svg>
-                                Save Prototype
-                            </button>
+                            </div>                            
                     </template>
+                        <button v-if="editPrototypeMode" v-on:click ="applyPrototypeChanges()">
+                            Apply to all
+                        </button>
+
+                        <button v-else v-on:click="savePrototype()">
+                            <svg class="icon">
+                                <use xlink:href="css/symbols.svg#fa-save"></use>
+                            </svg>
+                            Save Prototype
+                        </button>
                 </div>
             </div>
 

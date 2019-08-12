@@ -19,6 +19,10 @@ class World {
         }
         this.prototypes = {'BasicTile': new Prototype('BasicTile')};
 
+        this.prototypes["BasicTile"].context.addProperty('solid', false, 'boolean');
+        this.prototypes["BasicTile"].context.addProperty('name', '', 'string'); 
+        this.prototypes["BasicTile"].context.addEvent("main");
+       
         //@@UI
         ui.prototypes = this.prototypes;
 
@@ -47,18 +51,19 @@ class World {
         return [];
     }
 
-    update() {
+    update() {        
+
         for (let sprite of this.sprites) { 
-            
-            sprite.update();
 
             // Bring the focused tile to the top.
-            if (this.scene.focusObject == sprite) {
+            if (this.focusObject == sprite) {
                 sprite.sprite.depth = this.layers + 1;
             }
             else {
                 sprite.sprite.depth = sprite.layer;
             }
+
+            sprite.update();
         }
     }
 
@@ -79,6 +84,10 @@ class World {
             return false;
         }
 
+        if (typeof prototype === "undefined") {
+            return false;
+        }
+
         let tile = new Tile(this, x, y, prototype);
         this.sprites.push(tile);
         this.grid[x][y].add(tile);
@@ -94,9 +103,18 @@ class World {
             tile.destroy();
             if (this.focusObject == tile) {
                 this.focusObject = null;
+                ui.currentTile = null;                
             }            
         }
     }  
+
+    getTiles(){
+        return this.sprites;
+    }
+
+    getTileByName(){
+        
+    }
 
     getPrototype(name) {
         return this.prototypes[name];
@@ -104,6 +122,10 @@ class World {
 
     getPrototypeList() {
         return Object.values(this.prototypes);
+    }
+
+    updatePrototypeListFromUI() {
+        
     }
 
     save() {

@@ -11,6 +11,13 @@ class Prototype {
         }
     }
 
+    /**
+     * Return the context of the prototype. 
+     */
+    getContext() {
+        return this.context;
+    }
+
     serialize() {
         return JSON.stringify(this);
     }

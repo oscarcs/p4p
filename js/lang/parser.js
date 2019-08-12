@@ -155,7 +155,7 @@ class Parser {
         if (token === null) {
             return -1;
         }
-        return this.getPrefix(token).precedence || this.getInfix(token).precedence || 0;
+        return (this.getPrefix(token) || this.getInfix(token) || {precedence: 0}).precedence;
     }
 
     advance() {

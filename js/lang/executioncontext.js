@@ -7,13 +7,27 @@ class ExecutionContext {
     }
 
     /**
-     * Copy the values in this context to a new object.
+     * Copy the values in this context to another context.
      */
-    copy() {
-        let context = new ExecutionContext();
-        //@@TODO: Return a copy the fields etc
+    copy(context) {
+        for (var prop in this.props) {
+            context.addProperty(prop, this.getProperty(prop), this.props[prop].type);
+        }
 
-        return context;
+        for (var action in this.actions) {
+            context.addAction(action, this.getAction(action));
+        }
+
+        for (var event in this.events) {
+            context.addEvent(event);
+            context.events[event].code = this.events[event].code;
+
+            let locals = this.events[event].locals;
+
+            for (let local in locals) {               
+               context.addLocal(event, local, locals[local].value, locals[local].type);
+            }          
+        }
     }
 
     update() {
