@@ -52,8 +52,6 @@ class Game extends Phaser.Scene {
     }
 
     update() {
-        
-        
         this.world.update();        
         this.updateMarker();   
         this.updateSelectionMarker(); 
@@ -179,8 +177,8 @@ class Game extends Phaser.Scene {
          //Uncheck key when released.
          for (key in this.cursors) {
             if (this.cursors[key].isDown) {
-                if(this.keysDown[key] == false) {
-                    console.log(key + "justDown");
+                if (this.keysDown[key] == false) {
+                    this.world.keyDownEvent(key);
                 }
                 this.keysDown[key] = true;
             }
@@ -191,7 +189,7 @@ class Game extends Phaser.Scene {
         for (key in this.cursors) {
             if (this.cursors[key].isUp) {
                 if(this.keysDown[key] == true) {
-                    console.log(key + "justUp");
+                    this.world.keyUpEvent(key);
                 }
                 this.keysDown[key] = false;
             }

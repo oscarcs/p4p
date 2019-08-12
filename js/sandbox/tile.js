@@ -26,13 +26,19 @@ class Tile {
         this.layer = 1;
         this.sprite.depth = 1;
 
-        this.context = new ExecutionContext();
+        this.context = new ExecutionContext(this);
         this.context.addProperty('solid', false, 'boolean');
         this.context.addProperty('name', 'test', 'string');
         this.context.addEvent('main');
+        this.context.addEvent('key_up_right');
+        this.context.addEvent('key_up_down');
+        this.context.addEvent('key_up_left');
+        this.context.addEvent('key_up_up');
     }
 
     update() {
+        this.context.update();
+
         this.limitPosition(); 
 
         // Update the position of the sprite according to the tile x and y.
@@ -40,6 +46,14 @@ class Tile {
             this.sprite.x = Utils.gridToTrue(this.x);
             this.sprite.y = Utils.gridToTrue(this.y);           
         }
+    }
+
+    keyDownEvent(key) {
+        this.context.keyDownEvent(key);
+    }
+
+    keyUpEvent(key) {
+        this.context.keyUpEvent(key);
     }
 
     destroy() {        

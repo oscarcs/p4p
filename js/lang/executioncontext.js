@@ -1,5 +1,6 @@
 class ExecutionContext {
-    constructor() {
+    constructor(parent) {
+        this.parent = parent;
         this.props = {};
         this.actions = {};
         this.events = {};
@@ -13,6 +14,32 @@ class ExecutionContext {
         //@@TODO: Return a copy the fields etc
 
         return context;
+    }
+
+    update() {
+        if (this.events['main']) {
+            if (this.events['main'].running) {
+                this.events['main'].interpreter.step();
+            }
+        }
+    }
+
+    keyDownEvent(key) {
+        let eventName = 'key_down_' + key;
+        if (this.events[eventName]) {
+            if (this.events[eventName].running) {
+                this.events[eventName].interpreter.step();
+            }
+        }
+    }
+
+    keyUpEvent(key) {
+        let eventName = 'key_up_' + key;
+        if (this.events[eventName]) {
+            if (this.events[eventName].running) {
+                this.events[eventName].interpreter.step();
+            }
+        }
     }
 
     /**
@@ -71,13 +98,23 @@ class ExecutionContext {
     }
 
     /**
-     * Thread the AST to produce a node ordering
+     * Thread the AST to produce a linear node ordering.
      * @param {Node} root 
      */
     thread(event) {
         let root = this.parse(event);
         let contextHandler = new ContextHandler(root);
         return contextHandler.thread();
+    }
+
+    start(event) {
+        this.events[event].running = true;
+        let root = this.thread(event);
+        this.events[event].interpreter = new Interpreter(root, event, this);
+    }
+
+    stop(event) {
+        this.events[event].running = false;   
     }
 
     /**
@@ -163,7 +200,16 @@ class ExecutionContext {
      * @param {*} value 
      */
     setProperty(name, value) {
-        if (typeof this.props[name] !== 'undefined') {
+
+        console.log('set ', name, value);
+
+        if (name === 'x') {
+            this.parent.move(value, this.parent.y);
+        } 
+        else if (name === 'y') {
+            this.parent.move(this.parent.x, value);
+        }
+        else if (typeof this.props[name] !== 'undefined') {
             this.props[name].value = value;
             return true;
         }
@@ -247,6 +293,14 @@ class ExecutionContext {
      * @param {string} name 
      */
     lookup(event, name) {
+        if (name === 'x') {
+            return this.parent.x;
+        }
+
+        if (name === 'y') {
+            return this.parent.y;
+        }
+
         if (typeof this.events[event] !== 'undefined') {
             if (typeof this.events[event].locals[name] !== 'undefined') {
                 return this.events[event].locals[name].value;
@@ -256,5 +310,10 @@ class ExecutionContext {
         if (typeof this.props[name] !== 'undefined') {
             return this.props[name].value;
         }
+    }
+
+    //@@TODO: We need a 'lookup and set' function
+    lookupAndSet(event, name, value) {
+        throw 'not implemented!';
     }
 }

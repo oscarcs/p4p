@@ -27,7 +27,11 @@ window.onload = function() {
         },
         methods: {
             go: function() {
-                throw 'not implemented!';
+                this.currentContext.start(this.currentEventName);
+            },
+
+            stop: function() {
+                this.currentContext.stop(this.currentEventName);
             },
 
             lex: function() {
@@ -43,7 +47,11 @@ window.onload = function() {
             },
 
             thread: function() {
-                this.devOutput = this.currentContext.thread(this.currentEventName);
+                let t = this.currentContext.thread(this.currentEventName)
+                this.devOutput = ContextHandler.printContext(
+                    t
+                );
+                console.log(t);
             },
 
             changeCurrentContext: function() {

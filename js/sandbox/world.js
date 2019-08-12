@@ -62,6 +62,18 @@ class World {
         }
     }
 
+    keyDownEvent(key) {
+        for (let sprite of this.sprites) {
+            sprite.keyDownEvent(key);
+        }
+    }
+
+    keyUpEvent(key) {
+        for (let sprite of this.sprites) {
+            sprite.keyUpEvent(key);
+        }
+    }
+
     addTile(x, y, prototype) {
         if (x < 0 || x >= this.width || y < 0 || y >= this.height) {
             return false;
