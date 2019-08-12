@@ -125,8 +125,8 @@ class Lexer {
             this.advance();
         }
 
-        if (Reserved.getOperator(op)) {
-            let token = new Token('op', op);
+        if (Reserved.getOperator(op) !== null) {
+            let token = new Token('op', Reserved.getOperator(op));
             return token;
         }
         else {
@@ -142,8 +142,8 @@ class Lexer {
             this.advance();
         }
 
-        if (Reserved.getOperator(ident)) {
-            return new Token('op', ident);
+        if (Reserved.getOperator(ident) !== null) {
+            return new Token('op', Reserved.getOperator(ident));
         }
 
         if (Reserved.getKeyword(ident)) {

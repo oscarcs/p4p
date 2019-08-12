@@ -72,16 +72,16 @@ class Parser {
             }
         };
 
-        this.registerBasicInfix('+', 30);
-        this.registerBasicInfix('-', 30);
-        this.registerBasicInfix('*', 40);
-        this.registerBasicInfix('/', 40);
-        this.registerBasicInfix('<', 55);
-        this.registerBasicInfix('>', 55);
-        this.registerBasicInfix('==', 55);
-        this.registerBasicInfix('!=', 55);
-        this.registerBasicInfix('&&', 55);
-        this.registerBasicInfix('||', 55);
+        this.registerBasicInfix('==', 35);
+        this.registerBasicInfix('!=', 35);
+        this.registerBasicInfix('||', 40);
+        this.registerBasicInfix('&&', 41);
+        this.registerBasicInfix('<', 45);
+        this.registerBasicInfix('>', 45);
+        this.registerBasicInfix('-', 50);
+        this.registerBasicInfix('+', 50);
+        this.registerBasicInfix('*', 55);
+        this.registerBasicInfix('/', 55);
     }
 
     registerBasicPrefix(type) {

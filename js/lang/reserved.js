@@ -3,15 +3,27 @@ let Reserved = {
     operators: {
         'mod': {},
         'pow': {},
-        'and': {},
+        'and': {
+            canonical: '&&'
+        },
         'nand': {},
-        'or': {},
+        'or': {
+            canonical: '||'
+        },
         'nor': {},
         'xor': {},
-        'equals': {},
-        'not equals': {},
-        'is': {},
-        'is not': {},
+        'equals': {
+            canonical: '=='
+        },
+        'not equals': {
+            canonical: '!='
+        },
+        'is': {
+            canonical: '=='
+        },
+        'is not': {
+            canonical: '!='
+        },
         '+': {},
         '-': {},
         '*': {},
@@ -22,6 +34,8 @@ let Reserved = {
         '<': {},
         '<=': {},
         '>=': {},
+        '&&': {},
+        '||': {},
     },
 
     keywords: {
@@ -39,9 +53,12 @@ let Reserved = {
 
     getOperator: function(str) {
         if (typeof this.operators[str] !== 'undefined') {
-            return true;
+            if (typeof this.operators[str].canonical !== 'undefined') {
+                return this.operators[str].canonical;
+            }
+            return str;
         }
-        return false;
+        return null;
     },
 
     getKeyword: function(str) {

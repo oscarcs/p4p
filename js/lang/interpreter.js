@@ -77,6 +77,16 @@ class Interpreter {
                     case '-': this.pushStack(x - y); break;
                     case '*': this.pushStack(x * y); break;
                     case '/': this.pushStack(x / y); break;
+                    case '==': this.pushStack(x === y); break;
+                    case '!=': this.pushStack(x !== y); break;
+                    case '<': this.pushStack(x < y); break;
+                    case '>': this.pushStack(x > y); break;
+                    case '>=': this.pushStack(x >= y); break;
+                    case '<=': this.pushStack(x <= y); break;
+                    case '&&': this.pushStack(x && y); break;
+                    case '||': this.pushStack(x || y); break;
+                    case 'mod': this.pushStack(x % y); break;
+                    case 'pow': this.pushStack(Math.pow(x, y)); break;
                     //@@TODO: implement ops
                 }
 
