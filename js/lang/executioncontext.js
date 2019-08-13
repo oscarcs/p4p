@@ -4,7 +4,7 @@ class ExecutionContext {
         this.props = {};
         this.actions = {};
         this.events = {};
-
+        
         // Values built into the parent.
         this.builtins = [
             'x',
@@ -16,6 +16,7 @@ class ExecutionContext {
      * Copy the values in this context to another context.
      */
     copy(context) {
+        
         for (var prop in this.props) {
             context.addProperty(prop, this.getProperty(prop), this.props[prop].type);
         }
@@ -36,6 +37,7 @@ class ExecutionContext {
         }
     }
 
+
     update() {
         if (this.events['main']) {
             if (this.events['main'].running) {
@@ -52,6 +54,18 @@ class ExecutionContext {
         }
     }
 
+
+    //Schedule a wait before the next step for an event.
+    wait(eventName,duration) { 
+        var date = new Date();
+
+        if(this.events[eventName]) {
+            if (this.events[eventName].running) {
+                this.events[eventName].timer = date.getTime() + duration;
+            }
+        }
+    }
+
     /**
      * Add an event type to this context.
      * @param {string} name 
@@ -64,8 +78,8 @@ class ExecutionContext {
             this.events[name] = {
                 locals: {},
                 code: '',
-                queue: [],
-                running: false    
+                running: false,
+                timer: 0
             };
         }
     }

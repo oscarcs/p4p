@@ -5,9 +5,6 @@ class Tile {
         this.y = y;
         this.prototype = prototype;
         
-        var date = new Date();      
-        this.waitTimer = date.getTime();
-
         this.initialize(prototype);
     }
 
@@ -27,20 +24,23 @@ class Tile {
         this.sprite.depth = 1;
 
         this.context = new ExecutionContext(this);
+
         if (typeof prototype !== 'undefined') {
             prototype.context.copy(this.context);
         }
     }
 
     update() {
-        this.context.update();
+
+        if (this.world.getIsTick()) {
+            this.context.update();
+        }        
 
         this.limitPosition(); 
-
         // Update the position of the sprite according to the tile x and y.
+        
         if (Utils.gridToTrue(this.x) !== this.sprite.x || Utils.gridToTrue(this.y) !== this.sprite.y) {
-            this.sprite.x = Utils.gridToTrue(this.x);
-            this.sprite.y = Utils.gridToTrue(this.y);
+            this.move(this.x,this.y);
         }
     }
 
@@ -57,7 +57,7 @@ class Tile {
         if (newX < 0 || newX >= this.world.width ||
             newY < 0 || newY >= this.world.height
         ) {
-            //@@TODO trigger a collide with world edge event
+            this.event("collideEdge");
             return;
         }
 
@@ -79,6 +79,9 @@ class Tile {
         if (validMove) {
             this.x = newX;
             this.y = newY;
+            this.sprite.x = Utils.gridToTrue(this.x);
+            this.sprite.y = Utils.gridToTrue(this.y);
+
             this.world.grid[currentX][currentY].delete(this);
             this.world.grid[this.x][this.y].add(this);
         }
@@ -137,24 +140,8 @@ class Tile {
     }
     
     // Primitive funciton to wait before the next action.
-    wait(duration) {
-        var date = new Date();
-        this.waitTimer = date.getTime() + duration;
-    }
-
-    // Setting some hook actions.
-    setWhenExitScene(exitAction) {
-        if (typeof exitAction === "function") {
-            this.actions["whenExitScene"] = exitAction
-        }
-    }
-
-    onCollideEdge() {
-        if ("whenExitScene" in this.actions && 
-            typeof this.actions["whenExitScene"] == "function"
-        ) {
-            this.actions["whenExitScene"]();
-        }
+    wait(event, duration) {
+        this.getContext().wait(event,duration);
     }
 
     // For saving state.

@@ -105,7 +105,7 @@ window.onload = function() {
                 for (var tile of world.getTiles()){
 
                     if (tile.getType() === this.currentPrototype){
-                        tile.context = world.getPrototype(this.currentPrototype).getContext().copy();
+                        world.getPrototype(this.currentPrototype).getContext().copy(tile.context);
                     }
                 }
             },
@@ -124,6 +124,7 @@ window.onload = function() {
                 if (newPrototypeName.length > 0 && 
                     !(newPrototypeName in world.prototypes) &&
                     typeof this.currentTile !== "null") {
+
                     Vue.set(world.prototypes, newPrototypeName, new Prototype(newPrototypeName,this.currentTile));
                     
                 }               

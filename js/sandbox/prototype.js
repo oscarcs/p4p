@@ -3,12 +3,14 @@ class Prototype {
         this.type = type;
         this.context = new ExecutionContext();
 
+
         if (tile) {
-            this.context = tile.context.copy();
+            tile.getContext().copy(this.context);
         }
         else {
             this.spriteName = 'tree';
         }
+        
     }
 
     /**

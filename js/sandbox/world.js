@@ -28,6 +28,11 @@ class World {
         this.sprites = [];
         this.grid = this.createGrid();
 
+        var date = new Date();
+        this.timeBetweenUpdate = 100; 
+        this.prevTime = date.getTime()
+        this.isTick = false;
+
         this.addTile(0, 0, this.getPrototype('BasicTile'));
     }
 
@@ -51,7 +56,17 @@ class World {
     }
 
     update() {        
+        //Update the ticks
+        var date = new Date();
 
+        if (this.prevTime + this.timeBetweenUpdate > date.getTime()) {
+            this.isTick = false;
+        }else {
+            this.isTick = true;
+            this.prevTime = date.getTime();
+        }
+
+        //Update sprites
         for (let sprite of this.sprites) { 
 
             // Bring the focused tile to the top.
@@ -117,8 +132,8 @@ class World {
         return Object.values(this.prototypes);
     }
 
-    updatePrototypeListFromUI() {
-        
+    getIsTick(){
+        return this.isTick;
     }
 
     save() {
