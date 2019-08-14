@@ -17,6 +17,7 @@ window.onload = function() {
             showProperties: false,
             editPrototypeMode: false,
             newPropertyName: '',
+            updatesPerSecond: 10,
         },
         watch: {
             'currentTile': function() {
@@ -28,8 +29,11 @@ window.onload = function() {
                     this.editPrototypeMode = false;
                     this.currentContext = null;
                 }                
-            }
-        },
+            },
+            'updatesPerSecond': function() {
+                world.timeBetweenUpdate = 1000/this.updatesPerSecond;
+            },
+        },       
         computed: {
 
         },

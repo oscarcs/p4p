@@ -44,8 +44,10 @@
                                 <use xlink:href="css/symbols.svg#fa-pencil-alt"></use>
                             </svg>
                         </button>
-                    </div>        
-                    Tile Types
+                    </div> 
+                    <b>Game Speed : {{updatesPerSecond}}</b>
+                    <input type="range" min="1" max="20" step ="1" v-model = "updatesPerSecond"></input>                                               
+                    <b>Tile Types</b>
                     <select 
                         size="10"
                         v-model="currentPrototype"
