@@ -118,6 +118,10 @@ button:hover:not(:disabled) {
     margin-bottom: 0.3rem;
 }
 
+.property .warning {
+    color: red;
+}
+
 .debug {
     margin-top: 1rem;
 }

@@ -4,6 +4,9 @@ class Tile {
         this.x = x;
         this.y = y;
         this.prototype = prototype;
+
+        this.prevName = "";
+        this.invalidName = false;
         
         this.initialize(prototype);
     }
@@ -22,6 +25,9 @@ class Tile {
 
         this.layer = 1;
         this.sprite.depth = 1;
+        
+        //Use when queing the deletion of a tile.
+        this.toDelete = false;
 
         this.context = new ExecutionContext(this);
 
@@ -31,16 +37,21 @@ class Tile {
     }
 
     update() {
-
         if (this.world.getIsTick()) {
             this.context.update();
         }        
 
+        this.maintainName();
         this.limitPosition(); 
         // Update the position of the sprite according to the tile x and y.
         
         if (Utils.gridToTrue(this.x) !== this.sprite.x || Utils.gridToTrue(this.y) !== this.sprite.y) {
             this.move(this.x,this.y);
+        }
+
+        //Handle queued deletion
+        if (this.toDelete){
+            this.world.deleteTile(this);
         }
     }
 
@@ -52,7 +63,16 @@ class Tile {
         this.sprite.destroy(); 
     }
 
-    // General method to move a tile around
+    /**
+     * Use when deletion is done from code
+     */
+    queueDelete() {
+        this.toDelete = true;
+    }
+
+    /**
+     * General method to move a tile around
+     *  */
     move(newX, newY) {
         if (newX < 0 || newX >= this.world.width ||
             newY < 0 || newY >= this.world.height
@@ -97,12 +117,48 @@ class Tile {
     getType() {
         return this.prototype.type;
     }
+    
+    /**
+     * Get a property from this tile
+     *  */
+    getProp(property) {
+        return this.getContext().getProperty(property);
+    }
 
     limitPosition() {
         this.x = Math.max(this.x, 0);
         this.x = Math.min(this.x, this.world.width - 1);
         this.y = Math.max(this.y, 0);
         this.y = Math.min(this.y, this.world.height - 1);
+    }
+
+    /**
+     * Maintain the name for the sake of the namespace
+     */
+    maintainName() {
+        var name = this.getProp("name");    
+        if (name.length === 0) { 
+            return;
+        }
+
+        //If the tile doesnt already exist in the namespace, claim the name
+        if (!(name in this.world.getNameSpace())){
+            this.world.setTileName(name,this);
+            //If the previously typed name refers to itself, remove it
+            if (this.prevName.length > 0 && this.world.getTileByName(this.prevName)===this) {
+                this.world.removeTileName(this.prevName);
+            }            
+            this.prevName = name;
+        }
+        
+        //If the tile name refers to itself, the name is valid, if not then bad
+        if (this.world.getTileByName(name) === this) {
+            this.invalidName = false;
+            return;
+        }else{
+            this.invalidName = true;
+        }
+  
     }
 
     changeSprite(newSprite) {

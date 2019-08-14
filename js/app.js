@@ -17,7 +17,7 @@ window.onload = function() {
             showProperties: false,
             editPrototypeMode: false,
             newPropertyName: '',
-            updatesPerSecond: 10,
+            gameSpeed: 1,
         },
         watch: {
             'currentTile': function() {
@@ -31,7 +31,7 @@ window.onload = function() {
                 }                
             },
             'updatesPerSecond': function() {
-                world.timeBetweenUpdate = 1000/this.updatesPerSecond;
+                world.timeBetweenUpdate = 100/this.gameSpeed;
             },
         },       
         computed: {

@@ -19,13 +19,15 @@ class World {
         }
         this.prototypes = {'BasicTile': new Prototype('BasicTile')};
 
-        this.prototypes["BasicTile"].context.addProperty('solid', false, 'boolean');
         this.prototypes["BasicTile"].context.addProperty('name', '', 'string'); 
+        this.prototypes["BasicTile"].context.addProperty('solid', false, 'boolean');
+        
         this.prototypes["BasicTile"].context.addEvent("main");
        
         ui.prototypes = this.prototypes;
 
         this.sprites = [];
+        this.nameSpace = {};
         this.grid = this.createGrid();
 
         var date = new Date();
@@ -59,8 +61,7 @@ class World {
     update() {        
         //Update the ticks
         var date = new Date();
-        console.log(this.timeBetweenUpdate);
-
+        
         if (this.prevTime + this.timeBetweenUpdate > date.getTime()) {
             this.isTick = false;
         }else {
@@ -109,6 +110,10 @@ class World {
             let index = this.sprites.indexOf(tile);
             this.sprites.splice(index,1);
             
+            if (this.getTileByName(tile.getProp("name")) === tile){
+                this.removeTileName(tile.getProp("name"));
+            }
+            
             // Delete the object
             tile.destroy();
             if (this.focusObject == tile) {
@@ -122,8 +127,25 @@ class World {
         return this.sprites;
     }
 
-    getTileByName() {
-        
+    //Namespacing
+    getTileByName(name) {
+        if (name in this.nameSpace) {
+            return this.nameSpace[name];
+        }        
+    }
+
+    setTileName(name, tile) {        
+        if (!(name in this.nameSpace)) {
+            this.nameSpace[name] = tile;
+        }
+    }
+
+    removeTileName(name) {
+        delete this.nameSpace[name];
+    }
+
+    getNameSpace() { 
+        return this.nameSpace;
     }
 
     getPrototype(name) {
