@@ -10,13 +10,13 @@ class ExecutionContext {
             'x',
             'y'
         ];
+        this.loadBuiltInActions();
     }
 
     /**
      * Copy the values in this context to another context.
      */
     copy(context) {
-
         for (var prop in this.props) {
 
             if (prop in context.props && prop !== "name") {
@@ -365,9 +365,15 @@ class ExecutionContext {
 
     /**
      * Load the built in actions to this context
+     * @@TODO abuse inheritance and pass things from the basic tile.
      */
     loadBuiltInActions(){
-
+        if(typeof this.parent !== "undefined"){
+            this.addAction("moveUp", this.parent.move.bind(this.parent.x,this.parent.y-1));
+            this.addAction("moveDown", this.parent.move.bind(this.parent.x,this.parent.y+1));
+            this.addAction("moveLeft", this.parent.move.bind(this.parent.x-1,this.parent.y));
+            this.addAction("moveRight", this.parent.move.bind(this.parent.x+1,this.parent.y));
+        }          
     }
 
 }

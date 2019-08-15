@@ -39,9 +39,10 @@ class Utils {
         this.spriteDict["person4"] = {sheet: 'creatures', index: 4};
         this.spriteDict["person5"] = {sheet: 'creatures', index: 5};
         this.spriteDict["person6"] = {sheet: 'creatures', index: 6};
-        this.spriteDict["person7"] = {sheet: 'creatures', index: 7};
+
         this.spriteDict["rat"] = {sheet: 'creatures', index: 8};
         this.spriteDict["rat2"] = {sheet: 'creatures', index: 9};
+        this.spriteDict["dog"] = {sheet: 'creatures', index: 10};
         
     }
 }

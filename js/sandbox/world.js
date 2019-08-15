@@ -62,7 +62,7 @@ class World {
     update() {        
         //Update the ticks
         var date = new Date();
-        
+       
         if (this.prevTime + this.timeBetweenUpdate > date.getTime()) {
             this.isTick = false;
         }else {
