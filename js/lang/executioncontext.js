@@ -16,9 +16,15 @@ class ExecutionContext {
      * Copy the values in this context to another context.
      */
     copy(context) {
-        
+
         for (var prop in this.props) {
-            context.addProperty(prop, this.getProperty(prop), this.props[prop].type);
+
+            if (prop in context.props && prop !== "name") {
+                context.setProperty(prop,this.getProperty(prop));
+                
+            } else {
+                context.addProperty(prop, this.getProperty(prop), this.props[prop].type);
+            }
         }
 
         for (var action in this.actions) {

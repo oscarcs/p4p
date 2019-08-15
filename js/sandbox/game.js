@@ -8,11 +8,19 @@ class Game extends Phaser.Scene {
             frameWidth: 16,
             frameHeight: 16
         }); 
+
+        this.load.spritesheet('creatures', './assets/roguelikecreatures.png', {
+            frameWidth: 16,
+            frameHeight: 16
+        }); 
+
+        Utils.mapTilesToNames();
     }    
 
     create() {
+        
         this.world = new World(this);
-        window.world = this.world;
+        window.world = this.world;       
 
         // Marker for what the mouse is currently over.
         this.marker = this.add.rectangle(0, 32, 16, 16).setStrokeStyle(1, 0xffffff);

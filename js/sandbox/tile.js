@@ -16,12 +16,15 @@ class Tile {
             this.sprite.destroy();
         }
 
+        
         this.sprite = this.world.scene.add.sprite(
             Utils.gridToTrue(this.x), 
             Utils.gridToTrue(this.y),
-            'tiles',
-            Utils.nameToIndex(prototype.spriteName)
+            Utils.nameToMapping(prototype.getSpriteName()).sheet,
+            Utils.nameToMapping(prototype.getSpriteName()).index
         );
+
+        this.currentSpriteName = prototype.getSpriteName();
 
         this.layer = 1;
         this.sprite.depth = 1;
@@ -53,12 +56,18 @@ class Tile {
         if (this.toDelete){
             this.world.deleteTile(this);
         }
+
+        if(this.getProp("spriteName") !== this.currentSpriteName) {
+            this.changeSprite(this.getProp("spriteName"));
+        }
+
     }
 
     event(eventName) {
         this.context.event(eventName);
     }
 
+    //Destroy purely the sprite, does not destroy the tile instance. 
     destroy() {        
         this.sprite.destroy(); 
     }
@@ -117,6 +126,11 @@ class Tile {
     getType() {
         return this.prototype.type;
     }
+
+    //Return the sprite that this tile currently is
+    getSpriteName() {
+        return this.currentSpriteName;
+    }
     
     /**
      * Get a property from this tile
@@ -142,7 +156,7 @@ class Tile {
         }
 
         //If the tile doesnt already exist in the namespace, claim the name
-        if (!(name in this.world.getNameSpace())){
+        if (!(name in this.world.getNameSpace())) {
             this.world.setTileName(name,this);
             //If the previously typed name refers to itself, remove it
             if (this.prevName.length > 0 && this.world.getTileByName(this.prevName)===this) {
@@ -150,7 +164,7 @@ class Tile {
             }            
             this.prevName = name;
         }
-        
+
         //If the tile name refers to itself, the name is valid, if not then bad
         if (this.world.getTileByName(name) === this) {
             this.invalidName = false;
@@ -160,25 +174,23 @@ class Tile {
         }
   
     }
-
+    
+    /**
+    *Sprite can only be changed by function or dropdown menu.
+    **/
     changeSprite(newSprite) {
-        // if (this.spriteName == newSprite) {
-        //     //lazy update
-        //     return;
-        // }
 
-        // if (this.world.spriteDict[newSprite] != undefined) {
-        //     this.spriteName = newSprite;
-        //     var index = this.world.spriteDict[newSprite];
+        if (typeof Utils.nameToMapping(newSprite) !== "undefined") {
+            this.currentSpriteName = newSprite;
+            this.destroy();
 
-        //     this.sprite.destroy();            
-        //     this.sprite = this.world.add.sprite(
-        //         Utils.gridToTrue(this.x), 
-        //         Utils.gridToTrue(this.y),
-        //         'tiles',
-        //         index
-        //     );
-        // }
+            this.sprite = this.world.scene.add.sprite(
+                Utils.gridToTrue(this.x), 
+                Utils.gridToTrue(this.y),
+                Utils.nameToMapping(this.getSpriteName()).sheet,
+                Utils.nameToMapping(this.getSpriteName()).index
+            );
+        }
     }
 
     //@@DESIGN

@@ -3,14 +3,10 @@ class Prototype {
         this.type = type;
         this.context = new ExecutionContext();
 
-
-        if (tile) {
-            tile.getContext().copy(this.context);
-        }
-        else {
-            this.spriteName = 'tree';
-        }
         
+        if (tile) {
+            tile.getContext().copy(this.context);            
+        }      
     }
 
     /**
@@ -18,6 +14,10 @@ class Prototype {
      */
     getContext() {
         return this.context;
+    }
+
+    getSpriteName() {
+        return this.context.getProperty("spriteName");
     }
 
     serialize() {

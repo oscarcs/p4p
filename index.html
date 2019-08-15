@@ -79,8 +79,7 @@
                     <b v-else>{{currentTile.prototype.type}}</b>
 
                     <template v-if="!showProperties">
-                        <button v-on:click="showProperties = true">Show Properties</button>
-    
+                        <button v-on:click="showProperties = true">Show Properties</button>    
                         <textarea 
                             class="code-entry" 
                             v-model="currentContext.events[currentEventName].code"
@@ -104,8 +103,17 @@
                                     class="property" 
                                     v-for="(prop, name) in currentContext.props"
                                 >
-                                    <div class="property-title">
+                                    <div v-if="name==='spriteName'" class = 'property-title'>
                                         <b>{{name}}</b>:
+                                        <select v-if="name ==='spriteName'" v-model = "prop.value">
+                                                <option v-for="option in utils.getSpriteMapping()">
+                                                        {{option}}                
+                                                </option> 
+                                        </select>
+                                    </div>
+
+                                    <div v-else class="property-title">
+                                        <b>{{name}}</b>:                                       
                                         <select v-model="prop.type">
                                             <option :value="'boolean'">Boolean</option>
                                             <option :value="'numeric'">Number</option>
@@ -137,7 +145,7 @@
                                             v-model="prop.value"
                                         >
                                     </template>
-                                    <p class = "warning" v-if="name ==='name' && currentTile.invalidName">Duplicate name</p>                                                                      
+                                    <p class = "warning" v-if="currentTile !== null && name ==='name' && currentTile.invalidName">Duplicate name</p>                                                                      
                                 </div>
                             </div>                            
                     </template>

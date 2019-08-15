@@ -18,11 +18,13 @@ window.onload = function() {
             editPrototypeMode: false,
             newPropertyName: '',
             gameSpeed: 1,
+            utils: Utils,
         },
         watch: {
             'currentTile': function() {
                 this.changeCurrentContext();
                 this.editPrototypeMode = false;
+
             },
             'currentPrototype': function() {
                 if (this.editPrototypeMode){
@@ -97,9 +99,10 @@ window.onload = function() {
             },
 
             editPrototype: function() {
-                if (typeof world.getPrototype(this.currentPrototype) !== "undefined") {
-                    
+                
+                if (typeof world.getPrototype(this.currentPrototype) !== "undefined"){                   
                     this.currentContext = world.getPrototype(this.currentPrototype).getContext();
+                    this.currentEventName = "main";                    
                     this.editPrototypeMode = true;                    
                 }                
             },
@@ -111,6 +114,7 @@ window.onload = function() {
                     if (tile.getType() === this.currentPrototype){
                         world.getPrototype(this.currentPrototype).getContext().copy(tile.context);
                     }
+                    
                 }
             },
 
