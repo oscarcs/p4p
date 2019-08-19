@@ -19,12 +19,14 @@ textarea {
 
 textarea.code-entry {
     height: 100%;
+    font-family: 'Courier New', Courier, monospace;
 }
 
 select {
     border: 2px solid lightgray;
     border-radius: 0.25rem;
     padding: 0.25rem;
+    height: 3rem;
 }
 
 input {

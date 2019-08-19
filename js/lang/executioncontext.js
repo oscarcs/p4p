@@ -5,11 +5,17 @@ class ExecutionContext {
         this.actions = {};
         this.events = {};
         
-        // Values built into the parent.
-        this.builtins = [
+        this.builtinValues = [
             'x',
             'y'
         ];
+
+        this.builtinFunctions = [
+            'print',
+            'alert',
+            'changeSprite'
+        ];
+
         this.loadBuiltInActions();
     }
 
@@ -166,7 +172,14 @@ class ExecutionContext {
      * Get the fucntion associated with an action name.
      */
     getAction(name) {
-        return this.actions[name];
+        if (this.builtinFunctions.includes(name)) {
+            return this.parent[name];
+        }
+
+        if (this.actions[name]) {
+            return this.actions[name];
+        }
+        return null;
     }
 
     /**
@@ -195,7 +208,7 @@ class ExecutionContext {
      * @param {string} name 
      */
     lookup(event, name) {
-        if (this.builtins.includes(name)) {
+        if (this.builtinValues.includes(name)) {
             return this.parent[name];
         }
 
@@ -208,6 +221,8 @@ class ExecutionContext {
         if (typeof this.props[name] !== 'undefined') {
             return this.props[name].value;
         }
+
+        return null;
     }
 
     /**
@@ -217,7 +232,7 @@ class ExecutionContext {
      * @param {*} value 
      */
     lookupAndSet(event, name, value) {
-        if (this.builtins.includes(name)) {
+        if (this.builtinValues.includes(name)) {
             this.parent[name] = value;
             return;
         }

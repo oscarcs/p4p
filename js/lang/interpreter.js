@@ -15,6 +15,17 @@ class Interpreter {
         return this.stack.pop();
     }
 
+    /**
+     * Pop the stack, resolving the variable if there is one.
+     */
+    popStackAsValue() {
+        let x = this.popStack();
+        if (x.name) {
+            x = this.context.lookup(this.event, x.name);
+        }
+        return x;
+    }
+
     step() {
         let next = this.execute(this.next);
 
@@ -29,18 +40,49 @@ class Interpreter {
 
     execute(node) {
         switch (node.type) {
+            case 'pseudo':
+            case 'loop':
+                return node.successor;
+                
             case 'assignment':
-                let value = this.popStack();
+                let value = this.popStackAsValue();
                 let ident = this.popStack();
-
-                //@@TODO: local vs prop logic!
-
                 this.context.lookupAndSet(this.event, ident.name, value);
 
                 return node.successor;
 
-            // case 'if':
-                // let ident = this.popStack();
+            case 'call':
+                let values = [];
+                for (let i = 0; i < node.args; i++) {
+                    values.push(this.popStackAsValue());
+                }
+
+                let f = this.context.getAction(node.reproduction);
+                let result = 0;
+                if (f !== null) {
+                    result = f.apply(this.context.parent, values);
+                }
+                else {
+                    //@@ERROR
+                }
+                this.pushStack(result);
+
+                return node.successor;
+
+            case 'if':
+                let condition = this.popStackAsValue();
+                let state = false;
+                if (typeof condition === 'boolean') {
+                    state = condition;
+                }
+                else if (typeof condition === 'number') {
+                    state = condition > 0;
+                }
+                else if (typeof condition === 'string') {
+                    state = condition !== '';
+                }
+
+                return state ? node.successor : node.successorFalse;
 
             case 'ident':
                 this.pushStack({name: node.reproduction});
@@ -59,16 +101,8 @@ class Interpreter {
                 return node.successor;
 
             case 'op':
-                let x = this.popStack();
-                let y = this.popStack();
-
-                // Resolve variables
-                if (x.name) {
-                    x = this.context.lookup(this.event, x.name);
-                }
-                if (y.name) {
-                    y = this.context.lookup(this.event, y.name);
-                }
+                let y = this.popStackAsValue();
+                let x = this.popStackAsValue();
 
                 //@@TODO: typechecking!
                 
@@ -93,14 +127,20 @@ class Interpreter {
                 return node.successor;
 
             case 'prefix_op':
-                let v = this.popStack();
+                let v = this.popStackAsValue();
+
+                //@@TODO: typechecking!
 
                 switch (node.reproduction) {
-                    case '+':
+                    case '+': this.pushStack(+v); break;
+                    case '-': this.pushStack(-v); break;
+                    case '!': this.pushStack(!v); break;
                 }
+
+                return node.successor;
             
             default:
-                throw 'Not implemented!';
+                throw 'Interpreter Errpr: Type not implemented: ' + node.type;
         }
     }
 }

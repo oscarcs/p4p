@@ -23,8 +23,7 @@ class Utils {
     static getSpriteMapping(){
         return Object.keys(this.spriteDict);
     }
-
-
+    
     //Called at the start to map all the sprites to their tileSheet and index
     static mapTilesToNames() {
         this.spriteDict = {}

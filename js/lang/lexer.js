@@ -131,6 +131,7 @@ class Lexer {
         }
         else {
             // @@ERROR
+            throw 'Unrecognized token: ' + op;
         }
     }
 

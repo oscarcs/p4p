@@ -60,17 +60,17 @@ class World {
     }
 
     update() {        
-        //Update the ticks
+        // Update the ticks
         var date = new Date();
        
         if (this.prevTime + this.timeBetweenUpdate > date.getTime()) {
             this.isTick = false;
-        }else {
+        }
+        else {
             this.isTick = true;
             this.prevTime = date.getTime();
         }
 
-        //Update sprites
         for (let sprite of this.sprites) { 
 
             // Bring the focused tile to the top.
@@ -111,8 +111,8 @@ class World {
             let index = this.sprites.indexOf(tile);
             this.sprites.splice(index,1);
             
-            if (this.getTileByName(tile.getProp("name")) === tile){
-                this.removeTileName(tile.getProp("name"));
+            if (this.getTileByName(tile.getProperty('name')) === tile) {
+                this.removeTileByName(tile.getProperty('name'));
             }
             
             // Delete the object
@@ -128,21 +128,20 @@ class World {
         return this.sprites;
     }
 
-    //Namespacing
     getTileByName(name) {
         if (name in this.nameSpace) {
             return this.nameSpace[name];
         }        
+    }
+    
+    removeTileByName(name) {
+        delete this.nameSpace[name];
     }
 
     setTileName(name, tile) {        
         if (!(name in this.nameSpace)) {
             this.nameSpace[name] = tile;
         }
-    }
-
-    removeTileName(name) {
-        delete this.nameSpace[name];
     }
 
     getNameSpace() { 

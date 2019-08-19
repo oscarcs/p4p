@@ -53,7 +53,7 @@ class ContextHandler {
                 return;
 
             case 'call':
-                this.threadCallStatement(node);
+                this.threadExpression(node);
                 return;
         }
     }
@@ -96,12 +96,17 @@ class ContextHandler {
 
     threadLoopStatement(node) {
         this.lastNode.successor = node;
-
+        this.lastNode = node;
+        
         // Thread the loop body
         this.threadBlock(node.children[0]);
-        this.lastNode.successor = node;
+        
+        // Create a cycle in the control flow graph with a fake node.
+        let endLoopNode = new Node('pseudo', ContextHandler.randomID());
+        endLoopNode.successor = node;
 
-        this.lastNode = node;
+        this.lastNode.successor = endLoopNode;
+        this.lastNode = endLoopNode;
     } 
 
     threadWhileStatement(node) {
@@ -148,15 +153,6 @@ class ContextHandler {
         this.lastNode = node;
     }
 
-    threadCallStatement(node) {
-        for (let i of node.children) {
-            this.threadExpression(node.children[i]);
-        }
-
-        this.lastNode.successor = node;
-        this.lastNode = node;
-    }
-
     threadExpression(node) {
         switch(node.type) {
             case 'op':
@@ -179,6 +175,19 @@ class ContextHandler {
                 this.lastNode.successor = node;
                 this.lastNode = node;
                 break;
+
+            case 'call':
+                for (let child of node.children) {
+                    this.threadExpression(child);
+                }
+
+                this.lastNode.successor = node;
+                this.lastNode = node;
+                node.args = node.children.length;
+                return;
+            
+            default:
+                throw 'Error in context handler: Not implemented!';
         }
     }
 
@@ -189,7 +198,7 @@ class ContextHandler {
 
         let str = '';
         let cur = root;
-        while (cur.successor) {
+        while (cur.successor && cur.successor.type !== 'loop') {
             str += indent + Parser.printNode(cur) + '\n';
 
             if (cur.successorFalse) {

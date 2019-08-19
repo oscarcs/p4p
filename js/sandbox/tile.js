@@ -5,7 +5,7 @@ class Tile {
         this.y = y;
         this.prototype = prototype;
 
-        this.prevName = "";
+        this.prevName = '';
         this.invalidName = false;
         
         this.initialize(prototype);
@@ -16,7 +16,6 @@ class Tile {
             this.sprite.destroy();
         }
 
-        
         this.sprite = this.world.scene.add.sprite(
             Utils.gridToTrue(this.x), 
             Utils.gridToTrue(this.y),
@@ -28,9 +27,6 @@ class Tile {
 
         this.layer = 1;
         this.sprite.depth = 1;
-        
-        //Use when queing the deletion of a tile.
-        this.toDelete = false;
 
         this.context = new ExecutionContext(this);
 
@@ -46,19 +42,16 @@ class Tile {
 
         this.maintainName();
         this.limitPosition(); 
-        // Update the position of the sprite according to the tile x and y.
         
-        if (Utils.gridToTrue(this.x) !== this.sprite.x || Utils.gridToTrue(this.y) !== this.sprite.y) {
-            this.move(this.x,this.y);
+        // Update the position of the sprite according to the tile x and y.
+        if (Utils.gridToTrue(this.x) !== this.sprite.x ||
+            Utils.gridToTrue(this.y) !== this.sprite.y
+        ) {
+            this.move(this.x, this.y);
         }
 
-        //Handle queued deletion
-        if (this.toDelete){
-            this.world.deleteTile(this);
-        }
-
-        if(this.getProp("spriteName") !== this.currentSpriteName) {
-            this.changeSprite(this.getProp("spriteName"));
+        if (this.getProperty('spriteName') !== this.currentSpriteName) {
+            this.changeSprite(this.getProperty('spriteName'));
         }
 
     }
@@ -66,17 +59,9 @@ class Tile {
     event(eventName) {
         this.context.event(eventName);
     }
-
-    //Destroy purely the sprite, does not destroy the tile instance. 
+ 
     destroy() {        
-        this.sprite.destroy(); 
-    }
-
-    /**
-     * Use when deletion is done from code
-     */
-    queueDelete() {
-        this.toDelete = true;
+        this.world.destroy(this); 
     }
 
     /**
@@ -94,12 +79,11 @@ class Tile {
         let currentY = this.y;
         let validMove = true;
 
-        var gridPos = this.world.getGrid(newX,newY)
+        var gridPos = this.world.getGrid(newX, newY);
 
-        for (var i = 0;i<gridPos.length;i++) {
-            
-            if (gridPos[i].getContext().props["solid"].value){
-                validMove = false;                
+        for (var i = 0; i < gridPos.length; i++) {
+            if (gridPos[i].getContext().lookup('solid')) {
+                validMove = false;
                 break;
             }            
         }
@@ -127,15 +111,11 @@ class Tile {
         return this.prototype.type;
     }
 
-    //Return the sprite that this tile currently is
     getSpriteName() {
         return this.currentSpriteName;
     }
     
-    /**
-     * Get a property from this tile
-     *  */
-    getProp(property) {
+    getProperty(property) {
         return this.getContext().getProperty(property);
     }
 
@@ -150,7 +130,7 @@ class Tile {
      * Maintain the name for the sake of the namespace
      */
     maintainName() {
-        var name = this.getProp("name");    
+        var name = this.getProperty("name");    
         if (name.length === 0) { 
             return;
         }
@@ -159,8 +139,8 @@ class Tile {
         if (!(name in this.world.getNameSpace())) {
             this.world.setTileName(name,this);
             //If the previously typed name refers to itself, remove it
-            if (this.prevName.length > 0 && this.world.getTileByName(this.prevName)===this) {
-                this.world.removeTileName(this.prevName);
+            if (this.prevName.length > 0 && this.world.getTileByName(this.prevName) === this) {
+                this.world.removeTileByName(this.prevName);
             }            
             this.prevName = name;
         }
@@ -169,32 +149,55 @@ class Tile {
         if (this.world.getTileByName(name) === this) {
             this.invalidName = false;
             return;
-        }else{
+        }
+        else {
             this.invalidName = true;
         }
   
     }
     
-    /**
-    *Sprite can only be changed by function or dropdown menu.
-    **/
-    changeSprite(newSprite) {
+    /*******************************************************************************
+     * 
+     * 
+     *                     B U I L T - I N  F U N C T I O N S
+     *                                     |
+     *                                    \ /
+     *                                     
+     *******************************************************************************/
 
+    print() {
+        let str = Array.from(arguments).join(', ');
+        //@@TODO: print to screen or something somehow
+        console.log(str);
+        return str;
+    }
+
+    alert() {
+        let str = Array.from(arguments).join(', ');
+        alert(str);
+        return str;
+    }
+
+    changeSprite(newSprite) {
         if (typeof Utils.nameToMapping(newSprite) !== "undefined") {
             this.currentSpriteName = newSprite;
-            this.destroy();
+            this.context.setProperty('spriteName', newSprite);
 
+            this.sprite.destroy();
             this.sprite = this.world.scene.add.sprite(
                 Utils.gridToTrue(this.x), 
                 Utils.gridToTrue(this.y),
                 Utils.nameToMapping(this.getSpriteName()).sheet,
                 Utils.nameToMapping(this.getSpriteName()).index
             );
+            console.log(Utils.nameToMapping(this.getSpriteName()).sheet, this.currentSpriteName);
+
+            return true;
         }
+        return false;
     }
 
-    //@@DESIGN
-    // Limit depth to 10 layers for the sake of simplicity.
+    //@@DESIGN: Limit depth to 10 layers?
     changeDepth(layer) {
         if (layer < 1) {
             this.depth = 1;
@@ -209,7 +212,7 @@ class Tile {
     
     // Primitive funciton to wait before the next action.
     wait(event, duration) {
-        this.getContext().wait(event,duration);
+        this.getContext().wait(event, duration);
     }
 
     // For saving state.
