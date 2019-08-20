@@ -24,6 +24,7 @@ class World {
         this.prototypes["BasicTile"].context.addProperty('solid', false, 'boolean');        
         
         this.prototypes["BasicTile"].context.addEvent("main");
+        //this.prototypes["BasicTile"].context.addEvent("keydown_up");
        
         ui.prototypes = this.prototypes;
 

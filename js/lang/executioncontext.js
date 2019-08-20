@@ -13,10 +13,16 @@ class ExecutionContext {
         this.builtinFunctions = [
             'print',
             'alert',
-            'changeSprite'
+            'changeSprite',
+            'move',
+            'moveUp',
+            'moveDown',
+            'moveLeft',
+            'moveRight',
+            'checkEmpty',
+            'checkContains'
         ];
 
-        this.loadBuiltInActions();
     }
 
     /**
@@ -378,17 +384,5 @@ class ExecutionContext {
         return false;
     }
 
-    /**
-     * Load the built in actions to this context
-     * @@TODO abuse inheritance and pass things from the basic tile.
-     */
-    loadBuiltInActions(){
-        if(typeof this.parent !== "undefined"){
-            this.addAction("moveUp", this.parent.move.bind(this.parent.x,this.parent.y-1));
-            this.addAction("moveDown", this.parent.move.bind(this.parent.x,this.parent.y+1));
-            this.addAction("moveLeft", this.parent.move.bind(this.parent.x-1,this.parent.y));
-            this.addAction("moveRight", this.parent.move.bind(this.parent.x+1,this.parent.y));
-        }          
-    }
 
 }

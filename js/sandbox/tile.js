@@ -82,7 +82,7 @@ class Tile {
         var gridPos = this.world.getGrid(newX, newY);
 
         for (var i = 0; i < gridPos.length; i++) {
-            if (gridPos[i].getContext().lookup('solid')) {
+            if (gridPos[i].getContext().lookup('undefined','solid')) {
                 validMove = false;
                 break;
             }            
@@ -97,6 +97,8 @@ class Tile {
 
             this.world.grid[currentX][currentY].delete(this);
             this.world.grid[this.x][this.y].add(this);
+        }else {
+            this.event("movedIntoSolid");
         }
     }  
 
@@ -211,9 +213,64 @@ class Tile {
     }
     
     // Primitive funciton to wait before the next action.
+    //@@TODO make this work.
     wait(event, duration) {
         this.getContext().wait(event, duration);
     }
+
+    //movement primitives
+    moveUp(distance) {
+        var dist = 1
+        if (distance){
+            dist = distance;
+        }
+        this.move(this.x,this.y-dist);
+    }
+
+    moveDown(distance) {
+        var dist = 1
+        if (distance){
+            dist = distance;
+        }
+        this.move(this.x,this.y+dist);
+    }
+    
+    moveLeft(distance) {
+        var dist = 1
+        if (distance){
+            dist = distance;
+        }
+        this.move(this.x-dist,this.y);
+    }
+
+    moveRight(distance) {
+        var dist = 1
+        if (distance){
+            dist = distance;
+        }
+        this.move(this.x+dist,this.y);
+    }
+
+    //Check if a cell is empty
+    checkEmpty(x,y) {
+        if (this.world.getGrid(x,y).length === 0) {
+            return true;
+        }else {
+            return false;
+        }
+    }
+
+    checkContains(x,y,tileType) {
+        var cell = this.world.getGrid(x,y);
+        for (var i in cell) {
+            if (cell[i].getType() === tileType) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
 
     // For saving state.
     serialize() {

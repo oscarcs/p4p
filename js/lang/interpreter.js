@@ -54,8 +54,8 @@ class Interpreter {
             case 'call':
                 let values = [];
                 for (let i = 0; i < node.args; i++) {
-                    values.push(this.popStackAsValue());
-                }
+                    values.unshift(this.popStackAsValue());
+                }                
 
                 let f = this.context.getAction(node.reproduction);
                 let result = 0;
