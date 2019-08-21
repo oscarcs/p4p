@@ -121,6 +121,13 @@ window.onload = function() {
                 }                
             },
 
+            doneEdit() {
+                if (this.editPrototypeMode) {
+                    this.editPrototypeMode = false;
+                    this.currentContext = null;
+                }
+            },
+
             applyPrototypeChanges: function() {
                 for (var tile of world.getTiles()) {
                     if (tile.getType() === this.currentPrototype) {
@@ -160,7 +167,7 @@ window.onload = function() {
         height: 240,
         parent: 'sandbox',
         pixelArt: true,
-        zoom: 2,
+        zoom: 3,
         scene: [Game]
     });
 }

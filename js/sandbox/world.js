@@ -24,7 +24,8 @@ class World {
         this.prototypes["BasicTile"].context.addProperty('solid', false, 'boolean');        
         
         this.prototypes["BasicTile"].context.addEvent("main");
-        //this.prototypes["BasicTile"].context.addEvent("keydown_up");
+        this.prototypes["BasicTile"].context.addEvent("collideEdge");
+        this.prototypes["BasicTile"].context.addEvent("collideSolidTile");
        
         ui.prototypes = this.prototypes;
 
@@ -117,7 +118,7 @@ class World {
             }
             
             // Delete the object
-            tile.destroy();
+            tile.sprite.destroy();
             if (this.focusObject == tile) {
                 this.focusObject = null;
                 ui.currentTile = null;                

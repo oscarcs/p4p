@@ -61,7 +61,7 @@ class Tile {
     }
  
     destroy() {        
-        this.world.destroy(this); 
+        this.world.deleteTile(this); 
     }
 
     /**
@@ -98,7 +98,7 @@ class Tile {
             this.world.grid[currentX][currentY].delete(this);
             this.world.grid[this.x][this.y].add(this);
         }else {
-            this.event("movedIntoSolid");
+            this.event("collideSolidTile");
         }
     }  
 

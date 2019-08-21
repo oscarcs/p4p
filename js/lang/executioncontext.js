@@ -66,6 +66,7 @@ class ExecutionContext {
 
     event(eventName) {
         if (this.events[eventName]) {
+            //this.start(eventName);
             if (this.events[eventName].running) {
                 this.events[eventName].interpreter.step();
             }

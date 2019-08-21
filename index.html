@@ -23,32 +23,55 @@
     </head>
 
     <body>
+        <h1 class="projectheader">Sandbox programming toy</h1>
         <div class="game" id="app">
+            <div class = "banner">
+                <div class = "tools">
+                    <b>Tools: </b>
+                    <button
+                        :disabled="currentTool === 'select'"
+                        v-on:click="currentTool = 'select'"
+                    >
+                        <svg class="icon icon-large">
+                            <use xlink:href="css/symbols.svg#fa-mouse-pointer"></use>
+                        </svg>
+                    </button>
+
+                    <button
+                        :disabled="currentTool === 'create'"
+                        v-on:click="currentTool = 'create'"
+                    >
+                        <svg class="icon icon-large">
+                            <use xlink:href="css/symbols.svg#fa-pencil-alt"></use>
+                        </svg>
+                    </button>
+                </div> 
+                <div class = "playcontrol">        
+                    <div>
+                        <button>
+                            <svg class="icon icon-large">
+                                    <use xlink:href="css/symbols.svg#fa-play"></use>
+                            </svg>
+                        </button>  
+                        <button>
+                            <svg class="icon icon-large">
+                                    <use xlink:href="css/symbols.svg#fa-stop"></use>
+                            </svg>
+                        </button>
+                    </div>              
+                    <div>
+                        <input type="range" min="0.1" max="2" step="0.1" v-model="gameSpeed"></input>  
+                        <br>
+                        <b>Game Speed: {{gameSpeed}}</b>
+                    </div>           
+                </div>                
+            </div>
             <div class="columns">
                 <div class="panel">
-                    <div>
-                        <button
-                            :disabled="currentTool === 'select'"
-                            v-on:click="currentTool = 'select'"
-                        >
-                            <svg class="icon icon-large">
-                                <use xlink:href="css/symbols.svg#fa-mouse-pointer"></use>
-                            </svg>
-                        </button>
-
-                        <button
-                            :disabled="currentTool === 'create'"
-                            v-on:click="currentTool = 'create'"
-                        >
-                            <svg class="icon icon-large">
-                                <use xlink:href="css/symbols.svg#fa-pencil-alt"></use>
-                            </svg>
-                        </button>
-                    </div> 
-                    <b>Game Speed: {{gameSpeed}}</b>
-                    <input type="range" min="0.1" max="2" step="0.1" v-model="gameSpeed"></input>                                               
+                                                                 
                     <b>Tile Types</b>
                     <select 
+                        class = "tileselect"
                         size="10"
                         v-model="currentPrototype"
                     >
@@ -71,13 +94,13 @@
                     id="sandbox"
                 ></div>
                 
-                <div class="panel" v-if="currentContext !== null">
+                <div class="codepanel" v-if="currentContext !== null">
+                    <h1 v-if="editPrototypeMode">Editing {{currentPrototype}} prototype</h1>
+                    <h1 v-else>{{currentTile.prototype.type}}</h1>
+                    <b>Events</b>
                     <select v-model="currentEventName">
                         <option v-for="event in currentContext.getEventList()">{{event}}</option>
                     </select>
-                    <b v-if="editPrototypeMode">Editing {{currentPrototype}} prototype</b>
-                    <b v-else>{{currentTile.prototype.type}}</b>
-
                     <template v-if="!showProperties">
                         <button v-on:click="showProperties = true">Show Properties</button>    
                         <textarea 
@@ -90,7 +113,7 @@
 
                     <template v-if="showProperties">
                             <button v-on:click="showProperties = false">Show Code</button>                            
-                            <div class="property-buttons">
+                            <div class="new-property-input">
                                 <input v-model="newPropertyName">
                                 <button v-on:click="addProperty()">
                                     <svg class="icon">
@@ -105,7 +128,7 @@
                                     v-for="(prop, name) in currentContext.props"
                                 >
                                     <div v-if="name==='spriteName'" class = 'property-title'>
-                                        <b>{{name}}</b>:
+                                        <b>{{name}}:</b>
                                         <select v-if="name ==='spriteName'" v-model = "prop.value">
                                                 <option v-for="option in utils.getSpriteMapping()">
                                                         {{option}}                
@@ -114,7 +137,7 @@
                                     </div>
 
                                     <div v-else class="property-title">
-                                        <b>{{name}}</b>:                                       
+                                        <b>{{name}}:</b>                                     
                                         <select v-model="prop.type">
                                             <option :value="'boolean'">Boolean</option>
                                             <option :value="'numeric'">Number</option>
@@ -150,6 +173,9 @@
                                 </div>
                             </div>                            
                     </template>
+                        <button v-if = "editPrototypeMode" v-on:click="doneEdit()">
+                            Done
+                        </button>
                         <button v-if="editPrototypeMode" v-on:click ="applyPrototypeChanges()">
                             Apply to all
                         </button>
