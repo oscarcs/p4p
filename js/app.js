@@ -49,7 +49,7 @@ window.onload = function() {
             },
 
             goAll: function() {
-
+                world.goAll();
             },
 
             stopAll: function() {

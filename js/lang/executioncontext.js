@@ -59,19 +59,37 @@ class ExecutionContext {
 
 
     update() {
+        for (let event in this.events) {            
+            if (this.events[event].running && 
+                this.events[event].code.length > 1) {
+                
+                try{
+                    this.events[event].interpreter.step(); 
+                }catch {
+                    this.events[event].running = false;
+                }                
+            }
+        }
+        /*
         if (this.events['main']) {
             if (this.events['main'].running) {
                 this.events['main'].interpreter.step();
             }
         }
+        */
     }
 
     event(eventName) {
-        if (this.events[eventName]) {
-            //this.start(eventName);
+        if (this.events[eventName] && 
+            this.events[eventName].code.length > 1) {
+                
+            this.events[eventName].running = true;
+
+            /*
             if (this.events[eventName].running) {
                 this.events[eventName].interpreter.step();
             }
+            */
         }
     }
 

@@ -36,6 +36,13 @@ class World {
         this.prototypes["BasicTile"].context.addEvent("whenOverlap");
         this.prototypes["BasicTile"].context.addLocal("whenOverlap", "evX", "","number");
         this.prototypes["BasicTile"].context.addLocal("whenOverlap", "evY", "","number");
+
+        this.prototypes["BasicTile"].context.addEvent("keyPress_space");
+        this.prototypes["BasicTile"].context.addEvent("keyPress_up");
+        this.prototypes["BasicTile"].context.addEvent("keyPress_left");
+        this.prototypes["BasicTile"].context.addEvent("keyPress_right");
+        this.prototypes["BasicTile"].context.addEvent("keyPress_down");
+        
        
         ui.prototypes = this.prototypes;
 
@@ -175,6 +182,14 @@ class World {
 
     getIsTick(){
         return this.isTick;
+    }
+
+    goAll() {
+        for (let sprite of this.sprites) {
+            for (let event of sprite.getContext().getEventList())  {
+                sprite.getContext().start(event);
+            }
+        }
     }
 
     stopAll() {

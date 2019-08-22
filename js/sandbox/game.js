@@ -187,7 +187,7 @@ class Game extends Phaser.Scene {
         for (key in this.cursors) {
             if (this.cursors[key].isDown) {
                 if (this.keysDown[key] == false) {
-                    this.world.event('keydown_' + key);
+                    this.world.event('keyPress_' + key);
                 }
                 this.keysDown[key] = true;
             }
@@ -196,7 +196,7 @@ class Game extends Phaser.Scene {
         for (key in this.cursors) {
             if (this.cursors[key].isUp) {
                 if (this.keysDown[key] == true) {
-                    this.world.event('keyup_' + key);
+                    this.world.event('keyRelease_' + key);
                 }
                 this.keysDown[key] = false;
             }
@@ -204,13 +204,13 @@ class Game extends Phaser.Scene {
 
         if (this.spaceKey.isDown) {
             if (this.keysDown['space'] === false) {
-                this.world.event('keydown_space');
+                this.world.event('keyPress_space');
             }
             this.keysDown["space"] = true;
         }
         else {
             if (this.keysDown["space"] === true) {
-                this.world.event('keyup_space');
+                this.world.event('keyRelease_space');
             }
             this.keysDown["space"] = false;
         } 
