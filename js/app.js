@@ -48,6 +48,14 @@ window.onload = function() {
                 this.currentContext.stop(this.currentEventName);
             },
 
+            goAll: function() {
+
+            },
+
+            stopAll: function() {
+                world.stopAll();
+            },
+
             lex: function() {
                 this.devOutput = Lexer.printTokens(
                     this.currentContext.lex(this.currentEventName)

@@ -48,12 +48,14 @@
                 </div> 
                 <div class = "playcontrol">        
                     <div>
-                        <button>
+                        <button
+                            v-on:click="goAll()">
                             <svg class="icon icon-large">
                                     <use xlink:href="css/symbols.svg#fa-play"></use>
                             </svg>
                         </button>  
-                        <button>
+                        <button
+                            v-on:click="stopAll()">
                             <svg class="icon icon-large">
                                     <use xlink:href="css/symbols.svg#fa-stop"></use>
                             </svg>

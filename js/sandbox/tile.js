@@ -71,6 +71,8 @@ class Tile {
         if (newX < 0 || newX >= this.world.width ||
             newY < 0 || newY >= this.world.height
         ) {
+            this.getContext().setLocal("collideEdge","evX",newX);
+            this.getContext().setLocal("collideEdge","evY",newY);
             this.event("collideEdge");
             return;
         }
@@ -98,6 +100,8 @@ class Tile {
             this.world.grid[currentX][currentY].delete(this);
             this.world.grid[this.x][this.y].add(this);
         }else {
+            this.getContext().setLocal("collideSolidTile","evX",newX);
+            this.getContext().setLocal("collideSolidTile","evY",newY);
             this.event("collideSolidTile");
         }
     }  
@@ -269,6 +273,14 @@ class Tile {
         }
 
         return false;
+    }
+
+    randomNumber(max) {
+        return Math.floor(Math.random()*max);
+    }
+
+    delete() {
+        this.world.deleteTile(this);
     }
 
 

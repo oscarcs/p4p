@@ -21,7 +21,8 @@
 
 .projectHeader {
     font-size: 32px;
-    text-align: center;
+    margin-bottom: 0.5rem;
+    margin-left: 50rem;
 }
 
 .banner .tools {
@@ -33,6 +34,10 @@
     display: flex;
     margin-left: 30rem;
     text-align: center;
+}
+
+.banner .playcontrol input {
+    margin-left: 2em;
 }
 
 textarea {

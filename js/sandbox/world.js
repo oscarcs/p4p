@@ -25,7 +25,17 @@ class World {
         
         this.prototypes["BasicTile"].context.addEvent("main");
         this.prototypes["BasicTile"].context.addEvent("collideEdge");
+        this.prototypes["BasicTile"].context.addLocal("collideEdge", "evX", "","number");
+        this.prototypes["BasicTile"].context.addLocal("collideEdge", "evY", "","number");
+
+
         this.prototypes["BasicTile"].context.addEvent("collideSolidTile");
+        this.prototypes["BasicTile"].context.addLocal("collideSolidTile", "evX", "","number");
+        this.prototypes["BasicTile"].context.addLocal("collideSolidTile", "evY", "","number");
+
+        this.prototypes["BasicTile"].context.addEvent("whenOverlap");
+        this.prototypes["BasicTile"].context.addLocal("whenOverlap", "evX", "","number");
+        this.prototypes["BasicTile"].context.addLocal("whenOverlap", "evY", "","number");
        
         ui.prototypes = this.prototypes;
 
@@ -74,6 +84,11 @@ class World {
         }
 
         for (let sprite of this.sprites) { 
+            if (this.getGrid(sprite.x,sprite.y).length >1){
+                sprite.getContext().setLocal("whenOverlap", "evX",sprite.x);
+                sprite.getContext().setLocal("whenOverlap","evY",sprite.y);
+                sprite.event("whenOverlap");
+            }
 
             // Bring the focused tile to the top.
             if (this.focusObject == sprite) {
@@ -160,6 +175,14 @@ class World {
 
     getIsTick(){
         return this.isTick;
+    }
+
+    stopAll() {
+        for (let sprite of this.sprites) {
+            for (let event of sprite.getContext().getEventList()) {
+                sprite.getContext().stop(event);
+            }
+        }
     }
 
     save() {

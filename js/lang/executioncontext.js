@@ -20,7 +20,9 @@ class ExecutionContext {
             'moveLeft',
             'moveRight',
             'checkEmpty',
-            'checkContains'
+            'checkContains',
+            'randomNumber',
+            'delete'
         ];
 
     }
