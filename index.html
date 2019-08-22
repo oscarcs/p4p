@@ -110,7 +110,7 @@
                             v-model="currentContext.events[currentEventName].code"
                             v-on:keydown.tab.prevent="insertTab($event)"
                         ></textarea>
-                        <button v-if ="!editPrototypeMode" v-on:click="go()">Go</button>
+                        <button v-if ="!editPrototypeMode" v-on:click="go()">Try it out</button>
                     </template>
 
                     <template v-if="showProperties">

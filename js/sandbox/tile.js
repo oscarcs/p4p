@@ -59,10 +59,6 @@ class Tile {
     event(eventName) {
         this.context.event(eventName);
     }
- 
-    destroy() {        
-        this.world.deleteTile(this); 
-    }
 
     /**
      * General method to move a tile around
@@ -111,6 +107,10 @@ class Tile {
             return this.context;
         }
         return null;
+    }
+
+    setType(newType) {
+        this.prototype.type = newType;
     }
 
     getType() {
@@ -279,9 +279,10 @@ class Tile {
         return Math.floor(Math.random()*max);
     }
 
-    delete() {
-        this.world.deleteTile(this);
+    destroy() {        
+        this.world.deleteTile(this); 
     }
+
 
 
     // For saving state.

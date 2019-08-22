@@ -22,7 +22,7 @@ class ExecutionContext {
             'checkEmpty',
             'checkContains',
             'randomNumber',
-            'delete'
+            'destroy'
         ];
 
     }
@@ -82,9 +82,8 @@ class ExecutionContext {
     event(eventName) {
         if (this.events[eventName] && 
             this.events[eventName].code.length > 1) {
-                
-            this.events[eventName].running = true;
 
+            this.events[eventName].running = true;
             /*
             if (this.events[eventName].running) {
                 this.events[eventName].interpreter.step();

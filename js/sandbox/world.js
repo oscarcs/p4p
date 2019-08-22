@@ -134,6 +134,8 @@ class World {
         if (tile) {
             let index = this.sprites.indexOf(tile);
             this.sprites.splice(index,1);
+
+            this.grid[tile.x][tile.y].delete(tile);
             
             if (this.getTileByName(tile.getProperty('name')) === tile) {
                 this.removeTileByName(tile.getProperty('name'));

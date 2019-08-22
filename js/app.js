@@ -159,6 +159,7 @@ window.onload = function() {
                     !(newPrototypeName in world.prototypes) &&
                     typeof this.currentTile !== "null"
                 ) {
+                    this.currentTile.setType(newPrototypeName);
                     Vue.set(
                         world.prototypes, 
                         newPrototypeName, 
