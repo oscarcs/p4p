@@ -49,13 +49,16 @@
                 <div class = "playcontrol">        
                     <div>
                         <button
-                            v-on:click="goAll()">
+                            v-on:click="goAll()"
+                            title = "Run all tiles"
+                            >
                             <svg class="icon icon-large">
                                     <use xlink:href="css/symbols.svg#fa-play"></use>
                             </svg>
                         </button>  
                         <button
-                            v-on:click="stopAll()">
+                            v-on:click="stopAll()"
+                            title = "Stop all tiles">
                             <svg class="icon icon-large">
                                     <use xlink:href="css/symbols.svg#fa-stop"></use>
                             </svg>

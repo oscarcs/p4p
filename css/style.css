@@ -3,6 +3,10 @@
     font-size: 13px; 
 }
 
+svg{
+    pointer-events: none;
+}
+
 #sandbox {
     border: 2px lightgray solid;
     border-radius: 0.25rem;

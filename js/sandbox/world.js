@@ -17,6 +17,9 @@ class World {
         for (let key in this.sprites) {
             this.sprites[key].destroy();
         }
+
+        //loadGame here if available
+
         this.prototypes = {'BasicTile': new Prototype('BasicTile')};
 
         this.prototypes["BasicTile"].context.addProperty('spriteName', 'tree', 'enum'); //Kinda hacky
@@ -205,6 +208,7 @@ class World {
     save() {
         var saveGameObject = {};
         saveGameObject.sprites = this.sprites.map(sprite => sprite.serialize());
+        saveGameObject.prototypes = this.prototypes.map(prototype => prototype.serialize());
 
         localStorage.setItem("2DSandbox", JSON.stringify(saveGameObject));
     }
