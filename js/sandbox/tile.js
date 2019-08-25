@@ -275,8 +275,12 @@ class Tile {
         return false;
     }
 
-    randomNumber(max) {
+    randomNum(max) {
         return Math.floor(Math.random()*max);
+    }
+
+    addTile(x,y,prototype) {
+        this.world.addTile(x,y,this.world.getPrototype(prototype));
     }
 
     destroy() {        
@@ -287,16 +291,12 @@ class Tile {
 
     // For saving state.
     serialize() {
-        // var saveSprite = {};
-        // saveSprite.type = this.type;
-        // saveSprite.name = this.name;
-        // saveSprite.spriteName = this.spriteName;        
-        // saveSprite.x = this.x;
-        // saveSprite.y = this.y;
-        // saveSprite.exposed_fields = this.exposed_fields;
-        // saveSprite.solid = this.solid;
-        // saveSprite.code = this.code;
+        var saveSprite = {};      
+        saveSprite.x = this.x;
+        saveSprite.y = this.y;
+        saveSprite.prototype = this.prototype;
+        
 
-        // return JSON.stringify(saveSprite);
+        return JSON.stringify(saveSprite);
     }
 }

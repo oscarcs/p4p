@@ -130,6 +130,8 @@ class World {
         let tile = new Tile(this, x, y, prototype);
         this.sprites.push(tile);
         this.grid[x][y].add(tile);
+        //@@TODO, make the tile on create event start here.
+        //@@TODO, all the events sans main should be started on creation.
         return tile;
     }
 
@@ -193,6 +195,10 @@ class World {
         for (let sprite of this.sprites) {
             for (let event of sprite.getContext().getEventList())  {
                 sprite.getContext().start(event);
+                if (event !== "main") {
+                    sprite.getContext().stop(event); //simply stops the event running.
+                }
+                //Start the interpreter at root for event at the root but the event is not running. 
             }
         }
     }
@@ -203,14 +209,28 @@ class World {
                 sprite.getContext().stop(event);
             }
         }
+        this.save();
     }
 
     save() {
         var saveGameObject = {};
+        //Save all the sprites in the world
         saveGameObject.sprites = this.sprites.map(sprite => sprite.serialize());
-        saveGameObject.prototypes = this.prototypes.map(prototype => prototype.serialize());
 
-        localStorage.setItem("2DSandbox", JSON.stringify(saveGameObject));
+        //saveGameObject.prototypes = this.prototypes;
+        var saveThing = JSON.stringify(saveGameObject);
+
+
+        //@@TODO make loading sprites work
+        var saveState = JSON.parse(saveThing);
+
+        for (var i = 0; i< saveState.sprites.length;i++){
+            var sprite = JSON.parse(saveState.sprites[i]);
+
+            //gets position of all the sprites. 
+            //but doesn't get prototype, make a Basic tile and manuall copy over all the data.
+        }
+        //localStorage.setItem("2DSandbox", JSON.stringify(saveGameObject));
     }
 
     load() {

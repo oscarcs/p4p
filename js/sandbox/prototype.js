@@ -2,7 +2,6 @@ class Prototype {
     constructor(type, tile) {
         this.type = type;
         this.context = new ExecutionContext();
-
         
         if (tile) {
             tile.getContext().copy(this.context);            

@@ -34,6 +34,7 @@ class Game extends Phaser.Scene {
 
         
         this.deleteKey = this.input.keyboard.addKey('DELETE');  
+        this.backSpaceKey = this.input.keyboard.addKey('BACKSPACE');
         this.spaceKey = this.input.keyboard.addKey('SPACE'); 
 
         //One tick per 100 milliseconds
@@ -157,6 +158,7 @@ class Game extends Phaser.Scene {
             activeElementType == "number"
         ) {
             this.deleteKey.enabled = false;  
+            this.backSpaceKey.enabled = false;
             this.spaceKey.enabled = false;
             
             for (var key in this.cursors){                
@@ -171,6 +173,9 @@ class Game extends Phaser.Scene {
 
             this.spaceKey.enabled = true;
             this.input.keyboard.addCapture("SPACE");
+
+            this.backSpaceKey.enabled = true;
+            this.input.keyboard.addCapture("BACKSPACE");
 
             for (var key in this.cursors){                
                 this.cursors[key].enabled = true;
@@ -216,7 +221,7 @@ class Game extends Phaser.Scene {
         } 
 
         // Delete key polling.
-        if (this.deleteKey.isDown) {
+        if (this.deleteKey.isDown || this.backSpaceKey.isDown) {
             this.world.deleteTile(this.world.focusObject);
         }
     }

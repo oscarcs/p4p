@@ -21,8 +21,9 @@ class ExecutionContext {
             'moveRight',
             'checkEmpty',
             'checkContains',
-            'randomNumber',
-            'destroy'
+            'randomNum',
+            'destroy',
+            'addTile'
         ];
 
     }
