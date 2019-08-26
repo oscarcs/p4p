@@ -111,8 +111,8 @@ class Tile {
         return null;
     }
 
-    setType(newType) {
-        this.prototype.type = newType;
+    setPrototype(prototype) {
+        this.prototype = prototype;
     }
 
     getType() {
@@ -160,7 +160,7 @@ class Tile {
             this.world.setTileName(name,this);
             //If the previously typed name refers to itself, remove it
             if (this.prevName.length > 0 && this.world.getTileByName(this.prevName) === this) {
-                this.world.removeTileByName(this.prevName);
+                this.world.removeTileName(this.prevName);
             }            
             this.prevName = name;
         }
@@ -298,6 +298,13 @@ class Tile {
 
     destroy() {        
         this.world.deleteTile(this); 
+    }
+
+    getTileProperty(tileName, property) {
+        var tile = this.world.getTileByName(tileName);
+        if (tile) {
+            return tile.getProperty(property);
+        }
     }
 
 

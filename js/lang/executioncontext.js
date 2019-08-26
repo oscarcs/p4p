@@ -23,7 +23,8 @@ class ExecutionContext {
             'checkContains',
             'randomNum',
             'destroy',
-            'addTile'
+            'addTile',
+            'getTileProperty'
         ];
 
     }

@@ -146,7 +146,7 @@ class World {
             this.grid[tile.x][tile.y].delete(tile);
             
             if (this.getTileByName(tile.getProperty('name')) === tile) {
-                this.removeTileByName(tile.getProperty('name'));
+                this.removeTileName(tile.getProperty('name'));
             }
             
             // Delete the object
@@ -165,10 +165,10 @@ class World {
     getTileByName(name) {
         if (name in this.nameSpace) {
             return this.nameSpace[name];
-        }        
+        } 
     }
     
-    removeTileByName(name) {
+    removeTileName(name) {
         delete this.nameSpace[name];
     }
 
@@ -206,10 +206,17 @@ class World {
             for (let event of sprite.getContext().getEventList()) {
                 sprite.getContext().stop(event);
             }
+        }        
+    }
+    
+    //Delete all sprites.
+    clearAll() {
+        for (var i=this.sprites.length-1;i>=0;i--) {
+            this.sprites[i].destroy()
         }
-        this.save();
     }
 
+    //@@TODO fix lol
     save() {
         var saveGameObject = {};
         //Save all the sprites in the world
@@ -221,10 +228,11 @@ class World {
 
         //@@TODO make loading sprites work
         var saveState = JSON.parse(saveThing);
-
+        
+         
         for (var i = 0; i< saveState.sprites.length;i++){
             var sprite = JSON.parse(saveState.sprites[i]);
-
+            
             //gets position of all the sprites. 
             //but doesn't get prototype, make a Basic tile and manuall copy over all the data.
         }

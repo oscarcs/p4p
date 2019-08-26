@@ -158,13 +158,14 @@ window.onload = function() {
                 if (newPrototypeName.length > 0 && 
                     !(newPrototypeName in world.prototypes) &&
                     typeof this.currentTile !== "null"
-                ) {
-                    //this.currentTile.setType(newPrototypeName);
+                ) {                    
                     Vue.set(
                         world.prototypes, 
                         newPrototypeName, 
                         new Prototype(newPrototypeName,this.currentTile)
                     );
+                    
+                    this.currentTile.setPrototype(world.prototypes[newPrototypeName]);
                 }               
             },
         }
