@@ -9,6 +9,8 @@ class Tile {
         this.invalidName = false;
         
         this.initialize(prototype);
+        this.enableEvents();
+        this.event("whenCreated");
     }
 
     initialize(prototype) {
@@ -133,6 +135,18 @@ class Tile {
     }
 
     /**
+     * Enable the events of a tile to be triggered.  
+     */
+    enableEvents() {
+        for (let event of this.getContext().getEventList()) {                     
+            if (event !== "main") {
+                this.getContext().start(event);
+                this.getContext().stop(event);
+            }
+        }
+    }
+
+    /**
      * Maintain the name for the sake of the namespace
      */
     maintainName() {
@@ -158,8 +172,7 @@ class Tile {
         }
         else {
             this.invalidName = true;
-        }
-  
+        }  
     }
     
     /*******************************************************************************

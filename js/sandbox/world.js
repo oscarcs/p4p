@@ -27,11 +27,14 @@ class World {
         this.prototypes["BasicTile"].context.addProperty('solid', false, 'boolean');        
         
         this.prototypes["BasicTile"].context.addEvent("main");
+
+        this.prototypes["BasicTile"].context.addEvent("whenCreated");
+
         this.prototypes["BasicTile"].context.addEvent("collideEdge");
         this.prototypes["BasicTile"].context.addLocal("collideEdge", "evX", "","number");
         this.prototypes["BasicTile"].context.addLocal("collideEdge", "evY", "","number");
 
-
+        //Not sure on the use of evX.
         this.prototypes["BasicTile"].context.addEvent("collideSolidTile");
         this.prototypes["BasicTile"].context.addLocal("collideSolidTile", "evX", "","number");
         this.prototypes["BasicTile"].context.addLocal("collideSolidTile", "evY", "","number");
@@ -193,13 +196,8 @@ class World {
 
     goAll() {
         for (let sprite of this.sprites) {
-            for (let event of sprite.getContext().getEventList())  {
-                sprite.getContext().start(event);
-                if (event !== "main") {
-                    sprite.getContext().stop(event); //simply stops the event running.
-                }
-                //Start the interpreter at root for event at the root but the event is not running. 
-            }
+            sprite.getContext().start("main");
+            sprite.enableEvents();
         }
     }
 

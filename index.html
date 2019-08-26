@@ -164,7 +164,7 @@
                                     </template>
                                     <template v-else-if="prop.type === 'numeric'">
                                         <input
-                                            v-model="prop.value"
+                                            v-model.number="prop.value"
                                             type="number"
                                             step="0.01"
                                         >

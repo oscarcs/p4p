@@ -44,6 +44,10 @@ svg{
     margin-left: 2em;
 }
 
+.banner .playcontrol input:focus {
+    outline: none;
+}
+
 textarea {
     border: 2px solid lightgray;
     border-radius: 0.25rem;
