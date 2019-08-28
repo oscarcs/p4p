@@ -168,6 +168,24 @@ window.onload = function() {
                     this.currentTile.setPrototype(world.prototypes[newPrototypeName]);
                 }               
             },
+
+            resetGame: function() {
+                var confirmation = confirm("This will delete all your unsaved work, are you sure?");
+                if (confirm) {
+                    world.clearAll()
+                    //@@TODO Need to work with the vue to repopulate the list.
+                    
+                }
+            },
+
+            importGame: function() {
+
+            },
+
+            exportGame: function() {
+                world.download(world.saveGame());
+
+            }
         }
     });
 

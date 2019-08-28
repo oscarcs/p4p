@@ -307,15 +307,19 @@ class Tile {
         }
     }
 
-
-
     // For saving state.
     serialize() {
         var saveSprite = {};      
         saveSprite.x = this.x;
         saveSprite.y = this.y;
         saveSprite.prototype = this.prototype;
-        
+        //@@TODO serialize the important aspects of the context too
+
+        saveSprite.props = this.getContext().props;
+        saveSprite.actions = this.getContext().actions;
+
+        //Only take the locals and the code from sprite events.
+        //saveSprite.events = this.getContext().events;
 
         return JSON.stringify(saveSprite);
     }

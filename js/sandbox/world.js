@@ -19,7 +19,26 @@ class World {
         }
 
         //loadGame here if available
+        this.initPrototypes()       
+       
+        ui.prototypes = this.prototypes;
 
+        this.sprites = [];
+        this.nameSpace = {};
+        this.grid = this.createGrid();
+
+        var date = new Date();
+        this.timeBetweenUpdate = 75; 
+
+        this.prevTime = date.getTime()
+        this.isTick = false;
+
+        this.addTile(0, 0, this.getPrototype('BasicTile'));
+    }
+
+    //Clears the prototype list and puts in the basic tile. 
+    initPrototypes() {        
+        this.prototypes = {};
         this.prototypes = {'BasicTile': new Prototype('BasicTile')};
 
         this.prototypes["BasicTile"].context.addProperty('spriteName', 'tree', 'enum'); //Kinda hacky
@@ -48,23 +67,10 @@ class World {
         this.prototypes["BasicTile"].context.addEvent("keyPress_left");
         this.prototypes["BasicTile"].context.addEvent("keyPress_right");
         this.prototypes["BasicTile"].context.addEvent("keyPress_down");
-        
-       
-        ui.prototypes = this.prototypes;
 
-        this.sprites = [];
-        this.nameSpace = {};
-        this.grid = this.createGrid();
-
-        var date = new Date();
-        this.timeBetweenUpdate = 100; 
-
-        this.prevTime = date.getTime()
-        this.isTick = false;
-
-        this.addTile(0, 0, this.getPrototype('BasicTile'));
     }
 
+    //Creates the co-ords for the world
     createGrid() {
         let grid = [];
         for (var i = 0; i < this.width; i++) {
@@ -133,8 +139,7 @@ class World {
         let tile = new Tile(this, x, y, prototype);
         this.sprites.push(tile);
         this.grid[x][y].add(tile);
-        //@@TODO, make the tile on create event start here.
-        //@@TODO, all the events sans main should be started on creation.
+       
         return tile;
     }
 
@@ -206,9 +211,11 @@ class World {
             for (let event of sprite.getContext().getEventList()) {
                 sprite.getContext().stop(event);
             }
-        }        
+        }       
     }
-    
+
+
+    //SAVING OPERATIONS     
     //Delete all sprites.
     clearAll() {
         for (var i=this.sprites.length-1;i>=0;i--) {
@@ -216,54 +223,89 @@ class World {
         }
     }
 
-    //@@TODO fix lol
-    save() {
+
+
+    //@@TODO save on exit to local storate but also save to JSON
+    saveGame() {
         var saveGameObject = {};
         //Save all the sprites in the world
-        saveGameObject.sprites = this.sprites.map(sprite => sprite.serialize());
+        saveGameObject.sprites = this.sprites.map(sprite => sprite.serialize()); 
+        saveGameObject.prototypes = this.prototypes;
 
-        //saveGameObject.prototypes = this.prototypes;
-        var saveThing = JSON.stringify(saveGameObject);
-
-
-        //@@TODO make loading sprites work
-        var saveState = JSON.parse(saveThing);
+        var saveFile = JSON.stringify(saveGameObject);
         
-         
-        for (var i = 0; i< saveState.sprites.length;i++){
-            var sprite = JSON.parse(saveState.sprites[i]);
-            
-            //gets position of all the sprites. 
-            //but doesn't get prototype, make a Basic tile and manuall copy over all the data.
-        }
+        return saveFile;
         //localStorage.setItem("2DSandbox", JSON.stringify(saveGameObject));
     }
 
-    load() {
-        var state = localStorage.getItem("2DSandbox");
+    /**
+     * Enables a Json file to be saved locally to a users computer.
+     * @param  file to be saved 
+     */
+    download(file) {        
+        var data = "text/json;charset=utf-8," + encodeURIComponent(file);
+        
+        var a = document.createElement('a');
+        a.href = 'data:' + data;
+        a.download = 'myGame.json';
+        
+        var container = document.getElementById('app');
+        container.appendChild(a);
+        a.click();
+        container.removeChild(a);
+    }
 
-        if (state === null) {
-            return;
+
+    /**
+     * Loads a game from a JSON file
+     */
+    loadGame(saveFile) {
+        //var state = localStorage.getItem("2DSandbox");
+
+        //if (state === null) {
+            //return;
+        //}
+
+        var saveState = JSON.parse(saveFile);
+
+        //Prototype loading 
+        for (let key in saveState.prototypes) {
+            var prototype = new Prototype(key);      
+            var savedPrototype = saveState.prototypes[key];
+            this.loadContextFromSave(prototype.context,savedPrototype.context);
+            //This has to access the ui
+        }    
+         
+        //Sprite loading
+        for (var i = 0; i< saveState.sprites.length;i++){
+            var sprite = JSON.parse(saveState.sprites[i]);         
+            
+            //@@TODO, work out how to make tiles into JSON
         }
+    }
 
-        var saveState = JSON.parse(state);
-                
-        for (var i = 0; i < saveState.sprites.length; i++) {
-            var spriteData = JSON.parse(saveState.sprites[i]);
-                        
-            // Need to repopulate the worldGrid as well as the sprites array.
-            // Keep loadgame this way to deal with prototype being deleted when existing sprites are out.
-            this.sprites[i] = new Tile(this, spriteData.x,spriteData.y,spriteData.spriteName);
-            this.sprites[i].type = spriteData.type;
-            this.sprites[i].code = spriteData.code;
-
-            for (var field in spriteData.exposed_fields) {
-                this.sprites[i].exposed_fields[field] = spriteData.exposed_fields[field];
+    loadContextFromSave(newContext, savedContext) {
+            //Copying saved properties from the JSON
+            var savedProps = savedContext.props;
+            for (let prop in savedProps) {
+                newContext.addProperty(
+                    prop,
+                    savedProps[prop].value,
+                    savedProps[prop].type);
             }
-        }
+            //Copying events over
+            var savedEvents = savedContext.events;
+            for (let event in savedEvents) {
+                newContext.addEvent(event);
+                newContext.events[event].code = savedEvents[event].code;
 
-        for (var prototype in saveState.prototypes) {
-            this.prototypes[prototype] = saveState.prototypes[prototype];
-        }
+                for (let local in savedEvents[event].locals) {                    
+                    newContext.addLocal(
+                        event,
+                        local,
+                        savedEvents[event].locals[local].value,
+                        savedEvents[event].locals[local].type);
+                }
+            } 
     }
 }
