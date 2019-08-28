@@ -128,6 +128,12 @@ button:hover:not(:disabled) {
     margin-top: 0.5em;
 }
 
+.game .panel-right {
+    display: flex;
+    flex-direction: column;
+    width: 30rem;
+}
+
 .game textarea {
     display: block;
     resize: none;
