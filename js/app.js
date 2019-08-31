@@ -173,32 +173,37 @@ window.onload = function() {
                 var confirmation = confirm("This will delete all your unsaved work, are you sure?");
                 if (confirm) {
                     world.clearAll()
-                    //@@TODO Need to work with the vue to repopulate the list.
                     
                 }
             },
 
+            uploadFile: function() {
+                var fileImport = document.getElementById("fileImport");
+                fileImport.value ="";
+                fileImport.click();
+                //Not waiting until the file is read.
+            },
+
+            //Clean this up
             importGame: function() {
                 var fileImport = document.getElementById("fileImport");
-                fileImport.click();
-                
-                file = document.getElementById("fileImport").files[0];
+                file = fileImport.files[0];
 
                 var reader = new FileReader();
                 var jsonObj;
                 try{
                     // Closure to capture the file information.
                     reader.onload = (event) => {
-                    jsonObj = event.target.result;
-                    console.log(jsonObj);
+                        jsonObj = event.target.result;
+                    //console.log(jsonObj);
                     //console.log('FILE CONTENT', event.target.result);
-                    world.loadGame(jsonObj);
+                        world.loadGame(jsonObj);
                     };
                     reader.readAsText(file);
                 } catch {
                     alert("Invalid Save file");
                 }
-                
+
             },
 
             exportGame: function() {

@@ -19,8 +19,7 @@ class World {
         }
 
         //loadGame here if available
-        this.initPrototypes()       
-       
+        this.initPrototypes();       
         ui.prototypes = this.prototypes;
 
         this.sprites = [];
@@ -221,6 +220,14 @@ class World {
         for (var i=this.sprites.length-1;i>=0;i--) {
             this.sprites[i].destroy()
         }
+        for (let prototype in this.prototypes) {
+            //Hmmm
+            Vue.delete(this.prototypes,prototype);
+
+            this.initPrototypes();       
+            ui.prototypes = this.prototypes;
+
+        }
     }
 
 
@@ -268,17 +275,16 @@ class World {
         this.clearAll();
 
         var saveState = JSON.parse(saveFile);
-
-        /*
+        
         //Prototype loading 
         for (let key in saveState.prototypes) {
             var prototype = new Prototype(key);      
             var savedPrototype = saveState.prototypes[key];
+            console.log(key);
 
             this.loadContextFromSave(prototype.context,savedPrototype.context);
-            //This has to access the ui.
-        }    
-        */
+            Vue.set(this.prototypes,key,prototype);
+        }            
          
         //Sprite loading
         for (var i = 0; i< saveState.sprites.length;i++){
@@ -299,6 +305,7 @@ class World {
         }
     }
 
+    //Bit ugly
     loadContextFromSave(newContext, savedContext) {
             //Copying saved properties from the JSON
             var savedProps = savedContext.props;
