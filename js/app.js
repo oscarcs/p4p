@@ -195,8 +195,8 @@ window.onload = function() {
                     // Closure to capture the file information.
                     reader.onload = (event) => {
                         jsonObj = event.target.result;
-                    //console.log(jsonObj);
-                    //console.log('FILE CONTENT', event.target.result);
+                        //console.log(jsonObj);
+                        //console.log('FILE CONTENT', event.target.result);
                         world.loadGame(jsonObj);
                     };
                     reader.readAsText(file);
@@ -219,7 +219,7 @@ window.onload = function() {
         height: 240,
         parent: 'sandbox',
         pixelArt: true,
-        zoom: 3,
+        zoom: 2.5,
         scene: [Game]
     });
 }

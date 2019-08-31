@@ -71,7 +71,25 @@
                         <br>
                         <b>Game Speed: {{gameSpeed}}</b>
                     </div>           
-                </div>             
+                </div> 
+                <div class = "savemenu">
+                        <button v-on:click="resetGame()" title = "New Project">
+                            <svg class="icon">
+                                <use xlink:href="css/symbols.svg#fa-file"></use>
+                            </svg>
+                        </button>
+                        <button v-on:click="exportGame()" title = "Export Project">
+                            <svg class="icon">
+                                <use xlink:href="css/symbols.svg#fa-download"></use>
+                            </svg>
+                        </button>
+                        <button v-on:click="uploadFile()" title = "Import Project">
+                            <svg class = "icon">
+                                <use xlink:href="css/symbols.svg#fa-upload"></use>
+                            </svg>
+                        </button>
+                        <input type= "file" accept=".json" size = "1" id = "fileImport" style= "display:none" @change = "importGame()"/></input>
+                    </div>             
             </div>
             <div class="columns">
                 <div class="panel">
@@ -195,14 +213,6 @@
                         </button>
                 </div>
             </div>
-
-            <div class = "savemenu">
-                <button v-on:click="resetGame()">New Project</button>
-                <button v-on:click="exportGame()">Export Project</button>
-                <button v-on:click="uploadFile()">Import Project</button>
-                <input type= "file" accept=".json" size = "1" id = "fileImport" style= "display:none" @change = "importGame()"/></input>
-            </div> 
-
             <div class="debug">
                 <template v-if="!showProperties && currentContext !== null">
                     <div class="buttons">
