@@ -13,7 +13,7 @@ class ExecutionContext {
         this.builtinFunctions = [
             'print',
             'alert',
-            'changeSprite',
+            'changeImage',
             'move',
             'moveUp',
             'moveDown',

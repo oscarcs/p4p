@@ -179,7 +179,26 @@ window.onload = function() {
             },
 
             importGame: function() {
+                var fileImport = document.getElementById("fileImport");
+                fileImport.click();
+                
+                file = document.getElementById("fileImport").files[0];
 
+                var reader = new FileReader();
+                var jsonObj;
+                try{
+                    // Closure to capture the file information.
+                    reader.onload = (event) => {
+                    jsonObj = event.target.result;
+                    console.log(jsonObj);
+                    //console.log('FILE CONTENT', event.target.result);
+                    world.loadGame(jsonObj);
+                    };
+                    reader.readAsText(file);
+                } catch {
+                    alert("Invalid Save file");
+                }
+                
             },
 
             exportGame: function() {

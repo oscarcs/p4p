@@ -265,22 +265,37 @@ class World {
         //if (state === null) {
             //return;
         //}
+        this.clearAll();
 
         var saveState = JSON.parse(saveFile);
 
+        /*
         //Prototype loading 
         for (let key in saveState.prototypes) {
             var prototype = new Prototype(key);      
             var savedPrototype = saveState.prototypes[key];
+
             this.loadContextFromSave(prototype.context,savedPrototype.context);
-            //This has to access the ui
+            //This has to access the ui.
         }    
+        */
          
         //Sprite loading
         for (var i = 0; i< saveState.sprites.length;i++){
-            var sprite = JSON.parse(saveState.sprites[i]);         
+            var savedSprite = JSON.parse(saveState.sprites[i]);  
+
+            //@@TODO, prototypes
+            var tile = this.addTile(savedSprite.x,savedSprite.y,this.getPrototype("BasicTile")); 
             
-            //@@TODO, work out how to make tiles into JSON
+            
+            tile.getContext().props = savedSprite.props;
+            tile.getContext().actions = savedSprite.actions;
+            tile.prototype.type = savedSprite.prototype.type;
+
+            for (let event in savedSprite.events) {
+                tile.getContext().events[event].code = savedSprite.events[event].code;
+                tile.getContext().events[event].locals = savedSprite.events[event].locals;
+            }              
         }
     }
 

@@ -53,7 +53,7 @@ class Tile {
         }
 
         if (this.getProperty('spriteName') !== this.currentSpriteName) {
-            this.changeSprite(this.getProperty('spriteName'));
+            this.changeImage(this.getProperty('spriteName'));
         }
 
     }
@@ -197,7 +197,7 @@ class Tile {
         return str;
     }
 
-    changeSprite(newSprite) {
+    changeImage(newSprite) {
         if (typeof Utils.nameToMapping(newSprite) !== "undefined") {
             this.currentSpriteName = newSprite;
             this.context.setProperty('spriteName', newSprite);
@@ -319,7 +319,13 @@ class Tile {
         saveSprite.actions = this.getContext().actions;
 
         //Only take the locals and the code from sprite events.
-        //saveSprite.events = this.getContext().events;
+        saveSprite.events = {};
+        for (let event in this.getContext().events) {
+            saveSprite.events[event] = {};
+            saveSprite.events[event].code = this.getContext().events[event].code;
+            saveSprite.events[event].locals =this.getContext().events[event].locals;
+            
+        }
 
         return JSON.stringify(saveSprite);
     }
