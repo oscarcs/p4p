@@ -219,7 +219,7 @@ window.onload = function() {
         height: 240,
         parent: 'sandbox',
         pixelArt: true,
-        zoom: 2.5,
+        zoom: 3,
         scene: [Game]
     });
 }
