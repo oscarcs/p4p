@@ -94,7 +94,7 @@
             <div class="columns">
                 <div class="panel">
                                                                  
-                    <b>Tile Types</b>
+                    <b>Tile Prototypes</b>
                     <select 
                         class = "tileselect"
                         size="10"
@@ -119,101 +119,103 @@
                     id="sandbox"
                 ></div>
                 
-                <div class="codepanel" v-if="currentContext !== null">
-                    <h1 v-if="editPrototypeMode">Editing {{currentPrototype}} prototype</h1>
-                    <h1 v-else>{{currentTile.prototype.type}}</h1>
-                    <b>Events</b>
-                    <select v-model="currentEventName">
-                        <option v-for="event in currentContext.getEventList()">{{event}}</option>
-                    </select>
-                    <template v-if="!showProperties">
-                        <button v-on:click="showProperties = true">Show Properties</button>    
-                        <textarea 
-                            class="code-entry" 
-                            v-model="currentContext.events[currentEventName].code"
-                            v-on:keydown.tab.prevent="insertTab($event)"
-                        ></textarea>
-                        <button v-if ="!editPrototypeMode" v-on:click="go()">Try it out</button>
-                    </template>
+                <div class ="fillpanel">
+                    <div class="codepanel" v-if="currentContext !== null">
+                        <h1 v-if="editPrototypeMode">Editing {{currentPrototype}} prototype</h1>
+                        <h1 v-else>{{currentTile.prototype.type}}</h1>
+                        <b>Events</b>
+                        <select class="eventSelect" v-model="currentEventName">
+                            <option v-for="event in currentContext.getEventList()">{{event}}</option>
+                        </select>
+                        <template v-if="!showProperties">
+                            <button v-on:click="showProperties = true">Show Properties</button>    
+                            <textarea 
+                                class="code-entry" 
+                                v-model="currentContext.events[currentEventName].code"
+                                v-on:keydown.tab.prevent="insertTab($event)"
+                            ></textarea>
+                            <button v-if ="!editPrototypeMode" v-on:click="go()">Try it out</button>
+                        </template>
 
-                    <template v-if="showProperties">
-                            <button v-on:click="showProperties = false">Show Code</button>                            
-                            <div class="new-property-input">
-                                <input v-model="newPropertyName">
-                                <button v-on:click="addProperty()">
-                                    <svg class="icon">
-                                        <use xlink:href="css/symbols.svg#fa-plus-square"></use>
-                                    </svg>
-                                    Add Property
-                                </button>
-                            </div>
-                            <div class="property-list" v-if="currentContext !== null">
-                                <div
-                                    class="property" 
-                                    v-for="(prop, name) in currentContext.props"
-                                >
-                                    <div v-if="name==='spriteName'" class = 'property-title'>
-                                        <b>{{name}}:</b>
-                                        <select v-if="name ==='spriteName'" v-model = "prop.value">
-                                                <option v-for="option in utils.getSpriteMapping()">
-                                                        {{option}}                
-                                                </option> 
-                                        </select>
-                                    </div>
-
-                                    <div v-else class="property-title">
-                                        <b>{{name}}:</b>                                     
-                                        <select v-model="prop.type">
-                                            <option :value="'boolean'">Boolean</option>
-                                            <option :value="'numeric'">Number</option>
-                                            <option :value="'string'">String</option>
-                                        </select> 
-                                        <template v-if= "name !== 'name' && name !=='solid'">
-                                            <button v-on:click="deleteProperty(name)">
-                                                <svg class="icon">
-                                                    <use xlink:href="css/symbols.svg#fa-trash"></use>
-                                                </svg>
-                                            </button>
-                                        </template>                                        
-                                    </div>
-                                    <template v-if="prop.type === 'boolean'">
-                                        <input 
-                                            v-model="prop.value"
-                                            type="checkbox"
-                                        >
-                                    </template>
-                                    <template v-else-if="prop.type === 'numeric'">
-                                        <input
-                                            v-model.number="prop.value"
-                                            type="number"
-                                            step="0.01"
-                                        >
-                                    </template>
-                                    <template v-else-if="prop.type === 'string'">
-                                        <input
-                                            v-model="prop.value"
-                                        >
-                                    </template>
-                                    <p class = "warning" v-if="currentTile !== null && name ==='name' && currentTile.invalidName">Duplicate name</p>                                                                      
+                        <template v-if="showProperties">
+                                <button v-on:click="showProperties = false">Show Code</button>                            
+                                <div class="new-property-input">
+                                    <input v-model="newPropertyName">
+                                    <button v-on:click="addProperty()">
+                                        <svg class="icon">
+                                            <use xlink:href="css/symbols.svg#fa-plus-square"></use>
+                                        </svg>
+                                        Add Property
+                                    </button>
                                 </div>
-                            </div>                            
-                    </template>
-                        <button v-if = "editPrototypeMode" v-on:click="doneEdit()">
-                            Done
-                        </button>
-                        <button v-if="editPrototypeMode" v-on:click ="applyPrototypeChanges()">
-                            Apply to all
-                        </button>
+                                <div class="property-list" v-if="currentContext !== null">
+                                    <div
+                                        class="property" 
+                                        v-for="(prop, name) in currentContext.props"
+                                    >
+                                        <div v-if="name==='spriteName'" class = 'property-title'>
+                                            <b>{{name}}:</b>
+                                            <select v-if="name ==='spriteName'" v-model = "prop.value">
+                                                    <option v-for="option in utils.getSpriteMapping()">
+                                                            {{option}}                
+                                                    </option> 
+                                            </select>
+                                        </div>
 
-                        <button v-else v-on:click="savePrototype()">
-                            <svg class="icon">
-                                <use xlink:href="css/symbols.svg#fa-save"></use>
-                            </svg>
-                            Save Prototype
-                        </button>
+                                        <div v-else class="property-title">
+                                            <b>{{name}}:</b>                                     
+                                            <select v-model="prop.type">
+                                                <option :value="'boolean'">Boolean</option>
+                                                <option :value="'numeric'">Number</option>
+                                                <option :value="'string'">String</option>
+                                            </select> 
+                                            <template v-if= "name !== 'name' && name !=='solid'">
+                                                <button v-on:click="deleteProperty(name)">
+                                                    <svg class="icon">
+                                                        <use xlink:href="css/symbols.svg#fa-trash"></use>
+                                                    </svg>
+                                                </button>
+                                            </template>                                        
+                                        </div>
+                                        <template v-if="prop.type === 'boolean'">
+                                            <input 
+                                                v-model="prop.value"
+                                                type="checkbox"
+                                            >
+                                        </template>
+                                        <template v-else-if="prop.type === 'numeric'">
+                                            <input
+                                                v-model.number="prop.value"
+                                                type="number"
+                                                step="0.01"
+                                            >
+                                        </template>
+                                        <template v-else-if="prop.type === 'string'">
+                                            <input
+                                                v-model="prop.value"
+                                            >
+                                        </template>
+                                        <p class = "warning" v-if="currentTile !== null && name ==='name' && currentTile.invalidName">Duplicate name</p>                                                                      
+                                    </div>
+                                </div>                            
+                        </template>
+                            <button v-if = "editPrototypeMode" v-on:click="doneEdit()">
+                                Done
+                            </button>
+                            <button v-if="editPrototypeMode" v-on:click ="applyPrototypeChanges()">
+                                Apply to all
+                            </button>
+
+                            <button v-else v-on:click="savePrototype()">
+                                <svg class="icon">
+                                    <use xlink:href="css/symbols.svg#fa-save"></use>
+                                </svg>
+                                Save as new prototype
+                            </button>
+                    </div>
                 </div>
             </div>
-            <div class="debug">
+            <div v-if="devMode" class="debug">
                 <template v-if="!showProperties && currentContext !== null">
                     <div class="buttons">
                         <button v-on:click="lex()">Lex</button>

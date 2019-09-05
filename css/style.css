@@ -1,6 +1,6 @@
 * {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    font-size: 13px; 
+    font-size: 14px; 
 }
 
 svg{
@@ -8,10 +8,14 @@ svg{
 }
 
 #sandbox {
-    border: 2px lightgray solid;
-    border-radius: 0.25rem;
+    display: block;
+    border: none;
     margin-left: 1.5rem;
-    margin-right: 1.5rem;
+    margin-right: 1.5rem;   
+    min-width: 400;
+    min-height: 300;
+    width: 1200;
+    height: 900;
 }
 
 .banner {
@@ -31,7 +35,7 @@ svg{
 
 .banner .playcontrol { 
     display: flex;
-    margin-left: 30rem;
+    margin-left: 15%;
     text-align: center;
 }
 
@@ -108,12 +112,23 @@ button:hover:not(:disabled) {
     display: flex;
     flex-direction: column;
     width: 25rem;
+    height: 600px;
+    min-height: 300px;
+}
+
+.game .fillpanel {
+    width: 40rem;
+    min-width: 10rem;
+    max-height: 600px;
+    height: 600px;
+    min-height: 300px;
 }
 
 .game .codepanel {
     display: flex;
     flex-direction: column;
-    width: 40rem;
+    overflow: auto;
+    height: 100%;
 }
 
 .game .codepanel select{
@@ -128,6 +143,14 @@ button:hover:not(:disabled) {
     margin-top: 0.5em;
 }
 
+.game .codepanel .eventSelect {
+    font-size: 18px;
+}
+
+.game .codepanel .eventSelect option {
+    font-size: 18px;
+}
+
 .game .panel-right {
     display: flex;
     flex-direction: column;
@@ -136,6 +159,7 @@ button:hover:not(:disabled) {
 
 .game textarea {
     display: block;
+    height: 100%;
     resize: none;
 }
 
@@ -162,6 +186,10 @@ button:hover:not(:disabled) {
     height: 60%;
 }
 
+.game .tileselect option {
+    font-size: 20px;
+}
+
 .new-property-input {
     margin-top: 1em;
     display: inline-block;
@@ -181,8 +209,7 @@ button:hover:not(:disabled) {
     overflow-x: hidden;
     overflow-y: auto;
     height: 100%;
-    /* @@TODO: make this dependent on the screen */
-    max-height: 530px;
+    max-height: 100%;
     
 }
 

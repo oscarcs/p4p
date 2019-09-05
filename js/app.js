@@ -19,6 +19,7 @@ window.onload = function() {
             newPropertyName: '',
             gameSpeed: 1,
             utils: Utils,
+            devMode: false
         },
         watch: {
             'currentTile': function() {
@@ -217,9 +218,11 @@ window.onload = function() {
         type: Phaser.AUTO,
         width: 320,
         height: 240,
+        scale: {
+            mode : Phaser.Scale.FIT
+        },
         parent: 'sandbox',
         pixelArt: true,
-        zoom: 3,
         scene: [Game]
     });
 }
