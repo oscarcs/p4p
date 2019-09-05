@@ -24,7 +24,8 @@ class ExecutionContext {
             'randomNum',
             'destroy',
             'addTile',
-            'getTileProperty'
+            'getTileProperty',
+            "isOverlapping"
         ];
 
     }

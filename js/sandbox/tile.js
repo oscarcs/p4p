@@ -288,6 +288,10 @@ class Tile {
         return false;
     }
 
+    isOverlapping(tileType) {
+        return this.checkContains(this.x,this.y,tileType);
+    }
+
     randomNum(max) {
         return Math.floor(Math.random()*max);
     }
