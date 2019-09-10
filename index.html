@@ -149,13 +149,32 @@
                                     </button>
                                 </div>
                                 <div class="property-list" v-if="currentContext !== null">
+
+                                    <div class="property"   
+                                         v-if="currentTile !== null && !editPrototypeMode">
+                                            <b>x: </b>
+                                        <input 
+                                            v-model="currentTile.x"
+                                            type="number"
+                                            step="1"
+                                            >    
+                                    </div> 
+                                    <div class="property"   
+                                    v-if="currentTile !== null && !editPrototypeMode">
+                                       <b>y: </b>
+                                   <input 
+                                       v-model="currentTile.y"
+                                       type="number"
+                                       step="1"
+                                       >    
+                                    </div> 
                                     <div
                                         class="property" 
                                         v-for="(prop, name) in currentContext.props"
                                     >
-                                        <div v-if="name==='spriteName'" class = 'property-title'>
+                                        <div v-if="name==='image'" class = 'property-title'>
                                             <b>{{name}}:</b>
-                                            <select v-if="name ==='spriteName'" v-model = "prop.value">
+                                            <select v-if="name ==='image'" v-model = "prop.value">
                                                     <option v-for="option in utils.getSpriteMapping()">
                                                             {{option}}                
                                                     </option> 
@@ -169,8 +188,8 @@
                                                 <option :value="'numeric'">Number</option>
                                                 <option :value="'string'">String</option>
                                             </select> 
-                                            <template v-if= "name !== 'name' && name !=='solid'">
-                                                <button v-on:click="deleteProperty(name)">
+                                            <template v-if= "name !== 'name' && name !=='solid' && name !=='depth'">
+                                                <button class = "deletePropButton" v-on:click="deleteProperty(name)">
                                                     <svg class="icon">
                                                         <use xlink:href="css/symbols.svg#fa-trash"></use>
                                                     </svg>

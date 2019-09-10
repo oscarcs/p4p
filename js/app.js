@@ -126,7 +126,7 @@ window.onload = function() {
                 if (typeof world.getPrototype(this.currentPrototype) !== "undefined") {                   
                     this.currentContext = world.getPrototype(this.currentPrototype).getContext();
                     this.currentEventName = "main";                    
-                    this.editPrototypeMode = true;                    
+                    this.editPrototypeMode = true;              
                 }                
             },
 

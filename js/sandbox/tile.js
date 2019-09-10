@@ -52,8 +52,8 @@ class Tile {
             this.move(this.x, this.y);
         }
 
-        if (this.getProperty('spriteName') !== this.currentSpriteName) {
-            this.changeImage(this.getProperty('spriteName'));
+        if (this.getProperty("image") !== this.currentSpriteName) {
+            this.changeImage(this.getProperty('image'));
         }
 
     }
@@ -132,6 +132,8 @@ class Tile {
         this.x = Math.min(this.x, this.world.width - 1);
         this.y = Math.max(this.y, 0);
         this.y = Math.min(this.y, this.world.height - 1);
+
+        //Maybe limit depth prop range here too. 
     }
 
     /**
@@ -200,7 +202,7 @@ class Tile {
     changeImage(newSprite) {
         if (typeof Utils.nameToMapping(newSprite) !== "undefined") {
             this.currentSpriteName = newSprite;
-            this.context.setProperty('spriteName', newSprite);
+            this.context.setProperty('image', newSprite);
 
             this.sprite.destroy();
             this.sprite = this.world.scene.add.sprite(
@@ -217,9 +219,9 @@ class Tile {
     }
 
     //@@DESIGN: Limit depth to 10 layers?
-    changeDepth(layer) {
+    changeLayer(layer) {   
         if (layer < 1) {
-            this.depth = 1;
+            this.layer = 1;
         }
         else if (layer > 10) {
             this.layer = 10;

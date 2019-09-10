@@ -16,7 +16,7 @@ class Prototype {
     }
 
     getSpriteName() {
-        return this.context.getProperty("spriteName");
+        return this.context.getProperty("image");
     }
 
     serialize() {

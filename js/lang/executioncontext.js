@@ -7,7 +7,7 @@ class ExecutionContext {
         
         this.builtinValues = [
             'x',
-            'y'
+            'y',
         ];
 
         this.builtinFunctions = [
@@ -24,7 +24,8 @@ class ExecutionContext {
             'randomNum',
             'destroy',
             'addTile',
-            'getTileProperty'
+            'getTileProperty',
+            'changeLayer'
         ];
 
     }
