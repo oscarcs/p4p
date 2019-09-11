@@ -248,6 +248,11 @@ button:hover:not(:disabled) {
     width: 100%;
 }
 
+.property .positionInput {
+    width: 70%;
+    
+}
+
 .property .warning {
     color: red;
 }

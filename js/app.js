@@ -208,6 +208,8 @@ window.onload = function() {
             },
 
             exportGame: function() {
+                //Stop the world running to prevent saving mid state change
+                world.stopAll();
                 world.download(world.saveGame());
 
             }

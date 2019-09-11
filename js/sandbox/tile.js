@@ -133,7 +133,8 @@ class Tile {
         this.y = Math.max(this.y, 0);
         this.y = Math.min(this.y, this.world.height - 1);
 
-        //Maybe limit depth prop range here too. 
+        this.layer = Math.max(this.layer,0);
+        this.layer = Math.min(this.layer,this.world.layers);
     }
 
     /**

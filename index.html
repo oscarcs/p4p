@@ -152,22 +152,38 @@
 
                                     <div class="property"   
                                          v-if="currentTile !== null && !editPrototypeMode">
+                                         <div class ="property-title">
                                             <b>x: </b>
-                                        <input 
-                                            v-model="currentTile.x"
-                                            type="number"
-                                            step="1"
+                                            <input 
+                                                class = "positionInput"
+                                                v-model="currentTile.x"
+                                                type="number"
+                                                step="1"
+                                                >  
+                                         </div>  
+                                    </div> 
+                                    <div class="property" v-if="currentTile !== null && !editPrototypeMode">
+                                        <div class ="property-title">
+                                            <b>y: </b>
+                                            <input 
+                                                class = "positionInput"
+                                                v-model="currentTile.y"
+                                                type="number"
+                                                step="1"
                                             >    
+                                        </div>                                  
                                     </div> 
-                                    <div class="property"   
-                                    v-if="currentTile !== null && !editPrototypeMode">
-                                       <b>y: </b>
-                                   <input 
-                                       v-model="currentTile.y"
-                                       type="number"
-                                       step="1"
-                                       >    
-                                    </div> 
+                                    <div class="property" v-if="currentTile !== null && !editPrototypeMode">
+                                        <div class = "property-title">
+                                            <b>layer: </b>
+                                            <input 
+                                                class = "positionInput"
+                                                v-model="currentTile.layer"
+                                                type="number"
+                                                step="1"
+                                                >    
+                                            </div> 
+                                        </div>                                       
                                     <div
                                         class="property" 
                                         v-for="(prop, name) in currentContext.props"
