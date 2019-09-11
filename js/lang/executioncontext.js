@@ -25,6 +25,7 @@ class ExecutionContext {
             'destroy',
             'addTile',
             'getTileProperty',
+            'isOverlapping',
             'changeLayer'
         ];
 

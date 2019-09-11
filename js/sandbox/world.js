@@ -237,6 +237,17 @@ class World {
         var saveGameObject = {};
         //Save all the sprites in the world
         saveGameObject.sprites = this.sprites.map(sprite => sprite.serialize()); 
+        
+        //Check world for any tiles with undefine prototypes and add to prototypes        
+        for (let sprite of this.sprites) {
+            if (!(sprite.getType() in this.prototypes)){
+                Vue.set(this.prototypes, 
+                        sprite.getType(), 
+                        new Prototype(sprite.getType(),sprite)
+                        );
+            }
+        }
+
         saveGameObject.prototypes = this.prototypes;
 
         var saveFile = JSON.stringify(saveGameObject);
@@ -280,7 +291,6 @@ class World {
         for (let key in saveState.prototypes) {
             var prototype = new Prototype(key);      
             var savedPrototype = saveState.prototypes[key];
-            console.log(key);
 
             this.loadContextFromSave(prototype.context,savedPrototype.context);
             Vue.set(this.prototypes,key,prototype);
@@ -291,12 +301,11 @@ class World {
             var savedSprite = JSON.parse(saveState.sprites[i]);  
 
             //@@TODO, prototypes
-            var tile = this.addTile(savedSprite.x,savedSprite.y,this.getPrototype("BasicTile")); 
+            var tile = this.addTile(savedSprite.x,savedSprite.y,this.getPrototype(savedSprite.prototype.type)); 
             
             
             tile.getContext().props = savedSprite.props;
             tile.getContext().actions = savedSprite.actions;
-            tile.prototype.type = savedSprite.prototype.type;
 
             for (let event in savedSprite.events) {
                 tile.getContext().events[event].code = savedSprite.events[event].code;
