@@ -220,7 +220,7 @@ button:hover:not(:disabled) {
 }
 
 .property {
-    /* background-color: #F0F0F0; */
+    background-color: #F9F9F9;
     border: 2px lightgray solid;
     border-radius: 0.25rem;
     padding: 0.3rem;

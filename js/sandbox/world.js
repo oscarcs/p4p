@@ -302,7 +302,7 @@ class World {
 
             //@@TODO, prototypes
             var tile = this.addTile(savedSprite.x,savedSprite.y,this.getPrototype(savedSprite.prototype.type)); 
-            
+            tile.layer = savedSprite.layer;
             
             tile.getContext().props = savedSprite.props;
             tile.getContext().actions = savedSprite.actions;

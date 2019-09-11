@@ -319,6 +319,7 @@ class Tile {
         var saveSprite = {};      
         saveSprite.x = this.x;
         saveSprite.y = this.y;
+        saveSprite.layer = this.layer;
         saveSprite.prototype = this.prototype;
         //@@TODO serialize the important aspects of the context too
 

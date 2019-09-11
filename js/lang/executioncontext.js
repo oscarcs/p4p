@@ -36,12 +36,15 @@ class ExecutionContext {
      */
     copy(context) {
         for (var prop in this.props) {
-
-            if (prop in context.props && prop !== "name") {
+            if (prop in context.props) {
                 context.setProperty(prop,this.getProperty(prop));
-                
             } else {
                 context.addProperty(prop, this.getProperty(prop), this.props[prop].type);
+            }
+
+            //No copy on name
+            if (prop === "name") {
+                context.setProperty(prop,"");
             }
         }
 

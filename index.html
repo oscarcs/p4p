@@ -188,6 +188,7 @@
                                     <div
                                         class="property" 
                                         v-for="(prop, name) in currentContext.props"
+                                        v-if= "!(name==='name' && editPrototypeMode)"
                                     >
                                         <div v-if="name==='image'" class = 'property-title'>
                                             <b>{{name}}:</b>
