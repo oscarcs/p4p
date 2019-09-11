@@ -153,27 +153,33 @@ class Tile {
      * Maintain the name for the sake of the namespace
      */
     maintainName() {
-        var name = this.getProperty("name");    
+        var name = this.getProperty("name");   
+        
         if (name.length === 0) { 
+            this.invalidName = false;
             return;
         }
-
+        
         //If the tile doesnt already exist in the namespace, claim the name
         if (!(name in this.world.getNameSpace())) {
             this.world.setTileName(name,this);
-            //If the previously typed name refers to itself, remove it
-            if (this.prevName.length > 0 && this.world.getTileByName(this.prevName) === this) {
-                this.world.removeTileName(this.prevName);
-            }            
+            if (this.prevName.length > 0 &&
+                this.world.getTileByName(this.prevName) === this &&
+                this.prevName !== name
+                ) {
+                
+                    this.world.removeTileName(this.prevName);
+            }         
             this.prevName = name;
         }
 
         //If the tile name refers to itself, the name is valid, if not then bad
         if (this.world.getTileByName(name) === this) {
             this.invalidName = false;
-            return;
-        }
-        else {
+        } else {         
+            if (this.prevName.length > 0 && this.world.getTileByName(this.prevName) === this) {
+                this.world.removeTileName(this.prevName);
+            }  
             this.invalidName = true;
         }  
     }
