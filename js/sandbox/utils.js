@@ -32,19 +32,24 @@ class Utils {
         this.spriteDict["snow"] = {sheet:'tiles', index: 12};
         this.spriteDict["tree"] = {sheet: 'tiles', index: 0};
 
-        this.spriteDict["person"] = {sheet: 'creatures', index: 0};
-        this.spriteDict["person2"] = {sheet: 'creatures', index: 1};
-        this.spriteDict["person3"] = {sheet: 'creatures', index: 3};
-        this.spriteDict["person4"] = {sheet: 'creatures', index: 4};
-        this.spriteDict["person5"] = {sheet: 'creatures', index: 5};
-        this.spriteDict["person6"] = {sheet: 'creatures', index: 6};
+        this.spriteDict["woman"] = {sheet: 'creatures', index: 0};
+        this.spriteDict["man"] = {sheet: 'creatures', index: 3};
+        this.spriteDict["noble"] = {sheet: 'creatures', index: 6};
 
-        this.spriteDict["rat"] = {sheet: 'creatures', index: 8};
-        this.spriteDict["rat2"] = {sheet: 'creatures', index: 9};
+        this.spriteDict["mouse"] = {sheet: 'creatures', index: 8};
+        this.spriteDict["rat"] = {sheet: 'creatures', index: 9};
         this.spriteDict["dog"] = {sheet: 'creatures', index: 10};
-        this.spriteDict["dog2"] = {sheet: 'creatures', index: 11};
+
         this.spriteDict["rabbit"] = {sheet: 'creatures', index:12};
         this.spriteDict["wolf"] = {sheet: 'creatures', index: 13};
+
+        this.spriteDict["goblin"] = {sheet: 'creatures', index: 16};
+        this.spriteDict["hog"] = {sheet: 'creatures', index: 21};
+
+        this.spriteDict["spider"] = {sheet: 'creatures', index: 32};
+        this.spriteDict["beetle"] = {sheet: 'creatures', index: 42};
+        this.spriteDict["ghost"] = {sheet: 'creatures', index: 58};
+
         
     }
 }

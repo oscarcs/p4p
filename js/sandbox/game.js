@@ -4,7 +4,8 @@ class Game extends Phaser.Scene {
     }
 
     preload() {
-        this.load.spritesheet('tiles', './assets/tilesheet.png', {
+        //Changed to test with transparent backgrounds
+        this.load.spritesheet('tiles', './assets/testTilesheet.png', {
             frameWidth: 16,
             frameHeight: 16
         }); 
@@ -20,7 +21,9 @@ class Game extends Phaser.Scene {
     create() {
         
         this.world = new World(this);
-        window.world = this.world;       
+        window.world = this.world; 
+        
+        this.input.mouse.disableContextMenu();
 
         // Marker for what the mouse is currently over.
         this.marker = this.add.rectangle(0, 32, 16, 16).setStrokeStyle(1, 0xffffff);
@@ -90,8 +93,28 @@ class Game extends Phaser.Scene {
                 }   
             }
             this.marker.setStrokeStyle(1, color);
+            
+            //Alt button
+            if (this.input.activePointer.rightButtonDown()&&this.input.activePointer.justDown) {
+                let numObjectsBeneathCursor = this.world.getGrid(x, y).length;
 
-            // On click
+                //If multiple tiles are stacked, cycle through from last to enter to first. 
+                if (numObjectsBeneathCursor > 1) {
+                    if (this.selectionIndicator.visible &&
+                        Utils.trueToGrid(this.selectionIndicator.x) === x &&
+                        Utils.trueToGrid(this.selectionIndicator.y )=== y)
+                    {                    
+                        var currentIndex = this.world.getGrid(x,y).indexOf(this.world.focusObject);
+                        if(currentIndex === 0) {
+                            currentIndex = this.world.getGrid(x,y).length;
+                        }
+                        this.world.focusObject = this.world.getGrid(x,y)[currentIndex-1];                        
+                        ui.currentTile = this.world.focusObject;
+                    }
+                } 
+            }
+
+            // On click primary
             if (this.input.activePointer.primaryDown && this.input.activePointer.justDown) {
                 if (tool === 'select') {
                     let numObjectsBeneathCursor = this.world.getGrid(x, y).length;
@@ -103,7 +126,13 @@ class Game extends Phaser.Scene {
                         this.world.focusObject = this.world.getGrid(x, y)[0];
                     }
                     else if (numObjectsBeneathCursor > 1) {
-                        this.world.focusObject = this.world.getGrid(x, y)[0];
+                        //In cases of multiple tiles on one square, first click select first to enter. 
+                        if (!(this.selectionIndicator.visible &&
+                            Utils.trueToGrid(this.selectionIndicator.x) === x &&
+                            Utils.trueToGrid(this.selectionIndicator.y )=== y))
+                        {
+                            this.world.focusObject = this.world.getGrid(x,y).pop();
+                        }
                         //@@UI: multiple-select mode
                     } 
 
