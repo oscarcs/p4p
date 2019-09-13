@@ -179,6 +179,7 @@ class ExecutionContext {
     start(event) {
         this.events[event].running = true;
         let root = this.thread(event);
+        console.log(event, root);
         this.events[event].interpreter = new Interpreter(root, event, this);
     }
 

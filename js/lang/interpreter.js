@@ -83,6 +83,44 @@ class Interpreter {
                 }
 
                 return state ? node.successor : node.successorFalse;
+            
+            case 'for':
+                let upperBound = this.popStackAsValue();
+                let lowerBound = this.popStackAsValue();
+                let loopVariable = this.popStack();
+
+                if (loopVariable.name) {
+                    let val = this.context.lookup(this.event, loopVariable.name);
+
+                    console.log(val);
+                    
+                    if (val === null) {
+                        this.context.addLocal(this.event, loopVariable.name, lowerBound, 'numeric');
+                    }
+                    else {
+                        if (upperBound > lowerBound) {
+                            this.context.lookupAndSet(this.event, loopVariable.name, val + 1);
+                        }
+                        else {
+                            this.context.lookupAndSet(this.event, loopVariable.name, val - 1);
+                        }
+                    }
+
+                    // Decide whether to continue the for loop or exit:
+                    let state = true;
+                    if (upperBound > lowerBound) {
+                        state = val < upperBound;
+                    }
+                    else {
+                        state = val > lowerBound;
+                    }
+    
+                    return state ? node.successor : node.successorFalse;
+                }
+                else {
+                    //@@ERROR
+                    throw 'Loop variable is not actually a variable!';
+                }
 
             case 'ident':
                 this.pushStack({name: node.reproduction});
@@ -140,7 +178,7 @@ class Interpreter {
                 return node.successor;
             
             default:
-                throw 'Interpreter Errpr: Type not implemented: ' + node.type;
+                throw 'Interpreter Error: Type not implemented: ' + node.type;
         }
     }
 }

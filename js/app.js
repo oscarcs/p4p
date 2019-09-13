@@ -19,7 +19,7 @@ window.onload = function() {
             newPropertyName: '',
             gameSpeed: 1,
             utils: Utils,
-            devMode: false
+            devMode: true
         },
         watch: {
             'currentTile': function() {

@@ -76,6 +76,16 @@ class Lexer {
             return new Token('rparen', ')');
         }
 
+        if (c == '[') {
+            this.advance();
+            return new Token('lsqbracket', '[');
+        }
+
+        if (c == ']') {
+            this.advance();
+            return new Token('rsqbracket', ']');
+        }
+
         if (c === ',') {
             this.advance();
             return new Token('comma', ',');

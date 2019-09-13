@@ -141,6 +141,8 @@ class ContextHandler {
         
         this.threadBlock(node.children[3]);
         this.lastNode.successor = node.children[0];
+
+        this.lastNode = endForNode;
     }
 
     threadAssignmentStatement(node) {

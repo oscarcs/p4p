@@ -23,7 +23,7 @@ class Game extends Phaser.Scene {
         this.world = new World(this);
         window.world = this.world; 
         
-        this.input.mouse.disableContextMenu();
+        // this.input.mouse.disableContextMenu();
 
         // Marker for what the mouse is currently over.
         this.marker = this.add.rectangle(0, 32, 16, 16).setStrokeStyle(1, 0xffffff);
