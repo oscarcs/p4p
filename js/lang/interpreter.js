@@ -92,10 +92,9 @@ class Interpreter {
                 if (loopVariable.name) {
                     let val = this.context.lookup(this.event, loopVariable.name);
 
-                    console.log(val);
-                    
                     if (val === null) {
                         this.context.addLocal(this.event, loopVariable.name, lowerBound, 'numeric');
+                        val = lowerBound;
                     }
                     else {
                         if (upperBound > lowerBound) {
@@ -112,7 +111,7 @@ class Interpreter {
                         state = val < upperBound;
                     }
                     else {
-                        state = val > lowerBound;
+                        state = val > upperBound;
                     }
     
                     return state ? node.successor : node.successorFalse;
@@ -121,6 +120,11 @@ class Interpreter {
                     //@@ERROR
                     throw 'Loop variable is not actually a variable!';
                 }
+
+            case 'while':
+                console.log(node);
+
+                throw 'not implemented';
 
             case 'ident':
                 this.pushStack({name: node.reproduction});
