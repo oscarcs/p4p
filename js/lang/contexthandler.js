@@ -110,9 +110,15 @@ class ContextHandler {
     } 
 
     threadWhileStatement(node) {
-        // Thread the condition and jump to the if node
+        // Create a pseudo node for the entry point to the conditional.
+        let startWhileNode = new Node('pseudo', ContextHandler.randomID());
+        this.lastNode.successor = startWhileNode;
+        this.lastNode = startWhileNode;
+
+        // Thread the condition and jump to the while node afterwards.
         this.threadExpression(node.children[0]);
         this.lastNode.successor = node;
+        this.lastNode = node;
 
         // Create a 'fake' node that joins the flow of control after the conditional.
         let endWhileNode = new Node('pseudo', ContextHandler.randomID());
@@ -120,7 +126,9 @@ class ContextHandler {
 
         // Thread the loop body
         this.threadBlock(node.children[1]);
-        this.lastNode.successor = node.children[0];
+
+        // Jump back to the entry point after the body
+        this.lastNode.successor = startWhileNode;
 
         this.lastNode = endWhileNode;
     }

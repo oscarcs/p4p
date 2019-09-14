@@ -122,9 +122,9 @@ class Interpreter {
                 }
 
             case 'while':
-                console.log(node);
-
-                throw 'not implemented';
+                let whileCondition = this.popStackAsValue();
+                console.log(whileCondition, node, this.stack);
+                return whileCondition ? node.successor : node.successorFalse;
 
             case 'ident':
                 this.pushStack({name: node.reproduction});
