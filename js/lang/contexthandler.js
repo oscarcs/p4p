@@ -11,15 +11,15 @@ class ContextHandler {
         return dummyNode.successor;
     }
 
-    threadBlock(node) {
+    threadBlock(node, exitNode) {
         for (let child of node.children) {
-            this.threadStatement(child);
+            this.threadStatement(child, exitNode);
         }
         // this.lastNode.successor = node;
         // this.lastNode = node;
     }
 
-    threadStatement(node) {
+    threadStatement(node, exitNode) {
         switch(node.type) {
             case 'if':
                 this.threadIfStatement(node);
@@ -42,6 +42,7 @@ class ContextHandler {
                 break;
 
             case 'break':
+                this.threadBreakStatement(node, exitNode);
                 break;
 
             case 'loop':
@@ -98,13 +99,13 @@ class ContextHandler {
         this.lastNode.successor = node;
         this.lastNode = node;
         
-        // Thread the loop body
-        this.threadBlock(node.children[0]);
-        
         // Create a cycle in the control flow graph with a fake node.
         let endLoopNode = new Node('pseudo', ContextHandler.randomID());
         endLoopNode.successor = node;
 
+        // Thread the loop body
+        this.threadBlock(node.children[0], endLoopNode);
+        
         this.lastNode.successor = endLoopNode;
         this.lastNode = endLoopNode;
     } 
@@ -125,7 +126,7 @@ class ContextHandler {
         node.successorFalse = endWhileNode;
 
         // Thread the loop body
-        this.threadBlock(node.children[1]);
+        this.threadBlock(node.children[1], endWhileNode);
 
         // Jump back to the entry point after the body
         this.lastNode.successor = startWhileNode;
@@ -147,7 +148,7 @@ class ContextHandler {
         let endForNode = new Node('pseudo', ContextHandler.randomID());
         node.successorFalse = endForNode;
         
-        this.threadBlock(node.children[3]);
+        this.threadBlock(node.children[3], endForNode);
         this.lastNode.successor = node.children[0];
 
         this.lastNode = endForNode;
@@ -161,6 +162,12 @@ class ContextHandler {
 
         this.lastNode.successor = node;
         this.lastNode = node;
+    }
+
+    threadBreakStatement(node, exitNode) {
+        this.lastNode.successor = node;
+        this.lastNode = node;
+        this.lastNode.successor = exitNode;
     }
 
     threadExpression(node) {

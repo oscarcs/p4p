@@ -357,8 +357,6 @@ class Parser {
 
     breakStatement() {
         let node = new Node('break', 'break');
-        this.advance();
-
         return node;
     }
 

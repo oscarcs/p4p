@@ -123,7 +123,6 @@ class Interpreter {
 
             case 'while':
                 let whileCondition = this.popStackAsValue();
-                console.log(whileCondition, node, this.stack);
                 return whileCondition ? node.successor : node.successorFalse;
 
             case 'ident':

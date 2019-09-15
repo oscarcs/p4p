@@ -179,7 +179,6 @@ class ExecutionContext {
     start(event) {
         this.events[event].running = true;
         let root = this.thread(event);
-        console.log(event, root);
         this.events[event].interpreter = new Interpreter(root, event, this);
     }
 
@@ -325,9 +324,6 @@ class ExecutionContext {
      * @param {*} value 
      */
     setProperty(name, value) {
-
-        console.log('set ', name, value);
-
         if (name === 'x') {
             this.parent.move(value, this.parent.y);
         } 
