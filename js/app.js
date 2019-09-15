@@ -10,6 +10,7 @@ window.onload = function() {
 
             devOutput: '',
 
+            currentTab: 'prototypes',
             currentPrototype: 'BasicTile',
             currentTool: 'select',
             currentContext: null,
@@ -19,7 +20,7 @@ window.onload = function() {
             newPropertyName: '',
             gameSpeed: 1,
             utils: Utils,
-            devMode: true
+            devMode: false
         },
         watch: {
             'currentTile': function() {
