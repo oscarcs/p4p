@@ -121,7 +121,7 @@
             <div class="content">
                 <div class="columns">
                     <div class="column">
-                        <div class="tabs is-boxed is-fullwidth">
+                        <div class="tabs is-fullwidth">
                             <ul>
                                 <li
                                     :class="{ 'is-active': currentTab === 'prototypes'}"
@@ -153,7 +153,7 @@
                                             <div class="select is-multiple is-fullwidth">
                                                 <select
                                                     multiple
-                                                    size="10"
+                                                    size="6"
                                                     v-model="currentPrototype"
                                                 >
                                                     <option v-for="(type, name) of prototypes">{{name}}</option>
@@ -169,24 +169,67 @@
                                             </div>
                                             <div class="field">
                                                 <button
-                                                    class="button"
+                                                    class="button is-danger"
                                                     :disabled="this.currentPrototype === 'BasicTile' || editPrototypeMode" 
                                                     v-on:click="deletePrototype()"                       
                                                 >Delete Prototype</button>
                                             </div>
                                         </div>
                                     </div>
+                                    
+                                    <!-- <h1 v-if="editPrototypeMode">Editing {{currentPrototype}} prototype</h1>
+                                    <h1 v-else>{{currentTile.prototype.type}}</h1> -->
+        
+                                    <div class="field">
+                                        <div class="buttons">
+                                            <template v-if="editPrototypeMode">
+                                                <button 
+                                                    v-if="editPrototypeMode" 
+                                                    v-on:click="doneEdit()"
+                                                    class="button is-success"
+                                                >Done</button>
+                                                <button 
+                                                    v-if="editPrototypeMode" 
+                                                    v-on:click ="applyPrototypeChanges()"
+                                                    class="button"
+                                                >Apply To All</button>
+                                            </template>
+                                            <template v-else>
+                                                <button 
+                                                    v-on:click="savePrototype()"
+                                                    class="button"
+                                                >
+                                                    <svg class="icon is-small">
+                                                        <use xlink:href="css/symbols.svg#fa-save"></use>
+                                                    </svg>
+                                                    Save As New Prototype
+                                                </button>
+                                            </template>
+                                        </div>
+                                    </div>
+                                        
                                 </template>
         
                                 <!-- CODE -->
                                 <template v-if="currentTab === 'code'">
+                                    <div class="field">
+                                        <span class="control">
+                                            <span class="select is-fullwidth">
+                                                <select v-model="currentEventName">
+                                                    <option 
+                                                        v-for="event in currentContext.getEventList()"
+                                                    >{{event}}</option>
+                                                </select>
+                                            </span>
+                                        </span>
+                                    </div>
                                     <div class="field">
                                         <textarea 
                                             class="textarea is-small code" 
                                             v-model="currentContext.events[currentEventName].code"
                                             v-on:keydown.tab.prevent="insertTab($event)"
                                             spellcheck="false"
-                                            rows="15"
+                                            rows="12"
                                         ></textarea>
                                     </div>
                                     <div class="field">
@@ -340,29 +383,6 @@
                                         </div>
                                     </template>
                                 </template>
-        
-                                <div class="codepanel" v-if="currentContext !== null" v-show="false">
-                                    <h1 v-if="editPrototypeMode">Editing {{currentPrototype}} prototype</h1>
-                                    <h1 v-else>{{currentTile.prototype.type}}</h1>
-                                    <b>Events</b>
-                                    <select class="eventSelect" v-model="currentEventName">
-                                        <option v-for="event in currentContext.getEventList()">{{event}}</option>
-                                    </select>
-        
-                                    <button v-if = "editPrototypeMode" v-on:click="doneEdit()">
-                                        Done
-                                    </button>
-                                    <button v-if="editPrototypeMode" v-on:click ="applyPrototypeChanges()">
-                                        Apply to all
-                                    </button>
-        
-                                    <button v-else v-on:click="savePrototype()">
-                                        <svg class="icon">
-                                            <use xlink:href="css/symbols.svg#fa-save"></use>
-                                        </svg>
-                                        Save as new prototype
-                                    </button>
-                                </div>
                             </div>
                         </div>
 
