@@ -92,6 +92,7 @@ class World {
     update() {        
         // Update the ticks
         var date = new Date();
+
        
         if (this.prevTime + this.timeBetweenUpdate > date.getTime()) {
             this.isTick = false;
@@ -229,7 +230,6 @@ class World {
 
         }
     }
-
 
 
     //@@TODO save on exit to local storate but also save to JSON

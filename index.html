@@ -170,7 +170,7 @@
                                             <div class="field">
                                                 <button
                                                     class="button is-danger"
-                                                    :disabled="this.currentPrototype === 'BasicTile' || editPrototypeMode" 
+                                                    :disabled="this.currentPrototype === 'BasicTile' || this.currentPrototype[0] === 'BasicTile' || editPrototypeMode" 
                                                     v-on:click="deletePrototype()"                       
                                                 >Delete Prototype</button>
                                             </div>

@@ -25,6 +25,8 @@ class Game extends Phaser.Scene {
         
         // this.input.mouse.disableContextMenu();
 
+        this.input.setDefaultCursor('url("./assets/pencil.cur"), pointer');
+
         // Marker for what the mouse is currently over.
         this.marker = this.add.rectangle(0, 32, 16, 16).setStrokeStyle(1, 0xffffff);
         this.marker.depth = 100; // magic numbered to always be on top.
@@ -82,17 +84,23 @@ class Game extends Phaser.Scene {
         if (ui.mouseInGame) {
             this.marker.setPosition(Utils.gridToTrue(x), Utils.gridToTrue(y));
             this.marker.visible = true;
-
+            
             let color = 0xffffff;
-            if (tool == 'select') {
+
+            if (tool === 'select') {
+                this.input.setDefaultCursor('pointer');
+
                 if (this.world.getGrid(x, y).length == 1) {
                     color = 0xFFFF00;
                 }
                 else if (this.world.getGrid(x, y).length > 1) {
                     color = 0xFFFFF0;
                 }   
+            } else if (tool === "create") {
+                this.input.setDefaultCursor('url("./assets/pencil.cur"), pointer');
             }
             this.marker.setStrokeStyle(1, color);
+            
             
             //Alt button
             if (this.input.activePointer.rightButtonDown()&&this.input.activePointer.justDown) {
