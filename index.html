@@ -33,6 +33,8 @@
                     </div>
                 </div>
                 <div class="navbar-menu">
+
+                    <!-- File Menu -->
                     <div class="navbar-item has-dropdown is-hoverable">
                         <a class="navbar-link">
                             File
@@ -50,7 +52,7 @@
                                 </svg>
                                 Download Project
                             </a>
-                            <a class="navbar-item" v-on:click="uploadFile()">
+                            <a class="navbar-item" v-on:click="importGame()">
                                 <svg class="icon is-small">
                                     <use xlink:href="css/symbols.svg#fa-upload"></use>
                                 </svg>
@@ -60,6 +62,7 @@
                         </div>
                     </div>
 
+                    <!-- Tools Menu -->
                     <div class="navbar-item has-dropdown is-hoverable">
                         <a class="navbar-link">
                             Tools
@@ -79,8 +82,17 @@
                             </a>
                         </div>
                     </div>
+
+                    <!-- Current prototype editing indicator -->
+                    <div class="navbar-item">
+                        <span class="tag is-danger" v-if="editPrototypeMode">
+                            Editing all '{{currentPrototype}}' tiles 
+                        </span>
+                    </div>
                 </div>
                 <div class="navbar-end">
+
+                    <!-- Go/Stop controls -->
                     <div class="navbar-item">
                         <div class="buttons">
                             <a class="button is-warning" v-on:click="goAll()">
@@ -97,6 +109,8 @@
                             </a>
                         </div>
                     </div>
+
+                    <!-- Speed controls -->
                     <div class="navbar-item">
                         <div>
                             <input 
@@ -111,6 +125,8 @@
                             <!-- TODO: wtf is the onkeydown event doing there? -->
                         </div> 
                     </div>
+
+                    <!-- Speed indicator -->
                     <div class="navbar-item">
                         <span class="tag is-white">
                             Speed: {{parseFloat(gameSpeed).toFixed(1)}}
@@ -121,65 +137,72 @@
             <div class="content">
                 <div class="columns">
                     <div class="column">
+                        <!-- Tabs control -->
                         <div class="tabs is-fullwidth">
                             <ul>
                                 <li
+                                    v-if="currentContext === null"
                                     :class="{ 'is-active': currentTab === 'prototypes'}"
                                     v-on:click="currentTab = 'prototypes'"
                                 >
-                                    <a>Prototypes</a>
+                                    <a>Tiles</a>
                                 </li>
                                 <li
+                                    v-if="currentContext !== null"
                                     :class="{ 'is-active': currentTab === 'code'}"
-                                    v-on:click="currentTab = 'code'"
+                                    v-on:click="currentTab = currentContext !== null ? 'code' : 'prototypes'"
                                 >
                                     <a>Code</a>
                                 </li>
                                 <li
+                                    v-if="currentContext !== null"
                                     :class="{ 'is-active': currentTab === 'properties'}"
-                                    v-on:click="currentTab = 'properties'"
+                                    v-on:click="currentTab = currentContext !== null ? 'properties' : 'prototypes'"
                                 >
                                     <a>Properties</a>
                                 </li>
                             </ul>
                         </div>
                         
+                        <!-- Tab content -->
                         <div class="has-left-padding">
 
-                                <!-- PROTOTYPES -->
+                                <!-- TILES -->
                                 <template v-if="currentTab === 'prototypes'">
-                                    <div class="columns">
-                                        <div class="column">
-                                            <div class="select is-multiple is-fullwidth">
-                                                <select
-                                                    multiple
-                                                    size="6"
-                                                    v-model="currentPrototype"
-                                                >
-                                                    <option v-for="(type, name) of prototypes">{{name}}</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <div class="column">
-                                            <div class="field">
-                                                <button
-                                                    class="button"
-                                                    v-on:click ="editPrototype()"
-                                                >Edit Prototype</button>
-                                            </div>
-                                            <div class="field">
-                                                <button
-                                                    class="button is-danger"
-                                                    :disabled="this.currentPrototype === 'BasicTile' || this.currentPrototype[0] === 'BasicTile' || editPrototypeMode" 
-                                                    v-on:click="deletePrototype()"                       
-                                                >Delete Prototype</button>
-                                            </div>
+                                    <div class="columns is-multiline">
+                                        <div 
+                                            class="column is-half" 
+                                            v-for="(type, name, idx) of prototypes"
+                                        >
+                                            <div 
+                                                class="box is-small" 
+                                                v-on:click="currentPrototype = name"
+                                                :class="{'is-active': currentPrototype === name}"
+                                            >
+                                                <div class="field is-horizontal">
+                                                    <div class="field-label is-normal">
+                                                        <label class="label">
+                                                            {{name}}
+                                                        </label>
+                                                    </div>
+                                                    <div class="field-body">
+                                                        <div class="buttons">
+                                                            <button
+                                                                class="button"
+                                                                v-on:click="editPrototype(name)"
+                                                            >Edit</button>
+                                                            <button
+                                                                class="button is-danger"
+                                                                v-if="name !== 'BasicTile' && !editPrototypeMode" 
+                                                                v-on:click="deletePrototype(name)"                       
+                                                            >Delete</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>                                                
                                         </div>
                                     </div>
                                     
-                                    <!-- <h1 v-if="editPrototypeMode">Editing {{currentPrototype}} prototype</h1>
-                                    <h1 v-else>{{currentTile.prototype.type}}</h1> -->
-        
                                     <div class="field">
                                         <div class="buttons">
                                             <template v-if="editPrototypeMode">
@@ -195,15 +218,15 @@
                                                 >Apply To All</button>
                                             </template>
                                             <template v-else>
-                                                <button 
+                                                <!-- <button 
                                                     v-on:click="savePrototype()"
                                                     class="button"
                                                 >
                                                     <svg class="icon is-small">
                                                         <use xlink:href="css/symbols.svg#fa-save"></use>
                                                     </svg>
-                                                    Save As New Prototype
-                                                </button>
+                                                    Save As New Tile
+                                                </button> -->
                                             </template>
                                         </div>
                                     </div>

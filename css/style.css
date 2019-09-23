@@ -6,6 +6,14 @@
     font-family: 'Courier New', Courier, monospace !important;
 }
 
+.box.is-small {
+	padding: 0.5rem;
+}
+
+.box.is-active {
+    background: rgba(10, 10, 10, 0.1);
+}
+
 .navbar-item svg.icon {
     margin-right: 0.5rem !important;
 }

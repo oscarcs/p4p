@@ -78,6 +78,11 @@ window.onload = function() {
                 console.log(t);
             },
 
+            /**
+             * Insert tab characters (spaces) into the code edit box.
+             * This event fires on a tab key press.
+             * @param {*} event 
+             */
             insertTab: function(event) {
                 let selectionStartPos = event.target.selectionStart;
                 let selectionEndPos   = event.target.selectionEnd;
@@ -97,17 +102,18 @@ window.onload = function() {
                 if (this.currentTile !== null) {
                     this.currentContext = this.currentTile.getContext();
                     this.currentEventName = this.currentContext.getDefaultEventName();
-
+                    this.currentTab = 'code';
                 }
                 else {
                     this.currentContext = null;
                     this.currentEventName = null;
+                    this.currentTab = 'prototypes';
                 }
             },
 
             addProperty: function() {
-                if (this.newPropertyName.length > 0){
-                    Vue.set(this.currentContext.props,this.newPropertyName,{
+                if (this.newPropertyName.length > 0) {
+                    Vue.set(this.currentContext.props, this.newPropertyName, {
                         value: '',
                         type:'string'
                     });
@@ -123,12 +129,11 @@ window.onload = function() {
                 this.currentContext.deleteProperty(name);                
             },
 
-            editPrototype: function() {
-                if (typeof world.getPrototype(this.currentPrototype) !== "undefined") {                   
-                    this.currentContext = world.getPrototype(this.currentPrototype).getContext();
-                    this.currentEventName = "main";                    
-                    this.editPrototypeMode = true;              
-                }                
+            editPrototype: function(prototypeName) {
+                this.currentPrototype = prototypeName;
+                this.currentContext = world.getPrototype(this.currentPrototype).getContext();
+                this.currentEventName = "main";                    
+                this.editPrototypeMode = true;                
             },
 
             doneEdit() {
@@ -147,15 +152,15 @@ window.onload = function() {
                 }
             },
 
-            deletePrototype: function() {
+            deletePrototype: function(prototypeName) {
                 if (this.editPrototypeMode) {
                     this.editPrototypeMode = false;     
                 }
-                Vue.delete(world.prototypes, this.currentPrototype);  
+                Vue.delete(world.prototypes, prototypeName);  
             },
 
             savePrototype: function() {
-                var newPrototypeName  = prompt("Enter prototype name");
+                var newPrototypeName = prompt("Enter prototype name");
                 
                 if (newPrototypeName.length > 0 && 
                     !(newPrototypeName in world.prototypes) &&
@@ -173,15 +178,14 @@ window.onload = function() {
 
             resetGame: function() {
                 var confirmation = confirm("This will delete all your unsaved work, are you sure?");
-                if (confirm) {
-                    world.clearAll()
-                    
+                if (confirmation) {
+                    world.clearAll();
                 }
             },
 
             uploadFile: function() {
                 var fileImport = document.getElementById("fileImport");
-                fileImport.value ="";
+                fileImport.value = "";
                 fileImport.click();
                 //Not waiting until the file is read.
             },
@@ -193,7 +197,7 @@ window.onload = function() {
 
                 var reader = new FileReader();
                 var jsonObj;
-                try{
+                try {
                     // Closure to capture the file information.
                     reader.onload = (event) => {
                         jsonObj = event.target.result;
@@ -202,7 +206,8 @@ window.onload = function() {
                         world.loadGame(jsonObj);
                     };
                     reader.readAsText(file);
-                } catch {
+                } 
+                catch {
                     alert("Invalid Save file");
                 }
 
