@@ -17,10 +17,11 @@ window.onload = function() {
             currentEventName: 'main',
             showProperties: false,
             editPrototypeMode: false,
+            applyAllPopup: false,
             newPropertyName: '',
             gameSpeed: 1,
             utils: Utils,
-            devMode: true
+            devMode: false,
         },
         watch: {
             'currentTile': function() {
@@ -138,11 +139,7 @@ window.onload = function() {
 
             doneEdit() {
                 //@@TODO make this dialogue an actual popup.
-                var applyAll = confirm("Apply these changes to all " + this.currentPrototype + " tiles?");
-
-                if (applyAll) {
-                    this.applyPrototypeChanges();
-                }
+                this.applyAllPopup = true;
 
                 if (this.editPrototypeMode) {
                     this.editPrototypeMode = false;
@@ -151,6 +148,7 @@ window.onload = function() {
             },
 
             applyPrototypeChanges: function() {
+                this.applyAllPopup = false;
                 for (var tile of world.getTiles()) {
                     if (tile.getType() === this.currentPrototype) {
                         world.getPrototype(this.currentPrototype).getContext().copy(tile.context);

@@ -26,6 +26,19 @@
 
     <body>
         <div id="app">
+                <div v-bind:class = "{ 'is-active': applyAllPopup }" class="modal">
+                    <div class="modal-background"></div>
+                    <div class="modal-card">
+                    <header class="modal-card-head">
+                    <p class="modal-card-title">Apply Changes to all '{{currentPrototype}}' tiles?</p>
+                    <button class="delete" aria-label="close" v-on:click="applyAllPopup=false"></button>
+                    </header>
+                    <footer class="modal-card-foot">
+                        <button class="button is-success" v-on:click="applyPrototypeChanges()" >Apply To all</button>
+                        <button class="button" v-on:click="applyAllPopup=false">Only apply to future tiles</button>
+                    </footer>
+                </div>
+            </div>
             <div class="navbar is-warning">
                 <div class="navbar-brand">
                     <div class="navbar-item">
