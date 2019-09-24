@@ -339,4 +339,8 @@ class World {
                 }
             } 
     }
+
+    toggleDevMode() {
+        ui.devMode = ! ui.devMode;
+    }
 }

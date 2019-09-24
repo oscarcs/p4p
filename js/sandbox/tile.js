@@ -320,6 +320,11 @@ class Tile {
         }
     }
 
+
+    devMode() {
+        this.world.toggleDevMode();
+    }
+
     // For saving state.
     serialize() {
         var saveSprite = {};      

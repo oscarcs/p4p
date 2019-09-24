@@ -26,7 +26,8 @@ class ExecutionContext {
             'addTile',
             'getTileProperty',
             'isOverlapping',
-            'changeLayer'
+            'changeLayer',
+            'devMode',
         ];
 
     }
