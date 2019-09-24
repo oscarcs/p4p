@@ -137,6 +137,13 @@ window.onload = function() {
             },
 
             doneEdit() {
+                //@@TODO make this dialogue an actual popup.
+                var applyAll = confirm("Apply these changes to all " + this.currentPrototype + " tiles?");
+
+                if (applyAll) {
+                    this.applyPrototypeChanges();
+                }
+
                 if (this.editPrototypeMode) {
                     this.editPrototypeMode = false;
                     this.currentContext = null;
