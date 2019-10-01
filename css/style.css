@@ -2,6 +2,7 @@
     padding-left: 1.5rem;
 }
 
+
 .code {
     font-family: 'Courier New', Courier, monospace !important;
 }
@@ -151,10 +152,14 @@ input[type=range].is-warning:focus::-ms-fill-upper {
     width: 100%;
 }
 
-
 .content {
     margin-top: 0rem;
 }
+
+.outerCol {
+    height: 100%;
+}
+
 
 /* .icon {
     width: 1.5rem;
