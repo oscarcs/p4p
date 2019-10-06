@@ -81,13 +81,13 @@
                             Tools
                         </a>
                         <div class="navbar-dropdown">
-                            <a class="navbar-item" v-on:click="currentTool = 'select'">
+                            <a class="navbar-item" v-bind:class="{selected:currentTool==='select'}" v-on:click="currentTool = 'select'">
                                 <svg class="icon is-small">
                                     <use xlink:href="css/symbols.svg#fa-mouse-pointer"></use>
                                 </svg>
                                 Select
                             </a>
-                            <a class="navbar-item" v-on:click="currentTool = 'create'">
+                            <a class="navbar-item" v-bind:class="{selected:currentTool==='create'}" v-on:click="currentTool = 'create'">
                                 <svg class="icon is-small">
                                     <use xlink:href="css/symbols.svg#fa-pencil-alt"></use>
                                 </svg>
