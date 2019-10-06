@@ -65,7 +65,7 @@
                                 </svg>
                                 Download Project
                             </a>
-                            <a class="navbar-item" v-on:click="importGame()">
+                            <a class="navbar-item" v-on:click="uploadFile()">
                                 <svg class="icon is-small">
                                     <use xlink:href="css/symbols.svg#fa-upload"></use>
                                 </svg>
@@ -122,7 +122,7 @@
                             </a>
                         </div>
                     </div>
-
+                    <input type="file" v-on:change="importGame()" id ="fileImport"/>
                     <!-- Speed controls -->
                     <div class="navbar-item">
                         <div>
@@ -135,7 +135,7 @@
                                 v-model="gameSpeed" 
                                 onkeydown="return false;"
                             ></input>
-                            <!-- TODO: wtf is the onkeydown event doing there? -->
+                            <!-- TODO: wtf is the onkeydown event doing there?(Here to stop arrow keys toggling gamespeed) -->
                         </div> 
                     </div>
 

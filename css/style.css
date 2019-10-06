@@ -157,7 +157,7 @@ input[type=range].is-warning:focus::-ms-fill-upper {
 }
 
 .outerCol {
-    height: 100%;
+    height: 80%;
 }
 
 .selected {
@@ -166,6 +166,13 @@ input[type=range].is-warning:focus::-ms-fill-upper {
 
 .selected:hover {
     background-color: #00cc00 !important;
+}
+
+#fileImport {
+    opacity: 0;
+    position: absolute;
+    left: 0;
+    top: 0;
 }
 
 /* .icon {
