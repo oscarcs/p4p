@@ -49,6 +49,8 @@ class Utils {
         this.spriteDict["spider"] = {sheet: 'creatures', index: 32};
         this.spriteDict["beetle"] = {sheet: 'creatures', index: 42};
         this.spriteDict["ghost"] = {sheet: 'creatures', index: 58};
+        this.spriteDict["mushroom"] = {sheet: "creatures", index: 65};
+        this.spriteDict["snake"] = {sheet:"creatures", index: 68};
 
         
     }
