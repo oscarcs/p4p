@@ -308,6 +308,8 @@ class ExecutionContext {
     getProperty(name) {
         if (typeof this.props[name] !== 'undefined') {
             return this.props[name].value;
+        } else if (this.builtinValues.includes(name)) {
+            return this.parent[name];
         }
         return null;
     } 
