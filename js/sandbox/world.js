@@ -40,7 +40,7 @@ class World {
         this.prototypes = {};
         this.prototypes = {'BasicTile': new Prototype('BasicTile')};
 
-        this.prototypes["BasicTile"].context.addProperty('image', 'tree', 'enum'); //Kinda hacky 
+        this.prototypes["BasicTile"].context.addProperty('image', 'base', 'enum'); //Kinda hacky 
         this.prototypes["BasicTile"].context.addProperty('name', '', 'string'); 
         this.prototypes["BasicTile"].context.addProperty('solid', false, 'boolean');      
         

@@ -28,6 +28,7 @@ class Utils {
     static mapTilesToNames() {
         this.spriteDict = {}
         
+        this.spriteDict["base"] = {sheet:'tiles',index: 2};
         this.spriteDict["deer"] = {sheet:'tiles', index: 1};
         this.spriteDict["snow"] = {sheet:'tiles', index: 12};
         this.spriteDict["tree"] = {sheet: 'tiles', index: 0};
