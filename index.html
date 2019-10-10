@@ -122,7 +122,7 @@
                             </a>
                         </div>
                     </div>
-                    <input type="file" v-on:change="importGame()" id ="fileImport"/>
+                    <input type="file" v-on:change="importGame()" accept=".json" id ="fileImport"/>
                     <!-- Speed controls -->
                     <div class="navbar-item">
                         <div>
@@ -243,6 +243,8 @@
         
                                 <!-- CODE -->
                                 <template v-if="currentTab === 'code'">
+                                    <b v-if="currentTile !== null">{{currentTile.getType()}}</b>
+                                    <b v-else-if="editPrototypeMode&&currentPrototype!==null">Editing all '{{currentPrototype}}' tiles</b>
                                     <div class="field">
                                         <span class="control">
                                             <span class="select is-fullwidth">
@@ -276,6 +278,8 @@
         
                                 <!-- PROPERTIES -->
                                 <template v-if="currentTab === 'properties'">
+                                    <b v-if="currentTile !== null">{{currentTile.getType()}}</b>
+                                    <b v-else-if="editPrototypeMode&&currentPrototype!==null">Editing all '{{currentPrototype}}' tiles</b>
                                     <div class="field has-addons">
                                         <div class="control is-expanded">
                                             <input 
