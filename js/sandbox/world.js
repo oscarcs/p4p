@@ -200,6 +200,7 @@ class World {
     }
 
     goAll() {
+        ui.running=true;
         for (let sprite of this.sprites) {
             sprite.getContext().start("main");
             sprite.enableEvents();
@@ -207,6 +208,7 @@ class World {
     }
 
     stopAll() {
+        ui.running=false;
         for (let sprite of this.sprites) {
             for (let event of sprite.getContext().getEventList()) {
                 sprite.getContext().stop(event);

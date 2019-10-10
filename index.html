@@ -101,12 +101,19 @@
                         <span class="tag is-danger" v-if="editPrototypeMode">
                             Editing all '{{currentPrototype}}' tiles 
                         </span>
+                        <button class="tag is is-success"
+                            v-if="editPrototypeMode" 
+                            v-on:click="doneEdit()"
+                            class="button is-success"
+                        >Done</button>
                     </div>
                 </div>
                 <div class="navbar-end">
 
                     <!-- Go/Stop controls -->
                     <div class="navbar-item">
+                        <div class="tag is-success" v-if="running">Running</div>
+                        <div class="tag is-danger" v-else>Stopped</div>
                         <div class="buttons">
                             <a class="button is-warning" v-on:click="goAll()">
                                 <svg class="icon is-small">
@@ -218,23 +225,16 @@
                                     
                                     <div class="field">
                                         <div class="buttons">
-                                            <template v-if="editPrototypeMode">
-                                                <button 
-                                                    v-if="editPrototypeMode" 
-                                                    v-on:click="doneEdit()"
-                                                    class="button is-success"
-                                                >Done</button>
-                                            </template>
-                                            <template v-else>
-                                                <!-- <button 
+                                            <template>
+                                                 <button 
                                                     v-on:click="savePrototype()"
                                                     class="button"
                                                 >
                                                     <svg class="icon is-small">
                                                         <use xlink:href="css/symbols.svg#fa-save"></use>
                                                     </svg>
-                                                    Save As New Tile
-                                                </button> -->
+                                                    New Tile
+                                                </button>
                                             </template>
                                         </div>
                                     </div>

@@ -7,9 +7,8 @@ window.onload = function() {
             // Variables tracked in the app
             currentTile: null,
             prototypes: [],
-
             devOutput: '',
-
+            running: false,
             currentTab: 'prototypes',
             currentPrototype: 'BasicTile',
             currentTool: 'select',
@@ -28,12 +27,6 @@ window.onload = function() {
                 this.changeCurrentContext();
                 this.editPrototypeMode = false;
 
-            },
-            'currentPrototype': function() {
-                if (this.editPrototypeMode) {
-                    this.editPrototypeMode = false;
-                    this.currentContext = null;
-                }                
             },
             'gameSpeed': function() {
                 world.timeBetweenUpdate = 50 / this.gameSpeed;
@@ -134,7 +127,8 @@ window.onload = function() {
                 this.currentPrototype = prototypeName;
                 this.currentContext = world.getPrototype(this.currentPrototype).getContext();
                 this.currentEventName = "main";                    
-                this.editPrototypeMode = true;                
+                this.editPrototypeMode = true; 
+                this.currentTab='code';               
             },
 
             doneEdit() {
@@ -144,6 +138,7 @@ window.onload = function() {
                 if (this.editPrototypeMode) {
                     this.editPrototypeMode = false;
                     this.currentContext = null;
+                    this.currentTab='prototypes';
                 }
             },
 
@@ -168,16 +163,14 @@ window.onload = function() {
                 var newPrototypeName = prompt("Enter prototype name");
                 
                 if (newPrototypeName.length > 0 && 
-                    !(newPrototypeName in world.prototypes) &&
-                    typeof this.currentTile !== "null"
+                    !(newPrototypeName in world.prototypes)
                 ) {                    
                     Vue.set(
                         world.prototypes, 
                         newPrototypeName, 
-                        new Prototype(newPrototypeName,this.currentTile)
-                    );
-                    
-                    this.currentTile.setPrototype(world.prototypes[newPrototypeName]);
+                        new Prototype(newPrototypeName,world.prototypes['BasicTile'])
+                    );                    
+                    //this.currentTile.setPrototype(world.prototypes[newPrototypeName]);
                 }               
             },
 
